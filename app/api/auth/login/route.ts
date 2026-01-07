@@ -5,15 +5,22 @@ import { cookies } from "next/headers"
 
 export async function POST(request: Request) {
   try {
+    console.log("[v0] Login: Iniciando...")
+
     const { email, senha } = await request.json()
+    console.log("[v0] Login: Dados recebidos - email:", email)
 
     if (!email || !senha) {
       return NextResponse.json({ error: "Email e senha são obrigatórios" }, { status: 400 })
     }
 
+    console.log("[v0] Login: Buscando usuário no banco...")
+    console.log("[v0] Login: DATABASE_URL existe:", !!process.env.DATABASE_URL)
+
     const usuario = await prisma.usuario.findUnique({
       where: { email: email.toLowerCase() },
     })
+    console.log("[v0] Login: Usuário encontrado:", !!usuario)
 
     if (!usuario) {
       return NextResponse.json({ error: "Credenciais inválidas" }, { status: 401 })
@@ -23,12 +30,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Usuário desativado" }, { status: 401 })
     }
 
+    console.log("[v0] Login: Verificando senha...")
     const senhaValida = verifyPassword(senha, usuario.senha)
 
     if (!senhaValida) {
       return NextResponse.json({ error: "Credenciais inválidas" }, { status: 401 })
     }
 
+    console.log("[v0] Login: Criando sessão...")
     const token = await createSession(usuario.id)
 
     const cookieStore = await cookies()
@@ -36,10 +45,11 @@ export async function POST(request: Request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60, // 7 dias
+      maxAge: 7 * 24 * 60 * 60,
       path: "/",
     })
 
+    console.log("[v0] Login: Sucesso!")
     return NextResponse.json({
       success: true,
       usuario: {
@@ -50,7 +60,16 @@ export async function POST(request: Request) {
       },
     })
   } catch (error) {
-    console.error("Erro no login:", error)
-    return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : "Erro desconhecido"
+    const errorStack = error instanceof Error ? error.stack : ""
+    console.error("[v0] Login ERRO:", errorMessage)
+    console.error("[v0] Login ERRO Stack:", errorStack)
+    return NextResponse.json(
+      {
+        error: "Erro interno do servidor",
+        details: errorMessage,
+      },
+      { status: 500 },
+    )
   }
 }
