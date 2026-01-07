@@ -32,6 +32,8 @@ ENV NODE_ENV=production
 # Build da aplicação
 RUN npm run build
 
+RUN npx prisma db push
+
 # Etapa 3: Imagem de produção
 FROM node:20-alpine AS runner
 WORKDIR /app
