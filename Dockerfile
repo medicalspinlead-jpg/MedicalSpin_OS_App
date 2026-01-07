@@ -1,13 +1,16 @@
 # Etapa 1: dependências
 FROM node:20-alpine AS deps
-RUN apk add --no-cache libc6-compat openssl
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+ENV PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
+
+COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
 COPY prisma ./prisma/
 
 RUN npm ci
 RUN npx prisma generate
+
 
 # Etapa 2: build
 FROM node:20-alpine AS builder
