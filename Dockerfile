@@ -17,8 +17,6 @@ RUN \
 
 # Gerar cliente Prisma
 RUN npx prisma generate
-RUN npx prisma db push
-RUN npx prisma db pull
 
 # Etapa 2: Build da aplicação
 FROM node:20-alpine AS builder
