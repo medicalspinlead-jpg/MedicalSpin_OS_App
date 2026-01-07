@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState, useRef } from "react"
 import { useRouter, usePathname } from "next/navigation"
 
 interface Usuario {
@@ -33,18 +33,31 @@ const publicPaths = ["/login", "/setup"]
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null)
   const [loading, setLoading] = useState(true)
+  const checkingRef = useRef(false)
   const router = useRouter()
   const pathname = usePathname()
 
   const isPublicPath = publicPaths.includes(pathname)
 
   useEffect(() => {
-    checkAuth()
-  }, [pathname])
+    if (!checkingRef.current) {
+      checkAuth()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!loading && !usuario && !isPublicPath) {
+      router.push("/login")
+    }
+  }, [pathname, loading, usuario, isPublicPath, router])
 
   async function checkAuth() {
+    if (checkingRef.current) return
+    checkingRef.current = true
+
     if (isPublicPath) {
       setLoading(false)
+      checkingRef.current = false
       return
     }
 
@@ -56,13 +69,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUsuario(data.usuario)
       } else {
         setUsuario(null)
-        router.push("/login")
       }
     } catch (error) {
       setUsuario(null)
-      router.push("/login")
     } finally {
       setLoading(false)
+      checkingRef.current = false
     }
   }
 
