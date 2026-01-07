@@ -18,7 +18,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft } from "lucide-react"
 
 export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([])
@@ -61,14 +60,8 @@ export default function ClientesPage() {
   return (
     <div className="min-h-screen bg-muted/30">
       <main className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">         
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <Button asChild variant="ghost" size="sm" className="mb-4">
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar
-              </Link>
-            </Button>            
             <h1 className="text-3xl font-semibold text-foreground">Clientes</h1>
             <p className="text-muted-foreground mt-1">Gerencie seus clientes e equipamentos</p>
           </div>

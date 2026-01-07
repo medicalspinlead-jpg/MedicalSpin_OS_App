@@ -9,13 +9,11 @@ import { Copy, Key, ShieldCheck, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { useState, useEffect } from "react"
-import { ArrowLeft } from "lucide-react"
-import Link from "next/link"
 
 export default function DocumentacaoPage() {
   const { toast } = useToast()
   const [copiedIndex, setCopiedIndex] = useState<string | null>(null)
-  const [baseUrl, setBaseUrl] = useState("https://os.medicalspin.com.br")
+  const [baseUrl, setBaseUrl] = useState("https://seu-dominio.com")
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -23,7 +21,7 @@ export default function DocumentacaoPage() {
     }
   }, [])
 
-  const apiKey = process.env.setupKey
+  const apiKey = "medicalspin2026"
 
   const copyToClipboard = (text: string, index?: string) => {
     navigator.clipboard.writeText(text)
@@ -39,7 +37,7 @@ export default function DocumentacaoPage() {
 
   const generateCurlCommand = (method: string, path: string, body: object | null, protected_: boolean) => {
     const headers = protected_
-      ? `-H "x-api-key: [apiKey]" \\\n  -H "Content-Type: application/json"`
+      ? `-H "x-api-key: ${apiKey}" \\\n  -H "Content-Type: application/json"`
       : `-H "Content-Type: application/json"`
 
     const bodyPart = body ? ` \\\n  -d '${JSON.stringify(body, null, 2).replace(/\n/g, "\n  ")}'` : ""
@@ -104,7 +102,7 @@ console.log(data);`
           method: "POST",
           path: "/api/auth/setup",
           description: "Criar primeiro usuario (setup inicial)",
-          body: { nome: "Admin", email: "admin@email.com", senha: "senha123", chaveSeguranca: "[setupKey]" },
+          body: { nome: "Admin", email: "admin@email.com", senha: "senha123", chaveSeguranca: "medicalspin2026" },
           response: { id: "uuid", nome: "Admin", email: "admin@email.com" },
           protected: false,
         },
@@ -395,43 +393,54 @@ console.log(data);`
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <main className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">          
-          <div>
-            <Button asChild variant="ghost" size="sm" className="mb-4">
-            <Link href="/clientes">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar
-            </Link>
-          </Button>
-            <h1 className="text-3xl font-semibold text-foreground">Documentação</h1>
-            <p className="text-muted-foreground mt-1">Documentação da API</p>
-          </div>
-        </div>
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 max-w-full overflow-x-hidden">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Documentacao da API</h1>
+        <p className="text-muted-foreground text-sm sm:text-base mt-1 sm:mt-2">
+          Referencia completa das rotas de API disponiveis no sistema. Comandos prontos para copiar e colar.
+        </p>
+      </div>
 
       {/* Card de Autenticação da API */}
       <Alert className="mb-4 sm:mb-6 border-primary/50 bg-primary/5">
         <ShieldCheck className="h-4 w-4" />
-        <AlertTitle className="text-sm sm:text-base">Autenticação da API</AlertTitle>
+        <AlertTitle className="text-sm sm:text-base">Autenticacao da API</AlertTitle>
         <AlertDescription className="mt-2">
           <p className="text-xs sm:text-sm mb-3">
             Todas as rotas protegidas requerem o header <code className="bg-muted px-1 rounded">x-api-key</code> com a
-            chave de segurança.
+            chave de seguranca.
           </p>
-          
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+            <div className="flex items-center gap-2 bg-muted px-2 sm:px-3 py-1.5 sm:py-2 rounded w-full sm:w-auto">
+              <Key className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+              <code className="text-xs sm:text-sm font-mono break-all">{apiKey}</code>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => copyToClipboard(apiKey, "apikey")}
+              className="w-full sm:w-auto text-xs sm:text-sm"
+            >
+              {copiedIndex === "apikey" ? (
+                <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              ) : (
+                <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              )}
+              {copiedIndex === "apikey" ? "Copiado!" : "Copiar"}
+            </Button>
+          </div>
         </AlertDescription>
       </Alert>
 
       <Card className="mb-4 sm:mb-6">
         <CardHeader className="p-3 sm:p-6">
           <CardTitle className="text-sm sm:text-base">Base URL</CardTitle>
-          <CardDescription className="text-xs sm:text-sm">Todas as requisições devem ser feitas para:</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Todas as requisicoes devem ser feitas para:</CardDescription>
         </CardHeader>
         <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
           <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
             <code className="bg-muted px-2 sm:px-3 py-1.5 sm:py-2 rounded text-xs sm:text-sm block break-all flex-1">
-              {baseUrl} 
+              {baseUrl}
             </code>
             <Button
               variant="outline"
@@ -573,7 +582,6 @@ console.log(data);`
           </TabsContent>
         ))}
       </Tabs>
-      </main>
     </div>
   )
 }

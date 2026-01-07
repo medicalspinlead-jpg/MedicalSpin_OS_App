@@ -44,9 +44,9 @@ export function AppHeader() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 hover:opacity-80">
-            <img src="/favicon.png" alt="Logo" className="h-8 w-8" />
+            <FileText className="h-5 w-5 md:h-6 md:w-6 text-primary" />
             <div>
-              <h1 className="text-base md:text-xl font-semibold text-foreground">Medical Spin OS</h1>
+              <h1 className="text-base md:text-xl font-semibold text-foreground">Sistema de OS</h1>
             </div>
           </Link>
 

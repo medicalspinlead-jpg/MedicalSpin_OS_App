@@ -3,8 +3,6 @@
 import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { createNovaOS, saveOrdemServico } from "@/lib/storage"
-import { ArrowLeft } from "lucide-react"
-import Link from "next/link"
 
 export default function NovaOSPage() {
   const router = useRouter()

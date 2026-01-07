@@ -99,8 +99,8 @@ export const Step6MaoObra = forwardRef(function Step6MaoObra(
                 <Input
                   id="horas"
                   type="number"
-                  step="1"
-                  min="1"
+                  step="0.5"
+                  min="0.5"
                   value={novoServico.horas}
                   onChange={(e) => setNovoServico({ ...novoServico, horas: Number.parseFloat(e.target.value) || 1 })}
                 />

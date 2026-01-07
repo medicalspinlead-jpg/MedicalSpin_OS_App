@@ -39,6 +39,7 @@ export const metadata: Metadata = {
     title: "Medical Spin",
     description: "Sistema de Ordens de Serviço",
   },
+    generator: 'v0.app'
 }
 
 export const viewport = {
@@ -60,7 +61,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.png" />
+        <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/icon-192.jpg" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />

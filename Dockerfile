@@ -1,71 +1,76 @@
-# Etapa 1: Instalar dependências
+# =========================
+# Etapa 1 — Dependências
+# =========================
 FROM node:20-alpine AS deps
-RUN apk add --no-cache libc6-compat
+
+RUN apk add --no-cache libc6-compat openssl
+
 WORKDIR /app
 
-# Copiar arquivos de dependências
 COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
-COPY prisma ./prisma/
+COPY prisma ./prisma
 
-# Instalar dependências
 RUN \
   if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
   elif [ -f package-lock.json ]; then npm ci; \
   elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
-  else npm i; \
+  else npm install; \
   fi
 
-# Gerar cliente Prisma
-RUN npx prisma generate
+# NÃO gerar Prisma aqui — evita binary incompatível
 
-# Etapa 2: Build da aplicação
+
+# =========================
+# Etapa 2 — Build
+# =========================
 FROM node:20-alpine AS builder
+
+RUN apk add --no-cache libc6-compat openssl
+
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Variáveis de ambiente para build
-ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build da aplicação
 RUN npm run build
 
-RUN npx prisma db push
 
-# Etapa 3: Imagem de produção
+# =========================
+# Etapa 3 — Runtime
+# =========================
 FROM node:20-alpine AS runner
+
+RUN apk add --no-cache libc6-compat openssl
+
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Criar usuário não-root para segurança
+# Usuário não-root
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Copiar arquivos necessários
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 
-# Configurar permissões para o cache do Next.js
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
+# Gerar Prisma Client NO AMBIENTE FINAL
+RUN npx prisma generate
 
-# Copiar build standalone do Next.js
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# Copiar node_modules do Prisma
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+# Permissões
+RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 
 EXPOSE 3000
 
 ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
+ENV HOSTNAME=0.0.0.0
 
 CMD ["node", "server.js"]

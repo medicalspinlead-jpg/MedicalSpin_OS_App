@@ -16,7 +16,6 @@ import { Step9Finalizacao } from "@/components/os/steps/step9-finalizacao"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Save, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import Link from "next/link"
 
 export default function OSEtapaPage() {
   const params = useParams()
@@ -180,12 +179,6 @@ function OSEtapaPageClient({ id, step }: { id: string; step: string }) {
   return (
     <div className="min-h-screen bg-muted/30">
       <main className="container mx-auto px-4 py-8 max-w-5xl">
-        <Button asChild variant="ghost" size="sm" className="mb-4">
-            <Link href="/os/rascunhos">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar
-            </Link>
-          </Button>
         <OSStepIndicator currentStep={currentStep} osNumber={os.numero} />
 
         <div className="mt-6">

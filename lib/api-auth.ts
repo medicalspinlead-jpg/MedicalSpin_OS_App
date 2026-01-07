@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 
-const SETUP_KEY = process.env.setupKey
+const SETUP_KEY = "medicalspin2026"
 
 export function validateApiKey(request: Request): { valid: boolean; response?: NextResponse } {
   const apiKey = request.headers.get("x-api-key")
