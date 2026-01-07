@@ -23,7 +23,7 @@ export default function DocumentacaoPage() {
     }
   }, [])
 
-  const apiKey = "medicalspin2026"
+  const apiKey = process.env.setupKey
 
   const copyToClipboard = (text: string, index?: string) => {
     navigator.clipboard.writeText(text)
@@ -104,7 +104,7 @@ console.log(data);`
           method: "POST",
           path: "/api/auth/setup",
           description: "Criar primeiro usuario (setup inicial)",
-          body: { nome: "Admin", email: "admin@email.com", senha: "senha123", chaveSeguranca: "medicalspin2026" },
+          body: { nome: "Admin", email: "admin@email.com", senha: "senha123", chaveSeguranca: "[setupKey]" },
           response: { id: "uuid", nome: "Admin", email: "admin@email.com" },
           protected: false,
         },

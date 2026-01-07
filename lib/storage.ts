@@ -1,6 +1,6 @@
 // Tipos para o sistema de OS
 
-const API_KEY = "medicalspin2026"
+const API_KEY = process.env.setupKey
 
 function getHeaders(): HeadersInit {
   return {

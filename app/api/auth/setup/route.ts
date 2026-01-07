@@ -2,13 +2,14 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { hashPassword } from "@/lib/auth"
+import { env } from "process"
 
 export async function POST(request: Request) {
   try {
     const { nome, email, senha, cargo, setupKey } = await request.json()
 
     // Chave de segurança para evitar criação não autorizada
-    if (setupKey !== "medicalspin2026") {
+    if (env.setupKey !== setupKey) {
       return NextResponse.json({ error: "Chave de setup inválida" }, { status: 403 })
     }
 
