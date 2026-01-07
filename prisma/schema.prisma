@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Cliente {
+  id           String         @id @default(uuid())
+  razaoSocial  String         @map("razao_social")
+  nomeFantasia String         @map("nome_fantasia")
+  cnpj         String         @unique
+  cidade       String
+  uf           String
+  telefone     String
+  email        String
+  responsavel  String
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  equipamentos Equipamento[]
+  ordens       OrdemServico[]
+
+  @@map("clientes")
+}
+
+model Equipamento {
+  id          String         @id @default(uuid())
+  clienteId   String         @map("cliente_id")
+  tipo        String
+  fabricante  String
+  modelo      String
+  numeroSerie String         @map("numero_serie")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  cliente     Cliente        @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  ordens      OrdemServico[]
+
+  @@map("equipamentos")
+}
+
+model OrdemServico {
+  id                String       @id @default(uuid())
+  numero            String
+  status            String       @default("rascunho")
+  currentStep       Int          @default(1) @map("current_step")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+  finalizedAt       DateTime?    @map("finalized_at")
+  empresa           Json         @default("{}")
+  clienteId         String?      @map("cliente_id")
+  equipamentoId     String?      @map("equipamento_id")
+  motivo            Json         @default("{}")
+  intervencao       Json         @default("{}")
+  pendencias        Json         @default("{}")
+  estadoEquipamento Json         @default("{}") @map("estado_equipamento")
+  finalizacao       Json         @default("{}")
+  midias            Json         @default("{}")
+  maoDeObra         MaoDeObra[]
+  cliente           Cliente?     @relation(fields: [clienteId], references: [id])
+  equipamento       Equipamento? @relation(fields: [equipamentoId], references: [id])
+  pecas             Peca[]
+
+  @@map("ordens_servico")
+}
+
+model Peca {
+  id          String       @id @default(uuid())
+  osId        String       @map("os_id")
+  nome        String
+  modeloRef   String?      @map("modelo_ref")
+  numeroSerie String?      @map("numero_serie")
+  observacoes String?
+  quantidade  Int
+  categoria   String       @default("cliente")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  ordem       OrdemServico @relation(fields: [osId], references: [id], onDelete: Cascade)
+
+  @@map("pecas")
+}
+
+model MaoDeObra {
+  id        String       @id @default(uuid())
+  osId      String       @map("os_id")
+  data      String
+  descricao String
+  horas     Float
+  createdAt DateTime     @default(now()) @map("created_at")
+  ordem     OrdemServico @relation(fields: [osId], references: [id], onDelete: Cascade)
+
+  @@map("mao_de_obra")
+}
+
+model Usuario {
+  id        String   @id @default(uuid())
+  nome      String
+  email     String   @unique
+  senha     String
+  cargo     String   @default("tecnico")
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("usuarios")
+}
+
+model Sessao {
+  id        String   @id @default(uuid())
+  usuarioId String   @map("usuario_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("sessoes")
+}
