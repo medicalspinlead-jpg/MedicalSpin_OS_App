@@ -1,6 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Analytics } from "@vercel/analytics/next"
+
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/components/auth-provider"
@@ -74,7 +74,6 @@ export default function RootLayout({
             <LayoutContent>{children}</LayoutContent>
           </AuthProvider>
         </ThemeProvider>
-        <Analytics />
       </body>
     </html>
   )
