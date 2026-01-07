@@ -7,17 +7,10 @@ RUN apk add --no-cache libc6-compat openssl
 
 WORKDIR /app
 
-COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
+COPY package.json package-lock.json* ./
 COPY prisma ./prisma
 
-RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
-  else npm install; \
-  fi
-
-# NÃO gerar Prisma aqui — evita binary incompatível
+RUN npm ci
 
 
 # =========================
@@ -50,27 +43,19 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Usuário não-root
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copiar arquivos necessários
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 
-# Gerar Prisma Client NO AMBIENTE FINAL
 RUN npx prisma generate
-
-# Permissões
 RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 
 EXPOSE 3000
-
-ENV PORT=3000
-ENV HOSTNAME=0.0.0.0
 
 CMD ["node", "server.js"]
