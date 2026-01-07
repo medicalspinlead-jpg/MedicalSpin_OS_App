@@ -5,12 +5,11 @@ WORKDIR /app
 
 ENV PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
 
-COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
+COPY package.json package-lock.json ./
 COPY prisma ./prisma/
 
 RUN npm ci
 RUN npx prisma generate
-
 
 # Etapa 2: build
 FROM node:20-alpine AS builder
