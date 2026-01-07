@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://os_medical:jh3tMYngZ5fEiQB3nCayGkHniiMIUkV08D4JN56sP6fEBHG3jbzCNWFheCGYa4Hq@95.217.164.173:5432/postgres
+      - NODE_ENV=production
+    restart: unless-stopped
