@@ -10,8 +10,12 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, Lock, Mail, Wrench } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useTheme } from "@/components/theme-provider"
+import { Moon, Sun } from "lucide-react"
+
 
 export default function LoginPage() {
+  const { theme, setTheme } = useTheme()
   const router = useRouter()
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
@@ -57,19 +61,38 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-950 p-4">
-      <Card className="w-full max-w-md">
+      
+      <Card className="relative w-full max-w-md">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+          className="absolute right-3 top-3"
+        >
+          {theme === "light" ? (
+            <Moon className="h-4 w-4" />
+          ) : (
+            <Sun className="h-4 w-4" />
+          )}
+        </Button>
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto w-20 h-12 rounded-2xl flex items-center justify-center">
-            <img src="/favicon.png" alt="logo" className="text-2xl font-bold"/>           
+            <img src="/favicon.png" alt="logo" />
           </div>
+
           <div>
-            <CardTitle className="text-2xl font-bold">Medical Spin OS</CardTitle>
-            <CardDescription>Entre com suas credenciais para acessar</CardDescription>
+            <CardTitle className="text-2xl font-bold">
+              Medical Spin OS
+            </CardTitle>
+            <CardDescription>
+              Entre com suas credenciais para acessar
+            </CardDescription>
           </div>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
+            <div className="space-y-2">             
               <Label htmlFor="email">Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
