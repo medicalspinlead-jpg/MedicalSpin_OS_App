@@ -59,11 +59,11 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-950 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-zinc-900 dark:bg-zinc-100 rounded-2xl flex items-center justify-center">
-            <Wrench className="w-8 h-8 text-white dark:text-zinc-900" />
+          <div className="mx-auto w-20 h-12 rounded-2xl flex items-center justify-center">
+            <img src="/favicon.png" alt="logo" className="text-2xl font-bold"/>           
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold">Sistema de OS</CardTitle>
+            <CardTitle className="text-2xl font-bold">Medical Spin OS</CardTitle>
             <CardDescription>Entre com suas credenciais para acessar</CardDescription>
           </div>
         </CardHeader>
