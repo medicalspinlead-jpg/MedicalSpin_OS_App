@@ -17,7 +17,7 @@ const _sourceSerif_4 = V0_Font_Source_Serif_4({ subsets: ['latin'], weight: ["20
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Sistema de Ordens de Serviço",
+  title: "Medical Spin OS - Sistema de Ordens de Serviço",
   description: "Gerenciador de OS com múltiplas etapas",
   manifest: "/manifest.json",
   appleWebApp: {
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     title: "Medical Spin",
     description: "Sistema de Ordens de Serviço",
   },
-    generator: 'v0.app'
+    generator: '6uy_1nc06n1t0'
 }
 
 export const viewport = {
@@ -61,7 +61,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.png" />
         <link rel="apple-touch-icon" href="/icon-192.jpg" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />

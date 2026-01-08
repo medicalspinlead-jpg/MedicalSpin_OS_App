@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
+import { ArrowLeft} from "lucide-react"
 
 export default function HistoricoPage() {
   const [ordens, setOrdens] = useState<OrdemServico[]>([])
@@ -177,6 +178,12 @@ export default function HistoricoPage() {
     <div className="min-h-screen bg-muted/30">
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6">
+          <Button asChild variant="ghost" size="sm" className="mb-4">
+            <Link href="/">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar
+            </Link>
+          </Button>
           <h1 className="text-3xl font-semibold text-foreground">Histórico de OS</h1>
           <p className="text-muted-foreground mt-1">Ordens de serviço finalizadas</p>
         </div>

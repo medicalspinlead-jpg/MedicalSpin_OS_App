@@ -9,6 +9,8 @@ import { Copy, Key, ShieldCheck, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { useState, useEffect } from "react"
+import { ArrowLeft} from "lucide-react"
+import Link from "next/link"
 
 export default function DocumentacaoPage() {
   const { toast } = useToast()
@@ -21,7 +23,7 @@ export default function DocumentacaoPage() {
     }
   }, [])
 
-  const apiKey = "medicalspin2026"
+  const apiKey = process.env.API_KEY
 
   const copyToClipboard = (text: string, index?: string) => {
     navigator.clipboard.writeText(text)
@@ -37,7 +39,7 @@ export default function DocumentacaoPage() {
 
   const generateCurlCommand = (method: string, path: string, body: object | null, protected_: boolean) => {
     const headers = protected_
-      ? `-H "x-api-key: ${apiKey}" \\\n  -H "Content-Type: application/json"`
+      ? `-H "x-api-key: {apiKey}" \\\n  -H "Content-Type: application/json"`
       : `-H "Content-Type: application/json"`
 
     const bodyPart = body ? ` \\\n  -d '${JSON.stringify(body, null, 2).replace(/\n/g, "\n  ")}'` : ""
@@ -102,7 +104,7 @@ console.log(data);`
           method: "POST",
           path: "/api/auth/setup",
           description: "Criar primeiro usuario (setup inicial)",
-          body: { nome: "Admin", email: "admin@email.com", senha: "senha123", chaveSeguranca: "medicalspin2026" },
+          body: { nome: "Admin", email: "admin@email.com", senha: "senha123", chaveSeguranca: "{apiKey}" },
           response: { id: "uuid", nome: "Admin", email: "admin@email.com" },
           protected: false,
         },
@@ -395,6 +397,12 @@ console.log(data);`
   return (
     <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 max-w-full overflow-x-hidden">
       <div className="mb-4 sm:mb-6">
+        <Button asChild variant="ghost" size="sm" className="mb-4">
+            <Link href="/">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar
+            </Link>
+          </Button>
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Documentacao da API</h1>
         <p className="text-muted-foreground text-sm sm:text-base mt-1 sm:mt-2">
           Referencia completa das rotas de API disponiveis no sistema. Comandos prontos para copiar e colar.
@@ -410,25 +418,7 @@ console.log(data);`
             Todas as rotas protegidas requerem o header <code className="bg-muted px-1 rounded">x-api-key</code> com a
             chave de seguranca.
           </p>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <div className="flex items-center gap-2 bg-muted px-2 sm:px-3 py-1.5 sm:py-2 rounded w-full sm:w-auto">
-              <Key className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-              <code className="text-xs sm:text-sm font-mono break-all">{apiKey}</code>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => copyToClipboard(apiKey, "apikey")}
-              className="w-full sm:w-auto text-xs sm:text-sm"
-            >
-              {copiedIndex === "apikey" ? (
-                <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              ) : (
-                <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              )}
-              {copiedIndex === "apikey" ? "Copiado!" : "Copiar"}
-            </Button>
-          </div>
+          
         </AlertDescription>
       </Alert>
 
