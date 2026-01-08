@@ -45,10 +45,22 @@ export const Step5Pecas = forwardRef(function Step5Pecas(
   const adicionarPeca = () => {
     if (!novaPeca.nome) return
 
-    const peca: Peca = {
-      id: crypto.randomUUID(),
-      ...novaPeca,
-    }
+    // Adicione no topo do componente, logo após o import:
+const generateUUID = () => {
+  if (crypto.randomUUID) return crypto.randomUUID()
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0
+    const v = c === 'x' ? r : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
+}
+
+// Dentro do adicionarPeca, substitua:
+const peca: Peca = {
+  id: generateUUID(),
+  ...novaPeca,
+}
+
 
     setPecas([...pecas, peca])
     setNovaPeca({ nome: "", modeloRef: "", numeroSerie: "", observacoes: "", quantidade: 1, categoria: "cliente" })

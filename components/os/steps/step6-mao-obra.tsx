@@ -40,10 +40,22 @@ export const Step6MaoObra = forwardRef(function Step6MaoObra(
   const adicionarServico = () => {
     if (!novoServico.descricao) return
 
-    const servico: MaoDeObra = {
-      id: crypto.randomUUID(),
-      ...novoServico,
-    }
+    // Adicione no topo do componente, logo após os imports:
+const generateUUID = () => {
+  if (crypto.randomUUID) return crypto.randomUUID()
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0
+    const v = c === 'x' ? r : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
+}
+
+// Dentro do adicionarServico, substitua:
+const servico: MaoDeObra = {
+  id: generateUUID(),
+  ...novoServico,
+}
+
 
     setMaoDeObra([...maoDeObra, servico])
     setNovoServico({ data: new Date().toISOString().split("T")[0], descricao: "", horas: 1 })
