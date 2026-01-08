@@ -1,7 +1,9 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react"
-import { useRouter, usePathname } from "next/navigation"
+import type React from "react"
+
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react"
+import { usePathname } from "next/navigation"
 
 interface Usuario {
   id: string
@@ -31,62 +33,74 @@ const publicPaths = ["/login", "/setup"]
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null)
   const [loading, setLoading] = useState(true)
-
-  const router = useRouter()
   const pathname = usePathname()
+  const hasChecked = useRef(false)
+  const isRedirecting = useRef(false)
 
-  const isPublicPath = publicPaths.includes(pathname)
+  const isPublicPath = publicPaths.some((path) => pathname.startsWith(path))
 
   useEffect(() => {
+    if (hasChecked.current) return
+    hasChecked.current = true
+
     async function checkAuth() {
       if (isPublicPath) {
         setLoading(false)
         return
       }
 
-      setLoading(true)
-
       try {
         const response = await fetch("/api/auth/me", {
           credentials: "include",
         })
 
-        if (!response.ok) {
+        if (response.ok) {
+          const data = await response.json()
+          setUsuario(data.usuario)
+        } else {
           setUsuario(null)
-          router.replace("/login")
-          return
         }
-
-        const data = await response.json()
-        setUsuario(data.usuario)
-      } catch {
+      } catch (error) {
         setUsuario(null)
-        router.replace("/login")
       } finally {
         setLoading(false)
       }
     }
 
     checkAuth()
-  }, [pathname])
+  }, [])
+
+  useEffect(() => {
+    if (!loading && !usuario && !isPublicPath && !isRedirecting.current) {
+      isRedirecting.current = true
+      window.location.href = "/login"
+    }
+  }, [loading, usuario, isPublicPath])
 
   const logout = useCallback(async () => {
-    await fetch("/api/auth/logout", { method: "POST" })
-    setUsuario(null)
-    router.replace("/login")
-  }, [router])
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      })
+      setUsuario(null)
+      window.location.href = "/login"
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error)
+    }
+  }, [])
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-900 dark:border-zinc-100" />
       </div>
     )
   }
 
-  return (
-    <AuthContext.Provider value={{ usuario, loading, logout }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  if (!usuario && !isPublicPath) {
+    return null
+  }
+
+  return <AuthContext.Provider value={{ usuario, loading, logout }}>{children}</AuthContext.Provider>
 }

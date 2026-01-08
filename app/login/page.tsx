@@ -28,6 +28,7 @@ export default function LoginPage() {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(formData),
       })
 
@@ -42,8 +43,7 @@ export default function LoginPage() {
         description: `Bem-vindo, ${data.usuario.nome}!`,
       })
 
-      router.push("/")
-      router.refresh()
+      window.location.href = "/"
     } catch (error) {
       toast({
         title: "Erro",

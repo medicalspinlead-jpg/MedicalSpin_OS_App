@@ -41,15 +41,20 @@ export async function POST(request: Request) {
     const token = await createSession(usuario.id)
 
     const cookieStore = await cookies()
+    const isProduction = process.env.NODE_ENV === "production"
+    const isHttps = request.url.startsWith("https")
+
+    console.log("[v0] Login: isProduction:", isProduction, "isHttps:", isHttps)
+
     cookieStore.set("session_token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isHttps, // Só usa secure se a requisição for HTTPS
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60,
       path: "/",
     })
 
-    console.log("[v0] Login: Sucesso!")
+    console.log("[v0] Login: Cookie configurado com sucesso!")
     return NextResponse.json({
       success: true,
       usuario: {
