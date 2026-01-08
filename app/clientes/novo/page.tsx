@@ -86,18 +86,27 @@ export default function NovoClientePage() {
     }
   }
 
-  const addEquipamento = () => {
-    setEquipamentos([
-      ...equipamentos,
-      {
-        tempId: crypto.randomUUID(),
-        tipo: "",
-        fabricante: "",
-        modelo: "",
-        numeroSerie: "",
-      },
-    ])
-  }
+  const generateUUID = () => {
+  if (crypto.randomUUID) return crypto.randomUUID()
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0
+    const v = c === 'x' ? r : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
+}
+
+const addEquipamento = () => {
+  setEquipamentos([
+    ...equipamentos,
+    {
+      tempId: generateUUID(),
+      tipo: "",
+      fabricante: "",
+      modelo: "",
+      numeroSerie: "",
+    },
+  ])
+}
 
   const removeEquipamento = (tempId: string) => {
     setEquipamentos(equipamentos.filter((eq) => eq.tempId !== tempId))
