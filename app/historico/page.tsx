@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -21,34 +21,31 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { ArrowLeft} from "lucide-react"
+import { ArrowLeft } from "lucide-react"
+import useSWR from "swr"
 
 export default function HistoricoPage() {
-  const [ordens, setOrdens] = useState<OrdemServico[]>([])
   const [search, setSearch] = useState("")
   const [filtroMes, setFiltroMes] = useState("todos")
   const [osToDelete, setOsToDelete] = useState<OrdemServico | null>(null)
-  const [loading, setLoading] = useState(true)
   const [buscandoLink, setBuscandoLink] = useState<string | null>(null)
   const [linkDownload, setLinkDownload] = useState<string | null>(null)
   const [showLinkDialog, setShowLinkDialog] = useState(false)
   const [erroLink, setErroLink] = useState<string | null>(null)
   const { toast } = useToast()
 
-  useEffect(() => {
-    loadOrdens()
-  }, [])
+  const {
+    data: ordensRaw = [],
+    isLoading: loading,
+    mutate,
+  } = useSWR("os-finalizadas", getOSFinalizadas, {
+    revalidateOnFocus: true,
+    revalidateOnMount: true,
+    dedupingInterval: 0,
+  })
 
-  const loadOrdens = async () => {
-    try {
-      const data = await getOSFinalizadas()
-      setOrdens(data.sort((a, b) => new Date(b.finalizedAt!).getTime() - new Date(a.finalizedAt!).getTime()))
-    } catch (error) {
-      console.error("Erro ao carregar histórico:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Ordenar por data de finalização
+  const ordens = [...ordensRaw].sort((a, b) => new Date(b.finalizedAt!).getTime() - new Date(a.finalizedAt!).getTime())
 
   const handleDelete = async () => {
     if (osToDelete) {
@@ -59,7 +56,7 @@ export default function HistoricoPage() {
           description: `A ordem de serviço ${osToDelete.numero} foi removida do histórico.`,
         })
         setOsToDelete(null)
-        await loadOrdens()
+        await mutate()
       } catch (error) {
         toast({
           title: "Erro",

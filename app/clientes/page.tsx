@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { Plus, Search, Trash2, Edit, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -18,34 +18,27 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft} from "lucide-react"
+import { ArrowLeft } from "lucide-react"
+import useSWR from "swr"
 
 export default function ClientesPage() {
-  const [clientes, setClientes] = useState<Cliente[]>([])
   const [search, setSearch] = useState("")
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadClientes()
-  }, [])
-
-  const loadClientes = async () => {
-    setLoading(true)
-    try {
-      const data = await getClientes()
-      setClientes(data || [])
-    } catch (error) {
-      console.error("Erro ao carregar clientes:", error)
-      setClientes([])
-    } finally {
-      setLoading(false)
-    }
-  }
+  const {
+    data: clientes = [],
+    isLoading: loading,
+    mutate,
+  } = useSWR("clientes", getClientes, {
+    revalidateOnFocus: true,
+    revalidateOnMount: true,
+    refreshInterval: 0,
+    dedupingInterval: 0,
+  })
 
   const handleDelete = async (id: string) => {
     await deleteCliente(id)
-    await loadClientes()
+    await mutate()
     setDeleteId(null)
   }
 
@@ -123,12 +116,7 @@ export default function ClientesPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredClientes.map((cliente) => (
-              <ClienteCard
-                key={cliente.id}
-                cliente={cliente}
-                onDelete={() => setDeleteId(cliente.id)}
-                onUpdate={loadClientes}
-              />
+              <ClienteCard key={cliente.id} cliente={cliente} onDelete={() => setDeleteId(cliente.id)} />
             ))}
           </div>
         )}
@@ -161,25 +149,15 @@ export default function ClientesPage() {
 function ClienteCard({
   cliente,
   onDelete,
-  onUpdate,
 }: {
   cliente: Cliente
   onDelete: () => void
-  onUpdate: () => void
 }) {
-  const [equipamentos, setEquipamentos] = useState(0)
-
-  useEffect(() => {
-    const loadEquipamentos = async () => {
-      try {
-        const equips = await getEquipamentosByCliente(cliente.id)
-        setEquipamentos(equips?.length || 0)
-      } catch {
-        setEquipamentos(0)
-      }
-    }
-    loadEquipamentos()
-  }, [cliente.id])
+  const { data: equipamentosList = [] } = useSWR(
+    `equipamentos-${cliente.id}`,
+    () => getEquipamentosByCliente(cliente.id),
+    { revalidateOnFocus: true },
+  )
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -191,7 +169,7 @@ function ClienteCard({
           </div>
           <Badge variant="secondary" className="flex items-center gap-1">
             <Wrench className="h-3 w-3" />
-            {equipamentos}
+            {equipamentosList.length}
           </Badge>
         </div>
       </CardHeader>

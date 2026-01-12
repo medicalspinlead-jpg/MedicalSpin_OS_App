@@ -2,6 +2,12 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { validateApiKey } from "@/lib/api-auth"
 
+const noCacheHeaders = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+  Pragma: "no-cache",
+  Expires: "0",
+}
+
 function generateOSName(data: {
   empresa?: { razaoSocial?: string; cnpj?: string }
   cliente?: { razaoSocial?: string; cnpj?: string }
@@ -140,12 +146,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       },
     })
     if (!os) {
-      return NextResponse.json({ error: "Ordem de serviço não encontrada" }, { status: 404 })
+      return NextResponse.json({ error: "Ordem de serviço não encontrada" }, { status: 404, headers: noCacheHeaders })
     }
-    return NextResponse.json(mapOS(os))
+    return NextResponse.json(mapOS(os), { headers: noCacheHeaders })
   } catch (error) {
     console.error("Erro ao buscar ordem de serviço:", error)
-    return NextResponse.json({ error: "Erro ao buscar ordem de serviço" }, { status: 500 })
+    return NextResponse.json({ error: "Erro ao buscar ordem de serviço" }, { status: 500, headers: noCacheHeaders })
   }
 }
 
@@ -234,10 +240,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       },
     })
 
-    return NextResponse.json(mapOS(updatedOS!))
+    return NextResponse.json(mapOS(updatedOS!), { headers: noCacheHeaders })
   } catch (error) {
     console.error("Erro ao atualizar ordem de serviço:", error)
-    return NextResponse.json({ error: "Erro ao atualizar ordem de serviço" }, { status: 500 })
+    return NextResponse.json({ error: "Erro ao atualizar ordem de serviço" }, { status: 500, headers: noCacheHeaders })
   }
 }
 
@@ -248,9 +254,9 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   try {
     const { id } = await params
     await prisma.ordemServico.delete({ where: { id } })
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true }, { headers: noCacheHeaders })
   } catch (error) {
     console.error("Erro ao excluir ordem de serviço:", error)
-    return NextResponse.json({ error: "Erro ao excluir ordem de serviço" }, { status: 500 })
+    return NextResponse.json({ error: "Erro ao excluir ordem de serviço" }, { status: 500, headers: noCacheHeaders })
   }
 }

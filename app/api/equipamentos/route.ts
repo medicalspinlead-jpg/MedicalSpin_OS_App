@@ -2,6 +2,12 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { validateApiKey } from "@/lib/api-auth"
 
+const noCacheHeaders = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+  Pragma: "no-cache",
+  Expires: "0",
+}
+
 export async function GET(request: Request) {
   const auth = validateApiKey(request)
   if (!auth.valid) return auth.response
@@ -24,10 +30,11 @@ export async function GET(request: Request) {
         numeroSerie: e.numeroSerie,
         createdAt: e.createdAt.toISOString(),
       })),
+      { headers: noCacheHeaders },
     )
   } catch (error) {
     console.error("Erro ao buscar equipamentos:", error)
-    return NextResponse.json({ error: "Erro ao buscar equipamentos" }, { status: 500 })
+    return NextResponse.json({ error: "Erro ao buscar equipamentos" }, { status: 500, headers: noCacheHeaders })
   }
 }
 
@@ -78,20 +85,26 @@ export async function POST(request: Request) {
     // Se era um único objeto, retorna no formato antigo para compatibilidade
     if (!isArray) {
       if (erros.length > 0) {
-        return NextResponse.json({ error: "Erro ao criar equipamento", details: erros[0].error }, { status: 500 })
+        return NextResponse.json(
+          { error: "Erro ao criar equipamento", details: erros[0].error },
+          { status: 500, headers: noCacheHeaders },
+        )
       }
-      return NextResponse.json(resultados[0])
+      return NextResponse.json(resultados[0], { headers: noCacheHeaders })
     }
 
     // Se era um array, retorna o resultado completo
-    return NextResponse.json({
-      sucesso: resultados.length,
-      erros: erros.length,
-      equipamentos: resultados,
-      falhas: erros,
-    })
+    return NextResponse.json(
+      {
+        sucesso: resultados.length,
+        erros: erros.length,
+        equipamentos: resultados,
+        falhas: erros,
+      },
+      { headers: noCacheHeaders },
+    )
   } catch (error) {
     console.error("Erro ao criar equipamento(s):", error)
-    return NextResponse.json({ error: "Erro ao criar equipamento(s)" }, { status: 500 })
+    return NextResponse.json({ error: "Erro ao criar equipamento(s)" }, { status: 500, headers: noCacheHeaders })
   }
 }

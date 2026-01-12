@@ -9,6 +9,23 @@ function getHeaders(): HeadersInit {
   }
 }
 
+function fetchNoCache(url: string, options: RequestInit = {}): Promise<Response> {
+  const timestamp = Date.now()
+  const separator = url.includes("?") ? "&" : "?"
+  const urlWithTimestamp = `${url}${separator}_t=${timestamp}`
+
+  return fetch(urlWithTimestamp, {
+    ...options,
+    cache: "no-store",
+    headers: {
+      ...getHeaders(),
+      ...options.headers,
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      Pragma: "no-cache",
+    },
+  })
+}
+
 export interface Cliente {
   id: string
   razaoSocial: string
@@ -110,7 +127,7 @@ export interface OrdemServico {
 
 // Clientes
 export async function getClientes(): Promise<Cliente[]> {
-  const res = await fetch("/api/clientes", { headers: getHeaders() })
+  const res = await fetchNoCache("/api/clientes")
   if (!res.ok) return []
   return res.json()
 }
@@ -122,9 +139,8 @@ export async function saveCliente(
   },
 ): Promise<Cliente> {
   if (cliente.id) {
-    const res = await fetch(`/api/clientes/${cliente.id}`, {
+    const res = await fetchNoCache(`/api/clientes/${cliente.id}`, {
       method: "PUT",
-      headers: getHeaders(),
       body: JSON.stringify(cliente),
     })
     if (!res.ok) {
@@ -133,9 +149,8 @@ export async function saveCliente(
     }
     return res.json()
   } else {
-    const res = await fetch("/api/clientes", {
+    const res = await fetchNoCache("/api/clientes", {
       method: "POST",
-      headers: getHeaders(),
       body: JSON.stringify(cliente),
     })
     if (!res.ok) {
@@ -147,24 +162,24 @@ export async function saveCliente(
 }
 
 export async function deleteCliente(id: string): Promise<void> {
-  await fetch(`/api/clientes/${id}`, { method: "DELETE", headers: getHeaders() })
+  await fetchNoCache(`/api/clientes/${id}`, { method: "DELETE" })
 }
 
 export async function getCliente(id: string): Promise<Cliente | undefined> {
-  const res = await fetch(`/api/clientes/${id}`, { headers: getHeaders() })
+  const res = await fetchNoCache(`/api/clientes/${id}`)
   if (!res.ok) return undefined
   return res.json()
 }
 
 // Equipamentos
 export async function getEquipamentos(): Promise<Equipamento[]> {
-  const res = await fetch("/api/equipamentos", { headers: getHeaders() })
+  const res = await fetchNoCache("/api/equipamentos")
   if (!res.ok) return []
   return res.json()
 }
 
 export async function getEquipamentosByCliente(clienteId: string): Promise<Equipamento[]> {
-  const res = await fetch(`/api/equipamentos?clienteId=${clienteId}`, { headers: getHeaders() })
+  const res = await fetchNoCache(`/api/equipamentos?clienteId=${clienteId}`)
   if (!res.ok) return []
   return res.json()
 }
@@ -173,16 +188,14 @@ export async function saveEquipamento(
   equipamento: Omit<Equipamento, "id" | "createdAt"> & { id?: string },
 ): Promise<Equipamento> {
   if (equipamento.id) {
-    const res = await fetch(`/api/equipamentos/${equipamento.id}`, {
+    const res = await fetchNoCache(`/api/equipamentos/${equipamento.id}`, {
       method: "PUT",
-      headers: getHeaders(),
       body: JSON.stringify(equipamento),
     })
     return res.json()
   } else {
-    const res = await fetch("/api/equipamentos", {
+    const res = await fetchNoCache("/api/equipamentos", {
       method: "POST",
-      headers: getHeaders(),
       body: JSON.stringify(equipamento),
     })
     return res.json()
@@ -190,33 +203,32 @@ export async function saveEquipamento(
 }
 
 export async function deleteEquipamento(id: string): Promise<void> {
-  await fetch(`/api/equipamentos/${id}`, { method: "DELETE", headers: getHeaders() })
+  await fetchNoCache(`/api/equipamentos/${id}`, { method: "DELETE" })
 }
 
 // Ordens de Serviço
 export async function getOrdensServico(): Promise<OrdemServico[]> {
-  const res = await fetch("/api/os", { headers: getHeaders() })
+  const res = await fetchNoCache("/api/os")
   if (!res.ok) return []
   return res.json()
 }
 
 export async function getRascunhos(): Promise<OrdemServico[]> {
-  const res = await fetch("/api/os?status=rascunho", { headers: getHeaders() })
+  const res = await fetchNoCache("/api/os?status=rascunho")
   if (!res.ok) return []
   return res.json()
 }
 
 export async function getOSFinalizadas(): Promise<OrdemServico[]> {
-  const res = await fetch("/api/os?status=finalizada", { headers: getHeaders() })
+  const res = await fetchNoCache("/api/os?status=finalizada")
   if (!res.ok) return []
   return res.json()
 }
 
 export async function saveOrdemServico(os: Partial<OrdemServico> & { id?: string }): Promise<OrdemServico> {
   if (os.id) {
-    const res = await fetch(`/api/os/${os.id}`, {
+    const res = await fetchNoCache(`/api/os/${os.id}`, {
       method: "PUT",
-      headers: getHeaders(),
       body: JSON.stringify(os),
     })
     if (!res.ok) {
@@ -224,9 +236,8 @@ export async function saveOrdemServico(os: Partial<OrdemServico> & { id?: string
     }
     return res.json()
   } else {
-    const res = await fetch("/api/os", {
+    const res = await fetchNoCache("/api/os", {
       method: "POST",
-      headers: getHeaders(),
       body: JSON.stringify(os),
     })
     if (!res.ok) {
@@ -237,13 +248,13 @@ export async function saveOrdemServico(os: Partial<OrdemServico> & { id?: string
 }
 
 export async function getOrdemServico(id: string): Promise<OrdemServico | undefined> {
-  const res = await fetch(`/api/os/${id}`, { headers: getHeaders() })
+  const res = await fetchNoCache(`/api/os/${id}`)
   if (!res.ok) return undefined
   return res.json()
 }
 
 export async function deleteOrdemServico(id: string): Promise<void> {
-  await fetch(`/api/os/${id}`, { method: "DELETE", headers: getHeaders() })
+  await fetchNoCache(`/api/os/${id}`, { method: "DELETE" })
 }
 
 export async function finalizarOrdemServico(id: string): Promise<void> {

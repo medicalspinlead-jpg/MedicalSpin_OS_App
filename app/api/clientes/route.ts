@@ -2,6 +2,12 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { validateApiKey } from "@/lib/api-auth"
 
+const noCacheHeaders = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+  Pragma: "no-cache",
+  Expires: "0",
+}
+
 export async function GET(request: Request) {
   const auth = validateApiKey(request)
   if (!auth.valid) return auth.response
@@ -33,10 +39,11 @@ export async function GET(request: Request) {
           createdAt: e.createdAt.toISOString(),
         })),
       })),
+      { headers: noCacheHeaders },
     )
   } catch (error) {
     console.error("Erro ao buscar clientes:", error)
-    return NextResponse.json({ error: "Erro ao buscar clientes" }, { status: 500 })
+    return NextResponse.json({ error: "Erro ao buscar clientes" }, { status: 500, headers: noCacheHeaders })
   }
 }
 
@@ -125,24 +132,27 @@ export async function POST(request: Request) {
       if (erros.length > 0) {
         return NextResponse.json(
           { error: erros[0].error, message: `Erro ao criar cliente: ${erros[0].error}` },
-          { status: erros[0].error === "CNPJ já cadastrado" ? 409 : 500 },
+          { status: erros[0].error === "CNPJ já cadastrado" ? 409 : 500, headers: noCacheHeaders },
         )
       }
-      return NextResponse.json(resultados[0])
+      return NextResponse.json(resultados[0], { headers: noCacheHeaders })
     }
 
     // Se era um array, retorna o resultado completo
-    return NextResponse.json({
-      sucesso: resultados.length,
-      erros: erros.length,
-      clientes: resultados,
-      falhas: erros,
-    })
+    return NextResponse.json(
+      {
+        sucesso: resultados.length,
+        erros: erros.length,
+        clientes: resultados,
+        falhas: erros,
+      },
+      { headers: noCacheHeaders },
+    )
   } catch (error) {
     console.error("[v0] Erro ao criar cliente(s):", error)
     return NextResponse.json(
       { error: "Erro ao criar cliente(s)", details: error instanceof Error ? error.message : String(error) },
-      { status: 500 },
+      { status: 500, headers: noCacheHeaders },
     )
   }
 }

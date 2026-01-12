@@ -2,6 +2,12 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { validateApiKey } from "@/lib/api-auth"
 
+const noCacheHeaders = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+  Pragma: "no-cache",
+  Expires: "0",
+}
+
 function mapOS(
   os: Awaited<ReturnType<typeof prisma.ordemServico.findUnique>> & {
     cliente?: Awaited<ReturnType<typeof prisma.cliente.findUnique>> | null
@@ -123,10 +129,10 @@ export async function GET(request: Request) {
       },
     })
 
-    return NextResponse.json(ordens.map(mapOS).filter(Boolean))
+    return NextResponse.json(ordens.map(mapOS).filter(Boolean), { headers: noCacheHeaders })
   } catch (error) {
     console.error("Erro ao buscar ordens de serviço:", error)
-    return NextResponse.json({ error: "Erro ao buscar ordens de serviço" }, { status: 500 })
+    return NextResponse.json({ error: "Erro ao buscar ordens de serviço" }, { status: 500, headers: noCacheHeaders })
   }
 }
 
@@ -160,9 +166,9 @@ export async function POST(request: Request) {
       },
     })
 
-    return NextResponse.json(mapOS(os))
+    return NextResponse.json(mapOS(os), { headers: noCacheHeaders })
   } catch (error) {
     console.error("Erro ao criar ordem de serviço:", error)
-    return NextResponse.json({ error: "Erro ao criar ordem de serviço" }, { status: 500 })
+    return NextResponse.json({ error: "Erro ao criar ordem de serviço" }, { status: 500, headers: noCacheHeaders })
   }
 }

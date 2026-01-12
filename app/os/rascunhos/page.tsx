@@ -1,12 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
-import { AppHeader } from "@/components/layout/app-header"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { getRascunhos, deleteOrdemServico, type OrdemServico } from "@/lib/storage"
+import { getRascunhos, deleteOrdemServico } from "@/lib/storage"
 import { FileText, Trash2, Edit } from "lucide-react"
 import {
   AlertDialog,
@@ -18,33 +17,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { ArrowLeft} from "lucide-react"
-
+import { ArrowLeft } from "lucide-react"
+import useSWR from "swr"
 
 export default function RascunhosPage() {
-  const [rascunhos, setRascunhos] = useState<OrdemServico[]>([])
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadRascunhos()
-  }, [])
-
-  const loadRascunhos = async () => {
-    try {
-      const data = await getRascunhos()
-      setRascunhos(data)
-    } catch (error) {
-      console.error("Erro ao carregar rascunhos:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const {
+    data: rascunhos = [],
+    isLoading: loading,
+    mutate,
+  } = useSWR("rascunhos", getRascunhos, {
+    revalidateOnFocus: true,
+    revalidateOnMount: true,
+    dedupingInterval: 0,
+  })
 
   const handleDelete = async (id: string) => {
     try {
       await deleteOrdemServico(id)
-      await loadRascunhos()
+      await mutate()
       setDeleteId(null)
     } catch (error) {
       console.error("Erro ao excluir rascunho:", error)
@@ -53,10 +45,8 @@ export default function RascunhosPage() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      
-
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-6">          
+        <div className="mb-6">
           <Button asChild variant="ghost" size="sm" className="mb-4">
             <Link href="/">
               <ArrowLeft className="h-4 w-4 mr-2" />
