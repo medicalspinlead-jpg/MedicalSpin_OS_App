@@ -522,16 +522,16 @@ export default function VisualizarOSPage() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm text-muted-foreground">Nome do Engenheiro</div>
-                  <div className="font-medium">{os.finalizacao.nomeEngenheiro || "-"}</div>
+                  <div className="font-medium">{os.finalizacao.nomeEngenheiro || "Julio Cezar"}</div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">CFT do Engenheiro</div>
-                  <div className="font-medium">{os.finalizacao.cftEngenheiro || "-"}</div>
+                  <div className="font-medium">{os.finalizacao.cftEngenheiro || "2000103820"}</div>
                 </div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Nome do Recebedor</div>
-                <div className="font-medium">{os.cliente?.responsavel || "-"}</div>
+                <div className="font-medium">{os.cliente?.responsavel || ""}</div>
               </div>
               {os.finalizedAt && (
                 <div>

@@ -82,7 +82,7 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
       setFormData((prev) => ({ ...prev, uf: os.empresa.uf }))
     }
     if (os.empresa.responsavel && !formData.responsavel) {
-      setFormData((prev) => ({ ...prev, uf: os.empresa.responsavel }))
+      setFormData((prev) => ({ ...prev, responsavel: os.empresa.responsavel }))
     }
   }, [os.empresa])
 
@@ -102,24 +102,9 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
   }
 
   const handleFinalizar = async (e: React.FormEvent) => {
-    e.preventDefault()
+  e.preventDefault()
 
-    if (
-      !formData.cidade ||
-      !formData.uf ||
-      !formData.nomeEngenheiro ||
-      !formData.cftEngenheiro ||
-      !formData.responsavel
-    ) {
-      toast({
-        title: "Campos obrigatórios",
-        description: "Preencha todos os campos obrigatórios para finalizar.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsFinalizando(true)
+  setIsFinalizando(true)
 
     try {
       // Prepara as imagens para o webhook
@@ -268,7 +253,7 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
                 <Label htmlFor="nomeEngenheiro">Nome do Engenheiro *</Label>
                 <Input
                   id="nomeEngenheiro"
-                  value={formData.nomeEngenheiro}
+                  value={formData.nomeEngenheiro || "Julio Cezar"}
                   onChange={(e) => setFormData({ ...formData, nomeEngenheiro: e.target.value })}
                   placeholder="Nome completo do engenheiro"
                   required
@@ -278,7 +263,7 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
                 <Label htmlFor="cftEngenheiro">CFT do Engenheiro *</Label>
                 <Input
                   id="cftEngenheiro"
-                  value={formData.cftEngenheiro}
+                  value={formData.cftEngenheiro || "2000103820"}
                   onChange={(e) => setFormData({ ...formData, cftEngenheiro: e.target.value })}
                   placeholder="Número do CFT"
                   required
