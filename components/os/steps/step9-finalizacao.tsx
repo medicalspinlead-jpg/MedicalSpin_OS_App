@@ -68,6 +68,7 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
     ...os.finalizacao,
     cidade: os.finalizacao.cidade || os.empresa.cidade || "",
     uf: os.finalizacao.uf || os.empresa.uf || "",
+    responsavel: os.finalizacao.responsavel|| os.empresa.responsavel || "",
   })
   const [imagens, setImagens] = useState<ImagemArmazenada[]>([])
   const [isUploading, setIsUploading] = useState(false)
@@ -79,6 +80,9 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
     }
     if (os.empresa.uf && !formData.uf) {
       setFormData((prev) => ({ ...prev, uf: os.empresa.uf }))
+    }
+    if (os.empresa.responsavel && !formData.responsavel) {
+      setFormData((prev) => ({ ...prev, uf: os.empresa.responsavel }))
     }
   }, [os.empresa])
 
@@ -105,7 +109,7 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
       !formData.uf ||
       !formData.nomeEngenheiro ||
       !formData.cftEngenheiro ||
-      !formData.nomeRecebedor
+      !formData.responsavel
     ) {
       toast({
         title: "Campos obrigatórios",
@@ -283,11 +287,11 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="nomeRecebedor">Nome do Recebedor *</Label>
+              <Label htmlFor="responsavel">Nome do Recebedor *</Label>
               <Input
-                id="nomeRecebedor"
-                value={formData.nomeRecebedor}
-                onChange={(e) => setFormData({ ...formData, nomeRecebedor: e.target.value })}
+                id="responsavel"
+                value={formData.responsavel} 
+                onChange={(e) => setFormData({ ...formData, responsavel: e.target.value })}
                 placeholder="Nome de quem recebeu o serviço"
                 required
               />

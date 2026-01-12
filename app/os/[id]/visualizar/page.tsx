@@ -244,8 +244,8 @@ export default function VisualizarOSPage() {
             </CardHeader>
             <CardContent className="grid md:grid-cols-2 gap-4">
               <div>
-                <div className="text-sm text-muted-foreground">Nome da Empresa</div>
-                <div className="font-medium">{os.empresa.nome || "-"}</div>
+                <div className="text-sm text-muted-foreground">Nome Fantasia</div>
+                <div className="font-medium">{os.empresa.nomeFantasia || "-"}</div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">CNPJ</div>
@@ -253,7 +253,7 @@ export default function VisualizarOSPage() {
               </div>
               <div className="md:col-span-2">
                 <div className="text-sm text-muted-foreground">Endereço</div>
-                <div className="font-medium">{os.empresa.endereco || "-"}</div>
+                <div className="font-medium">{os.empresa.cidade || "-"}</div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Telefone</div>
@@ -413,7 +413,7 @@ export default function VisualizarOSPage() {
                     <div key={servico.id} className="flex justify-between items-center p-3 border rounded-lg">
                       <div>
                         <div className="font-medium">{servico.descricao}</div>
-                        <div className="text-sm text-muted-foreground">Horas: {servico.horas}h</div>
+                        <div className="text-sm text-muted-foreground">{new Date(servico.data).toLocaleDateString("pt-BR")} - Horas: {servico.horas}h</div>
                       </div>
                     </div>
                   ))}
@@ -508,20 +508,7 @@ export default function VisualizarOSPage() {
               <CardTitle>9. Local e Assinaturas</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm text-muted-foreground">Local de Execução</div>
-                  <div className="font-medium">{os.finalizacao.localExecucao || "-"}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Data de Finalização</div>
-                  <div className="font-medium">
-                    {os.finalizacao.dataFinalizacao
-                      ? new Date(os.finalizacao.dataFinalizacao).toLocaleDateString("pt-BR")
-                      : "-"}
-                  </div>
-                </div>
-              </div>
+              
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm text-muted-foreground">Cidade</div>
@@ -544,7 +531,7 @@ export default function VisualizarOSPage() {
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Nome do Recebedor</div>
-                <div className="font-medium">{os.finalizacao.nomeRecebedor || "-"}</div>
+                <div className="font-medium">{os.cliente?.responsavel || "-"}</div>
               </div>
               {os.finalizedAt && (
                 <div>

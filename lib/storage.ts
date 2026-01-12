@@ -50,6 +50,7 @@ export interface Equipamento {
 }
 
 export interface Peca {
+  descricao: string
   id: string
   nome: string
   modeloRef: string
@@ -67,6 +68,7 @@ export interface MaoDeObra {
 }
 
 export interface OrdemServico {
+  nome: string
   id: string
   numero: string
   status: "rascunho" | "finalizada"
@@ -113,6 +115,9 @@ export interface OrdemServico {
   }
 
   finalizacao: {
+    localExecucao: string
+    dataFinalizacao: any
+    responsavel: string
     cidade: string
     uf: string
     nomeEngenheiro: string
