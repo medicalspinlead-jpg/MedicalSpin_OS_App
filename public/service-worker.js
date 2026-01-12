@@ -10,28 +10,43 @@ self.addEventListener("install", (event) => {
 })
 
 self.addEventListener("fetch", (event) => {
+  // Ignora requests que não podem ser cacheados
+  if (
+    event.request.method !== "GET" ||
+    !event.request.url.startsWith("http")
+  ) {
+    return
+  }
+
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      if (response) {
-        return response
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse
       }
+
       return fetch(event.request)
-        .then((response) => {
-          if (!response || response.status !== 200 || response.type !== "basic") {
-            return response
+        .then((networkResponse) => {
+          if (
+            !networkResponse ||
+            networkResponse.status !== 200 ||
+            networkResponse.type !== "basic"
+          ) {
+            return networkResponse
           }
-          const responseToCache = response.clone()
+
+          const responseToCache = networkResponse.clone()
+
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseToCache)
           })
-          return response
+
+          return networkResponse
         })
-        .catch(() => {
-          return caches.match("/offline")
-        })
+        .catch(() => caches.match("/offline"))
     }),
   )
 })
+
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
