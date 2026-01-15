@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import { useRouter, useParams } from "next/navigation"
 import Link from "next/link"
-import { AppHeader } from "@/components/layout/app-header"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -78,19 +77,38 @@ export default function VisualizarOSPage() {
       const endIndex = text.lastIndexOf(")")
 
       if (startIndex === -1 || endIndex === -1 || startIndex >= endIndex) {
-        console.error("[v0] Formato de resposta inválido. Resposta:", text.substring(0, 200))
         throw new Error("Formato de resposta inválido")
       }
 
       const jsonText = text.substring(startIndex + 1, endIndex)
       const data = JSON.parse(jsonText)
 
-      // Procura pela linha que contém o nome da OS
       const rows = data.table?.rows || []
+
       let linkEncontrado: string | null = null
 
+      const normalizar = (str: string) => {
+        return str
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "") // remove acentos
+          .replace(/[^a-z0-9]/g, "") // remove tudo que não é letra ou número
+      }
+
+      const extrairCNPJ = (str: string) => {
+        // Procura por padrões de CNPJ (14 dígitos ou formatado)
+        const match = str.replace(/[^0-9]/g, "").match(/\d{14}/)
+        return match ? match[0] : null
+      }
+
+      const extrairData = (str: string) => {
+        const match = str.match(/(\d{2}-\d{2}-\d{4})/)
+        return match ? match[1] : null
+      }
+
       const nomeOS = os.nome || os.numero
-      console.log("[v0] Buscando OS com nome:", nomeOS, "ou número:", os.numero)
+      const cnpjOS = extrairCNPJ(nomeOS) || extrairCNPJ(os.cliente?.cnpj || "")
+      const dataOS = extrairData(nomeOS)
 
       for (const row of rows) {
         const cells = row.c || []
@@ -99,10 +117,26 @@ export default function VisualizarOSPage() {
         for (let i = 0; i < cells.length; i++) {
           const cellValue = cells[i]?.v
           if (cellValue && typeof cellValue === "string") {
-            // Verifica se o nome da OS está na célula (compara com numero ou nome gerado)
+            const cnpjCelula = extrairCNPJ(cellValue)
+            const dataCelula = extrairData(cellValue)
+
+            // Verifica se CNPJ e data coincidem (mais confiável)
+            if (cnpjOS && dataOS && cnpjCelula === cnpjOS && dataCelula === dataOS) {
+              encontrouOS = true
+              break
+            }
+
+            // Fallback: comparação normalizada
+            const nomeNormalizado = normalizar(nomeOS)
+            const celulaNormalizada = normalizar(cellValue)
+            if (celulaNormalizada.includes(nomeNormalizado) || nomeNormalizado.includes(celulaNormalizada)) {
+              encontrouOS = true
+              break
+            }
+
+            // Fallback original: comparação exata
             if (cellValue.includes(os.numero) || (nomeOS && cellValue.includes(nomeOS))) {
               encontrouOS = true
-              console.log("[v0] Encontrou OS na célula:", cellValue)
               break
             }
           }
@@ -114,7 +148,6 @@ export default function VisualizarOSPage() {
             const value = cell?.v
             if (value && typeof value === "string" && (value.startsWith("http://") || value.startsWith("https://"))) {
               linkEncontrado = value
-              console.log("[v0] Link encontrado:", linkEncontrado)
               break
             }
           }
@@ -130,7 +163,7 @@ export default function VisualizarOSPage() {
         setShowLinkDialog(true)
       }
     } catch (error) {
-      console.error("[v0] Erro ao buscar link:", error)
+      console.error("Erro ao buscar link:", error)
       setErroLink("Erro ao buscar link de download. Tente novamente.")
       setShowLinkDialog(true)
     } finally {
@@ -164,8 +197,6 @@ export default function VisualizarOSPage() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      
-
       <main className="container mx-auto px-4 py-8 max-w-5xl">
         <div className="mb-6 no-print">
           <Button asChild variant="ghost" size="sm" className="mb-4">
@@ -177,7 +208,7 @@ export default function VisualizarOSPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">OS {os.numero}</h1>
+                <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">{os.numero}</h1>
                 <Badge variant="default" className={os.status === "finalizada" ? "bg-green-600" : "bg-orange-600"}>
                   {os.status === "finalizada" ? "Finalizada" : "Rascunho"}
                 </Badge>
@@ -413,7 +444,9 @@ export default function VisualizarOSPage() {
                     <div key={servico.id} className="flex justify-between items-center p-3 border rounded-lg">
                       <div>
                         <div className="font-medium">{servico.descricao}</div>
-                        <div className="text-sm text-muted-foreground">{new Date(servico.data).toLocaleDateString("pt-BR")} - Horas: {servico.horas}h</div>
+                        <div className="text-sm text-muted-foreground">
+                          {new Date(servico.data).toLocaleDateString("pt-BR")} - Horas: {servico.horas}h
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -508,7 +541,6 @@ export default function VisualizarOSPage() {
               <CardTitle>9. Local e Assinaturas</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm text-muted-foreground">Cidade</div>

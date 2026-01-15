@@ -24,6 +24,23 @@ import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft } from "lucide-react"
 import useSWR from "swr"
 
+function normalizeText(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .toLowerCase()
+}
+
+function extractNumbers(text: string): string {
+  return text.replace(/\D/g, "")
+}
+
+function extractDate(text: string): string | null {
+  const match = text.match(/(\d{2}-\d{2}-\d{4})/)
+  return match ? match[1] : null
+}
+
 export default function HistoricoPage() {
   const [search, setSearch] = useState("")
   const [filtroMes, setFiltroMes] = useState("todos")
@@ -94,12 +111,37 @@ export default function HistoricoPage() {
 
       const nomeOS = os.nome || os.numero
 
+      const cnpjLocal = extractNumbers(nomeOS)
+      const dataLocal = extractDate(nomeOS)
+      const nomeNormalizado = normalizeText(nomeOS)
+
       for (const row of rows) {
         const cells = row.c || []
         let encontrouOS = false
+
         for (let i = 0; i < cells.length; i++) {
           const cellValue = cells[i]?.v
           if (cellValue && typeof cellValue === "string") {
+            const cnpjPlanilha = extractNumbers(cellValue)
+            const dataPlanilha = extractDate(cellValue)
+
+            if (cnpjLocal.length >= 11 && dataLocal && dataPlanilha) {
+              // Verifica se o CNPJ da planilha contém o CNPJ local (ou vice-versa) e se as datas coincidem
+              if (
+                (cnpjPlanilha.includes(cnpjLocal) || cnpjLocal.includes(cnpjPlanilha)) &&
+                dataLocal === dataPlanilha
+              ) {
+                encontrouOS = true
+                break
+              }
+            }
+
+            const cellNormalizado = normalizeText(cellValue)
+            if (cellNormalizado.includes(nomeNormalizado) || nomeNormalizado.includes(cellNormalizado)) {
+              encontrouOS = true
+              break
+            }
+
             if (cellValue.includes(os.numero) || (nomeOS && cellValue.includes(nomeOS))) {
               encontrouOS = true
               break
