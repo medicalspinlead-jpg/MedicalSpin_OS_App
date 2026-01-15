@@ -378,14 +378,27 @@ function ClienteDetalhePageClient({ id }: { id: string }) {
                             {equip.fabricante} {equip.modelo}
                           </CardDescription>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setDeleteEquipamentoId(equip.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setEditingEquipamento(equip)
+                              setShowEquipamentoForm(true)
+                            }}
+                            className="text-muted-foreground hover:text-foreground"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setDeleteEquipamentoId(equip.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent className="text-sm space-y-1">
