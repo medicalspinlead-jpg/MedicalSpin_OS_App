@@ -124,3 +124,12 @@ model Sessao {
 
   @@map("sessoes")
 }
+
+model Configuracao {
+  id              String   @id @default(uuid())
+  emailHabilitado Boolean  @default(true) @map("email_habilitado")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("configuracoes")
+}

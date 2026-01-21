@@ -9,19 +9,28 @@ interface Usuario {
   id: string
   nome: string
   email: string
-  cargo: string
+  cargo: "admin" | "tecnico" | string
+}
+
+interface Configuracao {
+  id: string
+  emailHabilitado: boolean
 }
 
 interface AuthContextType {
   usuario: Usuario | null
   loading: boolean
   logout: () => Promise<void>
+  config: Configuracao | null
+  setEmailHabilitado: (habilitado: boolean) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
   usuario: null,
   loading: true,
   logout: async () => {},
+  config: null,
+  setEmailHabilitado: async () => {},
 })
 
 export function useAuth() {
@@ -33,6 +42,7 @@ const publicPaths = ["/login", "/setup"]
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null)
   const [loading, setLoading] = useState(true)
+  const [config, setConfig] = useState<Configuracao | null>(null)
   const pathname = usePathname()
   const hasChecked = useRef(false)
   const isRedirecting = useRef(false)
@@ -57,6 +67,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (response.ok) {
           const data = await response.json()
           setUsuario(data.usuario)
+
+          // Buscar configurações
+          try {
+            const configRes = await fetch("/api/config", { credentials: "include" })
+            if (configRes.ok) {
+              const configData = await configRes.json()
+              setConfig(configData)
+            }
+          } catch {
+            console.error("Erro ao buscar configurações")
+          }
         } else {
           setUsuario(null)
         }
@@ -90,6 +111,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  const setEmailHabilitado = useCallback(async (habilitado: boolean) => {
+    try {
+      const response = await fetch("/api/config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ emailHabilitado: habilitado }),
+      })
+
+      if (response.ok) {
+        const configData = await response.json()
+        setConfig(configData)
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar configuração:", error)
+    }
+  }, [])
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -102,5 +141,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return null
   }
 
-  return <AuthContext.Provider value={{ usuario, loading, logout }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={{ usuario, loading, logout, config, setEmailHabilitado }}>
+      {children}
+    </AuthContext.Provider>
+  )
 }

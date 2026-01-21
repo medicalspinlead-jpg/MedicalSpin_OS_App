@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Home, FileText, Users, History, Moon, Sun, LogOut, User, Menu, BookOpen } from "lucide-react"
+import { Home, FileText, Users, History, Moon, Sun, LogOut, User, Menu, BookOpen, Mail, Shield } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/components/auth-provider"
 import { useState } from "react"
@@ -16,10 +16,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Switch } from "@/components/ui/switch"
+import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
+
 
 export function AppHeader() {
   const { theme, setTheme } = useTheme()
-  const { usuario, logout } = useAuth()
+  const { usuario, logout, config, setEmailHabilitado } = useAuth()
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -83,14 +87,43 @@ export function AppHeader() {
                   {usuario.nome.split(" ")[0]}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-64">
                 <DropdownMenuLabel>
-                  <div className="flex flex-col">
-                    <span>{usuario.nome}</span>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                      <span>{usuario.nome}</span>
+                      <Badge
+                        variant={usuario.cargo === "admin" ? "default" : "secondary"}
+                        className={usuario.cargo === "admin" ? "bg-blue-600" : ""}
+                      >
+                        {usuario.cargo === "admin" ? "Admin" : "Técnico"}
+                      </Badge>
+                    </div>
                     <span className="text-xs text-muted-foreground">{usuario.email}</span>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                {usuario.cargo === "admin" && (
+                  <>
+                    <div className="px-2 py-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">Envio de Email</span>
+                        </div>
+                        <Checkbox
+                          checked={config?.emailHabilitado ?? true}
+                          onCheckedChange={(checked) => setEmailHabilitado(!!checked)}
+                          className="h-4 w-4"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {config?.emailHabilitado ? "Habilitado para todos" : "Desabilitado para todos"}
+                      </p>
+                    </div>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuItem asChild className="cursor-pointer">
                   <Link href="/documentacao">
                     <BookOpen className="h-4 w-4 mr-2" />
@@ -127,11 +160,38 @@ export function AppHeader() {
                   <div className="border-b pb-4">
                     <div className="flex items-center gap-2 mb-2">
                       <User className="h-5 w-5 text-muted-foreground" />
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium">{usuario.nome}</span>
+                      <div className="flex flex-col flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">{usuario.nome}</span>
+                          <Badge
+                            variant={usuario.cargo === "admin" ? "default" : "secondary"}
+                            className={usuario.cargo === "admin" ? "bg-blue-600" : ""}
+                          >
+                            {usuario.cargo === "admin" ? "Admin" : "Técnico"}
+                          </Badge>
+                        </div>
                         <span className="text-xs text-muted-foreground">{usuario.email}</span>
                       </div>
                     </div>
+                    {usuario.cargo === "admin" && (
+                      <div className="mt-3 p-2 bg-muted rounded-md">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">Envio de Email</span>
+                          </div>
+                          <Checkbox
+                            checked={config?.emailHabilitado ?? true}
+                            onCheckedChange={(checked) => setEmailHabilitado(!!checked)}
+                            className="h-4 w-4"
+                          />
+
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {config?.emailHabilitado ? "Habilitado" : "Desabilitado"}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Navigation Links */}

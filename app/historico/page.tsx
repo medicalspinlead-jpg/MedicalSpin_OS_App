@@ -23,6 +23,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft } from "lucide-react"
 import useSWR from "swr"
+import { useAuth } from "@/components/auth-provider"
 
 function normalizeText(text: string): string {
   return text
@@ -51,6 +52,7 @@ export default function HistoricoPage() {
   const [erroLink, setErroLink] = useState<string | null>(null)
   const [enviandoEmail, setEnviandoEmail] = useState<string | null>(null)
   const { toast } = useToast()
+  const { config } = useAuth()
 
   const {
     data: ordensRaw = [],
@@ -483,20 +485,22 @@ export default function HistoricoPage() {
                             </Link>
                           </Button>
                         )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 sm:flex-none bg-transparent"
-                          onClick={() => handleEnviarEmail(os)}
-                          disabled={enviandoEmail === os.id}
-                        >
-                          {enviandoEmail === os.id ? (
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          ) : (
-                            <Mail className="h-4 w-4 mr-2" />
-                          )}
-                          {enviandoEmail === os.id ? "Enviando..." : "Enviar Email"}
-                        </Button>
+                        {config?.emailHabilitado !== false && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 sm:flex-none bg-transparent"
+                            onClick={() => handleEnviarEmail(os)}
+                            disabled={enviandoEmail === os.id}
+                          >
+                            {enviandoEmail === os.id ? (
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                              <Mail className="h-4 w-4 mr-2" />
+                            )}
+                            {enviandoEmail === os.id ? "Enviando..." : "Enviar Email"}
+                          </Button>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"
