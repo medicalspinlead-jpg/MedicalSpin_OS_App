@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { getOrdemServico, type OrdemServico } from "@/lib/storage"
-import { ArrowLeft, Download, CheckCircle, AlertCircle, Loader2, Copy, ExternalLink } from "lucide-react"
+import { ArrowLeft, Download, CheckCircle, AlertCircle, Loader2, Copy, ExternalLink, Pencil } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -208,26 +208,50 @@ export default function VisualizarOSPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">{os.numero}</h1>
-                <Badge variant="default" className={os.status === "finalizada" ? "bg-green-600" : "bg-orange-600"}>
-                  {os.status === "finalizada" ? "Finalizada" : "Rascunho"}
+                <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">OS {os.numero}</h1>
+                <Badge
+                  variant="default"
+                  className={
+                    os.status === "finalizada"
+                      ? "bg-green-600"
+                      : os.status === "fechada"
+                        ? "bg-amber-500"
+                        : "bg-orange-600"
+                  }
+                >
+                  {os.status === "finalizada" ? "Finalizada" : os.status === "fechada" ? "Fechada" : "Rascunho"}
                 </Badge>
               </div>
               {os.finalizedAt && (
                 <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-                  Finalizada em {new Date(os.finalizedAt).toLocaleDateString("pt-BR")}
+                  {os.status === "finalizada" ? "Finalizada" : "Fechada"} em{" "}
+                  {new Date(os.finalizedAt).toLocaleDateString("pt-BR")}
                 </p>
               )}
             </div>
-            <Button
-              onClick={handleBaixar}
-              variant="outline"
-              disabled={buscandoLink}
-              className="w-full sm:w-auto bg-transparent"
-            >
-              {buscandoLink ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-              {buscandoLink ? "Buscando..." : "Baixar"}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              {os.status === "fechada" && (
+                <Button asChild variant="outline" className="w-full sm:w-auto bg-transparent">
+                  <Link href={`/os/${os.id}/etapa/1`}>
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Editar OS
+                  </Link>
+                </Button>
+              )}
+              <Button
+                onClick={handleBaixar}
+                variant="outline"
+                disabled={buscandoLink}
+                className="w-full sm:w-auto bg-transparent"
+              >
+                {buscandoLink ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4 mr-2" />
+                )}
+                {buscandoLink ? "Buscando..." : "Baixar"}
+              </Button>
+            </div>
           </div>
         </div>
 

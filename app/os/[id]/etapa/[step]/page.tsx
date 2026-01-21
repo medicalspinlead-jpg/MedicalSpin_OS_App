@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { useRouter, useParams } from "next/navigation"
-import { getOrdemServico, saveOrdemServico, finalizarOrdemServico, type OrdemServico } from "@/lib/storage"
+import { getOrdemServico, saveOrdemServico, finalizarOrdemServico, fecharOrdemServico, type OrdemServico } from "@/lib/storage"
 import { OSStepIndicator } from "@/components/os/step-indicator"
 import { Step1DadosEmpresa } from "@/components/os/steps/step1-empresa"
 import { Step2DadosEquipamento } from "@/components/os/steps/step2-equipamento"
@@ -161,6 +161,34 @@ function OSEtapaPageClient({ id, step }: { id: string; step: string }) {
     }
   }
 
+  const handleFechar = async (data: Partial<OrdemServico>) => {
+    if (!os) return
+
+    const updatedOS = {
+      ...os,
+      ...data,
+    }
+
+    try {
+      await saveOrdemServico(updatedOS)
+      await fecharOrdemServico(id)
+
+      toast({
+        title: "OS Fechada!",
+        description: "Ordem de Serviço fechada. Ainda pode ser editada até ser finalizada.",
+      })
+
+      router.push(`/historico`)
+    } catch (error) {
+      console.error("Erro ao fechar:", error)
+      toast({
+        title: "Erro",
+        description: "Erro ao fechar OS",
+        variant: "destructive",
+      })
+    }
+  }
+
   const handlePrevious = () => {
     if (currentStep > 1) {
       router.push(`/os/${id}/etapa/${currentStep - 1}`)
@@ -206,6 +234,7 @@ function OSEtapaPageClient({ id, step }: { id: string; step: string }) {
               os={os}
               onSave={handleSave}
               onFinalizar={handleFinalizar}
+              onFechar={handleFechar}
               onSaveDraft={handleSaveDraft}
               ref={stepDataRef}
             />

@@ -118,8 +118,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get("status")
 
+    // Suporta múltiplos status separados por vírgula (ex: "fechada,finalizada")
+    const statusList = status ? status.split(",").map((s) => s.trim()) : null
+
     const ordens = await prisma.ordemServico.findMany({
-      where: status ? { status } : undefined,
+      where: statusList ? { status: { in: statusList } } : undefined,
       orderBy: { updatedAt: "desc" },
       include: {
         cliente: true,

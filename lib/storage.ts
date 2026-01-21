@@ -71,7 +71,7 @@ export interface OrdemServico {
   nome: string
   id: string
   numero: string
-  status: "rascunho" | "finalizada"
+  status: "rascunho" | "fechada" | "finalizada"
   currentStep: number
   createdAt: string
   updatedAt: string
@@ -230,6 +230,18 @@ export async function getOSFinalizadas(): Promise<OrdemServico[]> {
   return res.json()
 }
 
+export async function getOSFechadas(): Promise<OrdemServico[]> {
+  const res = await fetchNoCache("/api/os?status=fechada")
+  if (!res.ok) return []
+  return res.json()
+}
+
+export async function getOSHistorico(): Promise<OrdemServico[]> {
+  const res = await fetchNoCache("/api/os?status=fechada,finalizada")
+  if (!res.ok) return []
+  return res.json()
+}
+
 export async function saveOrdemServico(os: Partial<OrdemServico> & { id?: string }): Promise<OrdemServico> {
   if (os.id) {
     const res = await fetchNoCache(`/api/os/${os.id}`, {
@@ -266,6 +278,15 @@ export async function finalizarOrdemServico(id: string): Promise<void> {
   const os = await getOrdemServico(id)
   if (os) {
     os.status = "finalizada"
+    os.finalizedAt = new Date().toISOString()
+    await saveOrdemServico(os)
+  }
+}
+
+export async function fecharOrdemServico(id: string): Promise<void> {
+  const os = await getOrdemServico(id)
+  if (os) {
+    os.status = "fechada"
     os.finalizedAt = new Date().toISOString()
     await saveOrdemServico(os)
   }

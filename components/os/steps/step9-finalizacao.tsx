@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import type { OrdemServico } from "@/lib/storage"
-import { CheckCircle, Save, X, ImageIcon, Loader2 } from "lucide-react"
+import { CheckCircle, Save, X, ImageIcon, Loader2, Lock } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { enviarParaWebhook, converterParaJPG, isImageFile, type ImagemWebhook } from "@/lib/webhook"
 import { useToast } from "@/hooks/use-toast"
@@ -54,11 +54,13 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
     os,
     onSave,
     onFinalizar,
+    onFechar,
     onSaveDraft,
   }: {
     os: OrdemServico
     onSave: (data: Partial<OrdemServico>, goToNext?: boolean) => void
     onFinalizar: (data: Partial<OrdemServico>) => void
+    onFechar?: (data: Partial<OrdemServico>) => void
     onSaveDraft?: () => void
   },
   ref,
@@ -73,6 +75,7 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
   const [imagens, setImagens] = useState<ImagemArmazenada[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [isFinalizando, setIsFinalizando] = useState(false)
+  const [isFechando, setIsFechando] = useState(false)
 
   useEffect(() => {
     if (os.empresa.cidade && !formData.cidade) {
@@ -98,6 +101,60 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
       onSaveDraft()
     } else {
       onSave({ finalizacao: formData, midias: { arquivos: imagens.map((img) => img.preview) } }, false)
+    }
+  }
+
+  const handleFechar = async (e: React.MouseEvent) => {
+    e.preventDefault()
+
+    if (!onFechar) return
+
+    setIsFechando(true)
+
+    try {
+      // Prepara as imagens para o webhook
+      const imagensWebhook: ImagemWebhook[] = imagens.map((img) => ({
+        nome: img.nome,
+        tipo: "image/jpeg",
+        tamanho: img.tamanho,
+        base64: img.base64,
+      }))
+
+      // Cria OS atualizada com os dados finais
+      const osAtualizada: OrdemServico = {
+        ...os,
+        finalizacao: formData,
+        midias: { arquivos: imagens.map((img) => img.preview) },
+        status: "fechada",
+        finalizedAt: new Date().toISOString(),
+      }
+
+      // Envia para o webhook
+      const sucesso = await enviarParaWebhook(osAtualizada, imagensWebhook)
+
+      if (sucesso) {
+        toast({
+          title: "OS Fechada",
+          description: "Ordem de serviço fechada e enviada com sucesso! Ainda pode ser editada.",
+        })
+        onFechar({ finalizacao: formData, midias: { arquivos: imagens.map((img) => img.preview) } })
+      } else {
+        toast({
+          title: "Aviso",
+          description: "OS fechada localmente, mas houve um erro ao enviar para o servidor.",
+          variant: "destructive",
+        })
+        onFechar({ finalizacao: formData, midias: { arquivos: imagens.map((img) => img.preview) } })
+      }
+    } catch (error) {
+      console.error("Erro ao fechar:", error)
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao fechar a OS. Tente novamente.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsFechando(false)
     }
   }
 
@@ -380,12 +437,33 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
           </CardContent>
         </Card>
 
-        <div className="flex gap-3">
-          <Button type="button" variant="outline" onClick={handleSalvarRascunho} className="flex-1 bg-transparent">
+        <div className="flex gap-3 flex-wrap">
+          <Button type="button" variant="outline" onClick={handleSalvarRascunho} className="flex-1 min-w-[140px] bg-transparent">
             <Save className="h-4 w-4 mr-2" />
             Salvar Rascunho
           </Button>
-          <Button type="submit" className="flex-1 bg-green-600 hover:bg-green-700" disabled={isFinalizando}>
+          {onFechar && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleFechar}
+              className="flex-1 min-w-[140px] bg-transparent border-amber-500 text-amber-600 hover:bg-amber-50 hover:text-amber-700"
+              disabled={isFechando || isFinalizando}
+            >
+              {isFechando ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Fechando...
+                </>
+              ) : (
+                <>
+                  <Lock className="h-4 w-4 mr-2" />
+                  Fechar OS
+                </>
+              )}
+            </Button>
+          )}
+          <Button type="submit" className="flex-1 min-w-[140px] bg-green-600 hover:bg-green-700" disabled={isFinalizando || isFechando}>
             {isFinalizando ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />

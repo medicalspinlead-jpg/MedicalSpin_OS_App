@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { getOSFinalizadas, deleteOrdemServico, type OrdemServico } from "@/lib/storage"
-import { FileText, Search, Eye, Trash2, Download, Copy, ExternalLink, Loader2 } from "lucide-react"
+import { getOSHistorico, deleteOrdemServico, type OrdemServico, getOSFinalizadas } from "@/lib/storage"
+import { FileText, Search, Eye, Trash2, Download, Copy, ExternalLink, Loader2, Mail, Pencil } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   AlertDialog,
@@ -49,13 +49,14 @@ export default function HistoricoPage() {
   const [linkDownload, setLinkDownload] = useState<string | null>(null)
   const [showLinkDialog, setShowLinkDialog] = useState(false)
   const [erroLink, setErroLink] = useState<string | null>(null)
+  const [enviandoEmail, setEnviandoEmail] = useState<string | null>(null)
   const { toast } = useToast()
 
   const {
     data: ordensRaw = [],
     isLoading: loading,
     mutate,
-  } = useSWR("os-finalizadas", getOSFinalizadas, {
+  } = useSWR("os-historico", getOSHistorico, {
     revalidateOnFocus: true,
     revalidateOnMount: true,
     dedupingInterval: 0,
@@ -187,6 +188,134 @@ export default function HistoricoPage() {
     }
   }
 
+  const handleEnviarEmail = async (os: OrdemServico) => {
+    const email = os.cliente?.email
+    
+    if (!email) {
+      toast({
+        title: "Email não encontrado",
+        description: "Este cliente não possui email cadastrado.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setEnviandoEmail(os.id)
+
+    try {
+      // Buscar link de download primeiro
+      let linkDownloadOS: string | null = null
+      
+      try {
+        const url =
+          "https://docs.google.com/spreadsheets/d/1mZ4GlKIZieM_yz-CBjwNk4_8K62w45ez4BDTe-4e1e0/gviz/tq?gid=824063472&tqx=out:json&tq=SELECT%20*"
+
+        const response = await fetch(url)
+        const text = await response.text()
+
+        const startIndex = text.indexOf("(")
+        const endIndex = text.lastIndexOf(")")
+
+        if (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
+          const jsonText = text.substring(startIndex + 1, endIndex)
+          const data = JSON.parse(jsonText)
+
+          const rows = data.table?.rows || []
+          const nomeOS = os.nome || os.numero
+
+          const cnpjLocal = extractNumbers(nomeOS)
+          const dataLocal = extractDate(nomeOS)
+          const nomeNormalizado = normalizeText(nomeOS)
+
+          for (const row of rows) {
+            const cells = row.c || []
+            let encontrouOS = false
+
+            for (let i = 0; i < cells.length; i++) {
+              const cellValue = cells[i]?.v
+              if (cellValue && typeof cellValue === "string") {
+                const cnpjPlanilha = extractNumbers(cellValue)
+                const dataPlanilha = extractDate(cellValue)
+
+                if (cnpjLocal.length >= 11 && dataLocal && dataPlanilha) {
+                  if (
+                    (cnpjPlanilha.includes(cnpjLocal) || cnpjLocal.includes(cnpjPlanilha)) &&
+                    dataLocal === dataPlanilha
+                  ) {
+                    encontrouOS = true
+                    break
+                  }
+                }
+
+                const cellNormalizado = normalizeText(cellValue)
+                if (cellNormalizado.includes(nomeNormalizado) || nomeNormalizado.includes(cellNormalizado)) {
+                  encontrouOS = true
+                  break
+                }
+
+                if (cellValue.includes(os.numero) || (nomeOS && cellValue.includes(nomeOS))) {
+                  encontrouOS = true
+                  break
+                }
+              }
+            }
+
+            if (encontrouOS) {
+              for (const cell of cells) {
+                const value = cell?.v
+                if (value && typeof value === "string" && (value.startsWith("http://") || value.startsWith("https://"))) {
+                  linkDownloadOS = value
+                  break
+                }
+              }
+              break
+            }
+          }
+        }
+      } catch (linkError) {
+        console.error("Erro ao buscar link de download:", linkError)
+      }
+
+      // Enviar email com o link
+      const response = await fetch(
+        "https://n8n-www4kggggc4c8k8ow4w8g4g0.95.217.164.173.sslip.io/webhook/6c58efc2-699c-4c59-8be2-2b7169900363",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email,
+            osNumero: os.numero,
+            osNome: os.nome,
+            cliente: os.cliente?.razaoSocial || os.cliente?.nomeFantasia,
+            equipamento: os.equipamento?.tipo,
+            dataFinalizacao: os.finalizedAt,
+            linkDownload: linkDownloadOS,
+          }),
+        }
+      )
+
+      if (response.ok) {
+        toast({
+          title: "Email enviado!",
+          description: `Email enviado com sucesso para ${email}`,
+        })
+      } else {
+        throw new Error("Erro ao enviar email")
+      }
+    } catch (error) {
+      console.error("Erro ao enviar email:", error)
+      toast({
+        title: "Erro ao enviar email",
+        description: "Não foi possível enviar o email. Tente novamente.",
+        variant: "destructive",
+      })
+    } finally {
+      setEnviandoEmail(null)
+    }
+  }
+
   const filteredOrdens = ordens.filter((os) => {
     const matchSearch =
       os.numero.toLowerCase().includes(search.toLowerCase()) ||
@@ -296,9 +425,15 @@ export default function HistoricoPage() {
                       <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
                           <h3 className="text-base sm:text-lg font-semibold">{os.numero}</h3>
-                          <Badge variant="default" className="bg-green-600">
-                            Finalizada
-                          </Badge>
+                          {os.status === "finalizada" ? (
+                            <Badge variant="default" className="bg-green-600">
+                              Finalizada
+                            </Badge>
+                          ) : (
+                            <Badge variant="default" className="bg-amber-500">
+                              Fechada
+                            </Badge>
+                          )}
                           {os.pendencias.possuiPendencias && (
                             <Badge variant="secondary" className="bg-orange-100 text-orange-700">
                               Com Pendências
@@ -339,6 +474,28 @@ export default function HistoricoPage() {
                             <Eye className="h-4 w-4 mr-2" />
                             Ver Detalhes
                           </Link>
+                        </Button>
+                        {os.status === "fechada" && (
+                          <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-none bg-transparent">
+                            <Link href={`/os/${os.id}/etapa/1`}>
+                              <Pencil className="h-4 w-4 mr-2" />
+                              Editar
+                            </Link>
+                          </Button>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 sm:flex-none bg-transparent"
+                          onClick={() => handleEnviarEmail(os)}
+                          disabled={enviandoEmail === os.id}
+                        >
+                          {enviandoEmail === os.id ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          ) : (
+                            <Mail className="h-4 w-4 mr-2" />
+                          )}
+                          {enviandoEmail === os.id ? "Enviando..." : "Enviar Email"}
                         </Button>
                         <Button
                           variant="outline"
