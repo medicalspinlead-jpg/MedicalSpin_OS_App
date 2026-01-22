@@ -346,16 +346,16 @@ export default function HistoricoPage() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-4 md:py-8">
         <div className="mb-6">
-          <Button asChild variant="ghost" size="sm" className="mb-4">
+          <Button asChild variant="ghost" size="sm" className="mb-2 md:mb-4">
             <Link href="/">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Link>
           </Button>
-          <h1 className="text-3xl font-semibold text-foreground">Histórico de OS</h1>
-          <p className="text-muted-foreground mt-1">Ordens de serviço finalizadas</p>
+          <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Histórico de OS</h1>
+          <p className="text-sm md:text-base text-muted-foreground mt-1">Ordens de serviço finalizadas</p>
         </div>
 
         {/* Filters */}
@@ -381,17 +381,17 @@ export default function HistoricoPage() {
           </Select>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 mb-6">
+        <div className="grid gap-3 md:gap-4 grid-cols-2 mb-6">
           <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>Total de OS</CardDescription>
-              <CardTitle className="text-3xl">{filteredOrdens.length}</CardTitle>
+            <CardHeader className="p-4 md:p-6 pb-2 md:pb-3">
+              <CardDescription className="text-xs md:text-sm">Total de OS</CardDescription>
+              <CardTitle className="text-2xl md:text-3xl">{filteredOrdens.length}</CardTitle>
             </CardHeader>
           </Card>
           <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>Período</CardDescription>
-              <CardTitle className="text-3xl text-blue-600">
+            <CardHeader className="p-4 md:p-6 pb-2 md:pb-3">
+              <CardDescription className="text-xs md:text-sm">Período</CardDescription>
+              <CardTitle className="text-lg md:text-3xl text-blue-600">
                 {filtroMes === "todos" ? "Todos" : filtroMes === "este-mes" ? "Este mês" : "Último mês"}
               </CardTitle>
             </CardHeader>
@@ -418,69 +418,69 @@ export default function HistoricoPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-3 md:gap-4">
             {filteredOrdens.map((os) => {
               return (
                 <Card key={os.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="flex flex-col gap-4">
+                  <CardContent className="p-3 sm:p-4 md:p-6">
+                    <div className="flex flex-col gap-3 md:gap-4">
                       <div className="flex-1">
-                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
-                          <h3 className="text-base sm:text-lg font-semibold">{os.numero}</h3>
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3 mb-2">
+                          <h3 className="text-sm sm:text-base md:text-lg font-semibold truncate max-w-[200px] sm:max-w-none">{os.numero}</h3>
                           {os.status === "finalizada" ? (
-                            <Badge variant="default" className="bg-green-600">
+                            <Badge variant="default" className="bg-green-600 text-xs">
                               Finalizada
                             </Badge>
                           ) : (
-                            <Badge variant="default" className="bg-amber-500">
+                            <Badge variant="default" className="bg-amber-500 text-xs">
                               Fechada
                             </Badge>
                           )}
                           {os.pendencias.possuiPendencias && (
-                            <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                            <Badge variant="secondary" className="bg-orange-100 text-orange-700 text-xs hidden sm:inline-flex">
                               Com Pendências
                             </Badge>
                           )}
                         </div>
 
-                        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Cliente:</span>{" "}
-                            <span className="font-medium text-foreground">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1.5 sm:gap-2 md:gap-3 text-xs sm:text-sm">
+                          <div className="flex flex-wrap gap-1">
+                            <span className="text-muted-foreground">Cliente:</span>
+                            <span className="font-medium text-foreground truncate">
                               {os.cliente?.razaoSocial || os.cliente?.nomeFantasia || "-"}
                             </span>
                           </div>
-                          <div>
-                            <span className="text-muted-foreground">Equipamento:</span>{" "}
-                            <span className="font-medium text-foreground">{os.equipamento?.tipo || "-"}</span>
+                          <div className="flex flex-wrap gap-1">
+                            <span className="text-muted-foreground">Equipamento:</span>
+                            <span className="font-medium text-foreground truncate">{os.equipamento?.tipo || "-"}</span>
                           </div>
-                          <div>
-                            <span className="text-muted-foreground">Finalizada em:</span>{" "}
+                          <div className="flex flex-wrap gap-1">
+                            <span className="text-muted-foreground">Finalizada em:</span>
                             <span className="font-medium text-foreground">
                               {new Date(os.finalizedAt!).toLocaleDateString("pt-BR")}
                             </span>
                           </div>
                         </div>
 
-                        <div className="mt-2 sm:mt-3 flex items-center gap-4">
-                          <div className="text-sm">
-                            <span className="text-muted-foreground">Intervenção:</span>{" "}
+                        <div className="mt-2 flex items-center gap-4">
+                          <div className="text-xs sm:text-sm flex flex-wrap gap-1">
+                            <span className="text-muted-foreground">Intervenção:</span>
                             <span className="text-foreground">{os.intervencao.tipo || "-"}</span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                        <Button asChild size="sm" className="flex-1 sm:flex-none">
+                      <div className="flex flex-wrap items-stretch gap-1.5 sm:gap-2">
+                        <Button asChild size="sm" className="flex-1 min-w-[100px] sm:flex-none text-xs sm:text-sm">
                           <Link href={`/os/${os.id}/visualizar`}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            Ver Detalhes
+                            <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                            <span className="hidden xs:inline">Ver </span>Detalhes
                           </Link>
                         </Button>
                         {os.status === "fechada" && (
-                          <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-none bg-transparent">
+                          <Button asChild variant="outline" size="sm" className="flex-1 min-w-[80px] sm:flex-none bg-transparent text-xs sm:text-sm">
                             <Link href={`/os/${os.id}/etapa/1`}>
-                              <Pencil className="h-4 w-4 mr-2" />
+                              <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                               Editar
                             </Link>
                           </Button>
@@ -489,40 +489,40 @@ export default function HistoricoPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="flex-1 sm:flex-none bg-transparent"
+                            className="flex-1 min-w-[80px] sm:flex-none bg-transparent text-xs sm:text-sm"
                             onClick={() => handleEnviarEmail(os)}
                             disabled={enviandoEmail === os.id}
                           >
                             {enviandoEmail === os.id ? (
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2 animate-spin" />
                             ) : (
-                              <Mail className="h-4 w-4 mr-2" />
+                              <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                             )}
-                            {enviandoEmail === os.id ? "Enviando..." : "Enviar Email"}
+                            <span className="hidden sm:inline">{enviandoEmail === os.id ? "Enviando..." : "Email"}</span>
+                            <span className="sm:hidden">{enviandoEmail === os.id ? "..." : "Email"}</span>
                           </Button>
                         )}
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1 sm:flex-none bg-transparent"
+                          className="flex-1 min-w-[80px] sm:flex-none bg-transparent text-xs sm:text-sm"
                           onClick={() => handleBaixar(os)}
                           disabled={buscandoLink === os.id}
                         >
                           {buscandoLink === os.id ? (
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2 animate-spin" />
                           ) : (
-                            <Download className="h-4 w-4 mr-2" />
+                            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                           )}
-                          {buscandoLink === os.id ? "Buscando..." : "Baixar"}
+                          {buscandoLink === os.id ? "..." : "Baixar"}
                         </Button>
                         <Button
                           variant="destructive"
                           size="sm"
                           onClick={() => setOsToDelete(os)}
-                          className="flex-1 sm:flex-none"
+                          className="shrink-0"
                         >
-                          <Trash2 className="h-4 w-4 sm:mr-0 mr-2" />
-                          <span className="sm:hidden">Excluir</span>
+                          <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </Button>
                       </div>
                     </div>

@@ -150,21 +150,21 @@ function ClienteDetalhePageClient({ id }: { id: string }) {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <main className="container mx-auto px-4 py-8 max-w-5xl">
+      <main className="container mx-auto px-4 py-4 md:py-8 max-w-5xl">
         <div className="mb-6">
-          <Button asChild variant="ghost" size="sm" className="mb-4">
+          <Button asChild variant="ghost" size="sm" className="mb-2 md:mb-4">
             <Link href="/clientes">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Link>
           </Button>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-semibold text-foreground">{cliente.razaoSocial}</h1>
-              <p className="text-muted-foreground mt-1">{cliente.cnpj}</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-foreground truncate">{cliente.razaoSocial}</h1>
+              <p className="text-sm md:text-base text-muted-foreground mt-1">{cliente.cnpj}</p>
             </div>
             {!isEditing && (
-              <Button onClick={() => setIsEditing(true)}>
+              <Button onClick={() => setIsEditing(true)} size="sm" className="w-full sm:w-auto">
                 <Edit2 className="h-4 w-4 mr-2" />
                 Editar
               </Button>
@@ -333,13 +333,13 @@ function ClienteDetalhePageClient({ id }: { id: string }) {
 
         {/* Equipamentos */}
         <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
+          <CardHeader className="p-4 md:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <CardTitle>Equipamentos</CardTitle>
-                <CardDescription>Equipamentos cadastrados para este cliente</CardDescription>
+                <CardTitle className="text-lg md:text-xl">Equipamentos</CardTitle>
+                <CardDescription className="text-xs md:text-sm">Equipamentos cadastrados para este cliente</CardDescription>
               </div>
-              <Button size="sm" onClick={() => setShowEquipamentoForm(true)}>
+              <Button size="sm" onClick={() => setShowEquipamentoForm(true)} className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
                 Adicionar
               </Button>
@@ -363,11 +363,11 @@ function ClienteDetalhePageClient({ id }: { id: string }) {
             )}
 
             {equipamentos.length === 0 && !showEquipamentoForm ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-6 md:py-8 text-sm md:text-base text-muted-foreground">
                 Nenhum equipamento cadastrado. Clique em "Adicionar" para começar.
               </div>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2">
                 {equipamentos.map((equip) => (
                   <Card key={equip.id} className="border">
                     <CardHeader className="pb-3">

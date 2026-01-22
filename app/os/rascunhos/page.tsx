@@ -45,16 +45,16 @@ export default function RascunhosPage() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-4 md:py-8">
         <div className="mb-6">
-          <Button asChild variant="ghost" size="sm" className="mb-4">
+          <Button asChild variant="ghost" size="sm" className="mb-2 md:mb-4">
             <Link href="/">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Link>
           </Button>
-          <h1 className="text-3xl font-semibold text-foreground">Rascunhos de OS</h1>
-          <p className="text-muted-foreground mt-1">Ordens de serviço em andamento</p>
+          <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Rascunhos de OS</h1>
+          <p className="text-sm md:text-base text-muted-foreground mt-1">Ordens de serviço em andamento</p>
         </div>
 
         {loading ? (
@@ -77,34 +77,34 @@ export default function RascunhosPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {rascunhos.map((os) => (
               <Card key={os.id} className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">{os.numero}</CardTitle>
-                      <CardDescription className="mt-1">{os.cliente?.nome || "Sem cliente"}</CardDescription>
+                <CardHeader className="p-4 md:p-6 pb-2 md:pb-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="text-sm sm:text-base md:text-lg truncate max-w-[180px] sm:max-w-[220px] md:max-w-none">{os.numero}</CardTitle>
+                      <CardDescription className="mt-1 text-xs md:text-sm truncate max-w-[180px] sm:max-w-[220px] md:max-w-none">{os.cliente?.nome || "Sem cliente"}</CardDescription>
                     </div>
-                    <Badge variant="secondary">Etapa {os.currentStep}/9</Badge>
+                    <Badge variant="secondary" className="text-xs shrink-0">Etapa {os.currentStep}/9</Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm mb-4">
-                    <div>
-                      <span className="text-muted-foreground">Equipamento:</span>{" "}
-                      <span className="text-foreground">{os.equipamento?.tipo || "-"}</span>
+                <CardContent className="p-4 md:p-6 pt-2 md:pt-3">
+                  <div className="space-y-1.5 md:space-y-2 text-xs md:text-sm mb-3 md:mb-4">
+                    <div className="flex flex-wrap gap-1">
+                      <span className="text-muted-foreground">Equipamento:</span>
+                      <span className="text-foreground truncate">{os.equipamento?.tipo || "-"}</span>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">Atualizado:</span>{" "}
+                    <div className="flex flex-wrap gap-1">
+                      <span className="text-muted-foreground">Atualizado:</span>
                       <span className="text-foreground">{new Date(os.updatedAt).toLocaleDateString("pt-BR")}</span>
                     </div>
                   </div>
 
                   <div className="flex gap-2">
-                    <Button asChild size="sm" className="flex-1">
+                    <Button asChild size="sm" className="flex-1 text-xs md:text-sm">
                       <Link href={`/os/${os.id}/etapa/${os.currentStep}`}>
-                        <Edit className="h-3 w-3 mr-2" />
+                        <Edit className="h-3 w-3 mr-1.5 md:mr-2" />
                         Continuar
                       </Link>
                     </Button>

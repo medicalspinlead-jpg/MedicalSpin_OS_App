@@ -167,11 +167,10 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Better touch targets for mobile */
-  button,
-  a {
-    min-height: 44px;
-    min-width: 44px;
+  /* Better touch targets for mobile - only for interactive elements without explicit sizing */
+  button:not([class*="size-"]):not([class*="h-"]):not([class*="w-"]),
+  a:not([class*="size-"]):not([class*="h-"]):not([class*="w-"]) {
+    min-height: 36px;
   }
 
   /* Smooth scrolling */
@@ -194,5 +193,15 @@
     select {
       font-size: 16px; /* Prevents zoom on iOS */
     }
+  }
+
+  /* Hide scrollbar utility */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }

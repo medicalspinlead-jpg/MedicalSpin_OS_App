@@ -16,11 +16,13 @@ const STEPS = [
 
 export function OSStepIndicator({ currentStep, osNumber, osId }: { currentStep: number; osNumber: string; osId: string }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 md:space-y-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">Ordem de Serviço {osNumber}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground truncate">
+            OS {osNumber}
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Etapa {currentStep} de 9: {STEPS[currentStep - 1].name}
           </p>
         </div>
@@ -36,7 +38,34 @@ export function OSStepIndicator({ currentStep, osNumber, osId }: { currentStep: 
         </div>
       </div>
 
-      {/* Steps */}
+      {/* Mobile Steps - Horizontal scrollable */}
+      <div className="flex md:hidden items-center gap-1.5 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+        {STEPS.map((step) => {
+          const isCompleted = currentStep > step.number
+          const isCurrent = currentStep === step.number
+
+          return (
+            <Link
+              key={step.number}
+              href={`/os/${osId}/etapa/${step.number}`}
+              className="shrink-0"
+            >
+              <div
+                className={cn(
+                  "w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all cursor-pointer",
+                  isCurrent && "bg-primary text-primary-foreground ring-2 ring-primary/20",
+                  isCompleted && "bg-green-600 text-white",
+                  !isCurrent && !isCompleted && "bg-muted text-muted-foreground",
+                )}
+              >
+                {isCompleted ? <Check className="h-3 w-3" /> : step.number}
+              </div>
+            </Link>
+          )
+        })}
+      </div>
+
+      {/* Desktop Steps */}
       <div className="hidden md:flex items-center justify-between gap-2">
         {STEPS.map((step) => {
           const isCompleted = currentStep > step.number
