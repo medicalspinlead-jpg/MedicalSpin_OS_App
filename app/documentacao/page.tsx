@@ -74,43 +74,6 @@ console.log(data);`
 
   const apiRoutes = [
     {
-      category: "Autenticacao",
-      routes: [
-        {
-          method: "POST",
-          path: "/api/auth/login",
-          description: "Autenticar usuario",
-          body: { email: "usuario@email.com", senha: "sua_senha" },
-          response: { id: "uuid", nome: "Nome Usuario", email: "usuario@email.com" },
-          protected: false,
-        },
-        {
-          method: "POST",
-          path: "/api/auth/logout",
-          description: "Encerrar sessao do usuario",
-          body: null,
-          response: { success: true },
-          protected: false,
-        },
-        {
-          method: "GET",
-          path: "/api/auth/me",
-          description: "Obter dados do usuario autenticado",
-          body: null,
-          response: { id: "uuid", nome: "Nome Usuario", email: "usuario@email.com" },
-          protected: false,
-        },
-        {
-          method: "POST",
-          path: "/api/auth/setup",
-          description: "Criar primeiro usuario (setup inicial)",
-          body: { nome: "Admin", email: "admin@email.com", senha: "senha123", chaveSeguranca: "{apiKey}" },
-          response: { id: "uuid", nome: "Admin", email: "admin@email.com" },
-          protected: false,
-        },
-      ],
-    },
-    {
       category: "Usuarios",
       routes: [
         {
