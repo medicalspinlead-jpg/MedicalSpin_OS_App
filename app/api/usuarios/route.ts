@@ -1,18 +1,22 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { hashPassword } from "@/lib/auth"
-import { getCurrentUser } from "@/lib/auth"
+import { hashPassword, getCurrentUser } from "@/lib/auth"
 import { validateApiKey } from "@/lib/api-auth"
 
-// Listar usuários
+// Listar usuários (requer sessão de admin ou API key)
 export async function GET(request: Request) {
-  const auth = validateApiKey(request)
-  if (!auth.valid) return auth.response
-
   try {
+    // Verificar autenticação: sessão ou API key
     const currentUser = await getCurrentUser()
-    if (!currentUser || currentUser.cargo !== "admin") {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 403 })
+    const apiKeyAuth = validateApiKey(request)
+    
+    if (!currentUser && !apiKeyAuth.valid) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
+    }
+    
+    // Se autenticado por sessão, verificar se é admin
+    if (currentUser && currentUser.cargo !== "admin") {
+      return NextResponse.json({ error: "Acesso negado. Apenas administradores podem listar usuários." }, { status: 403 })
     }
 
     const usuarios = await prisma.usuario.findMany({
@@ -34,12 +38,22 @@ export async function GET(request: Request) {
   }
 }
 
-// Criar usuário
+// Criar usuário (requer sessão de admin ou API key)
 export async function POST(request: Request) {
-  const auth = validateApiKey(request)
-  if (!auth.valid) return auth.response
-
   try {
+    // Verificar autenticação: sessão ou API key
+    const currentUser = await getCurrentUser()
+    const apiKeyAuth = validateApiKey(request)
+    
+    if (!currentUser && !apiKeyAuth.valid) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
+    }
+    
+    // Se autenticado por sessão, verificar se é admin
+    if (currentUser && currentUser.cargo !== "admin") {
+      return NextResponse.json({ error: "Acesso negado. Apenas administradores podem criar usuários." }, { status: 403 })
+    }
+
     const { nome, email, senha, cargo } = await request.json()
 
     if (!nome || !email || !senha) {
