@@ -85,6 +85,7 @@ export interface OrdemServico {
     uf: string
     telefone: string
     email: string
+    emails: string[]
     responsavel: string
   }
 
@@ -308,6 +309,7 @@ export function createNovaOS(): Omit<OrdemServico, "id"> & { id?: string } {
       uf: "",
       telefone: "",
       email: "",
+      emails: [],
       responsavel: "",
     },
     motivo: {

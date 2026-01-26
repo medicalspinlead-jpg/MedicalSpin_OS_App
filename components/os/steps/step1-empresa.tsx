@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import type { OrdemServico } from "@/lib/storage"
 import { getClientes } from "@/lib/storage"
-import { ArrowRight, Search } from "lucide-react"
+import { ArrowRight, Search, Plus, X } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
@@ -61,11 +61,18 @@ export const Step1DadosEmpresa = forwardRef<
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [clienteSelecionado, setClienteSelecionado] = useState<string>("")
   const [open, setOpen] = useState(false)
-  const [formData, setFormData] = useState(os.empresa)
+  const [formData, setFormData] = useState({
+    ...os.empresa,
+    emails: os.empresa.emails || [],
+  })
+  const [novoEmail, setNovoEmail] = useState("")
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setFormData(os.empresa)
+    setFormData({
+      ...os.empresa,
+      emails: os.empresa.emails || [],
+    })
   }, [os.empresa])
 
   useEffect(() => {
@@ -101,6 +108,7 @@ export const Step1DadosEmpresa = forwardRef<
         uf: "",
         telefone: "",
         email: "",
+        emails: [],
         responsavel: "",
       }
       setFormData(dadosVazios)
@@ -120,6 +128,7 @@ export const Step1DadosEmpresa = forwardRef<
         uf: ufCorreto,
         telefone: cliente.telefone,
         email: cliente.email,
+        emails: cliente.email ? [cliente.email] : [],
         responsavel: cliente.responsavel,
       }
 
@@ -272,28 +281,95 @@ export const Step1DadosEmpresa = forwardRef<
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="telefone">Telefone</Label>
+          <div className="space-y-2">
+            <Label htmlFor="telefone">Telefone</Label>
+            <Input
+              id="telefone"
+              value={formData.telefone}
+              onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+              placeholder="(00) 00000-0000"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email Principal</Label>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="email@empresa.com"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Emails Adicionais</Label>
+            <div className="flex gap-2">
               <Input
-                id="telefone"
-                value={formData.telefone}
-                onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
-                placeholder="(00) 00000-0000"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
                 type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="email@empresa.com"
-                required
+                value={novoEmail}
+                onChange={(e) => setNovoEmail(e.target.value)}
+                placeholder="Adicionar outro email"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault()
+                    if (novoEmail && novoEmail.includes("@")) {
+                      setFormData({
+                        ...formData,
+                        emails: [...formData.emails, novoEmail],
+                      })
+                      setNovoEmail("")
+                    }
+                  }
+                }}
               />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="shrink-0 bg-transparent"
+                onClick={() => {
+                  if (novoEmail && novoEmail.includes("@")) {
+                    setFormData({
+                      ...formData,
+                      emails: [...formData.emails, novoEmail],
+                    })
+                    setNovoEmail("")
+                  }
+                }}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
             </div>
+            {formData.emails.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {formData.emails.map((email, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-1 bg-muted px-2 py-1 rounded-md text-sm"
+                  >
+                    <span>{email}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData({
+                          ...formData,
+                          emails: formData.emails.filter((_, i) => i !== index),
+                        })
+                      }}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Adicione emails adicionais que receberao a OS. Pressione Enter ou clique no botao + para adicionar.
+            </p>
           </div>
 
           <div className="space-y-2">

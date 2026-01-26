@@ -29,6 +29,7 @@ export interface WebhookPayload {
     uf: string
     telefone: string
     email: string
+    emails: string[]
     responsavel: string
   }
   equipamento: {
@@ -85,7 +86,10 @@ export async function enviarParaWebhook(os: OrdemServico, imagens: ImagemWebhook
       criadoEm: os.createdAt,
       finalizadoEm: os.finalizedAt || new Date().toISOString(),
     },
-    empresa: os.empresa,
+    empresa: {
+      ...os.empresa,
+      emails: os.empresa.emails || [],
+    },
     equipamento: os.equipamento
       ? {
           tipo: os.equipamento.tipo,

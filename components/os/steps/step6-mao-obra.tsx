@@ -38,7 +38,6 @@ export const Step6MaoObra = forwardRef(function Step6MaoObra(
   }
 
   const adicionarServico = () => {
-    if (!novoServico.descricao) return
 
     // Adicione no topo do componente, logo após os imports:
 const generateUUID = () => {
@@ -98,7 +97,7 @@ const servico: MaoDeObra = {
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="descricao">Descrição do Serviço</Label>
+                <Label htmlFor="descricao">Descrição do Serviço (opcional)</Label>
                 <Input
                   id="descricao"
                   value={novoServico.descricao}
@@ -143,7 +142,7 @@ const servico: MaoDeObra = {
                       {servicosPorData[data].map((servico) => (
                         <div key={servico.id} className="flex items-center justify-between p-3 border rounded-lg">
                           <div className="flex-1">
-                            <div className="font-medium">{servico.descricao}</div>
+                            <div className="font-medium">{servico.descricao || "Serviço sem descrição"}</div>
                             <div className="text-sm text-muted-foreground">Horas: {servico.horas}h</div>
                           </div>
                           <Button

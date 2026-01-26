@@ -315,8 +315,15 @@ export default function VisualizarOSPage() {
                 <div className="font-medium">{os.empresa.telefone || "-"}</div>
               </div>
               <div>
-                <div className="text-sm text-muted-foreground">Email</div>
-                <div className="font-medium">{os.empresa.email || "-"}</div>
+                <div className="text-sm text-muted-foreground">Email(s)</div>
+                <div className="font-medium">
+                  {os.empresa.email || "-"}
+                  {os.empresa.emails && os.empresa.emails.length > 0 && (
+                    <div className="text-sm text-muted-foreground mt-1">
+                      Emails adicionais: {os.empresa.emails.join(", ")}
+                    </div>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

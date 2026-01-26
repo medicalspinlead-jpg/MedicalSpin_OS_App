@@ -12,15 +12,23 @@ function generateOSName(data: {
   empresa?: { razaoSocial?: string; cnpj?: string }
   cliente?: { razaoSocial?: string; cnpj?: string }
   numero?: string
+  finalizedAt?: Date | null
 }) {
   const razaoSocial = data.empresa?.razaoSocial || data.cliente?.razaoSocial
   const cnpj = data.empresa?.cnpj || data.cliente?.cnpj
 
   if (razaoSocial && cnpj) {
-    const dataStr = new Date().toLocaleDateString("pt-BR").replace(/\//g, "-")
+    const dataFinalizacao = data.finalizedAt || new Date()
+    const dataStr = dataFinalizacao.toLocaleDateString("pt-BR").replace(/\//g, "-")
+    // Adiciona hora e minuto para diferenciar OS do mesmo dia
+    const horaStr = dataFinalizacao.toLocaleTimeString("pt-BR", { 
+      hour: "2-digit", 
+      minute: "2-digit",
+      hour12: false 
+    }).replace(":", "h")
     const nomeFormatado = razaoSocial.replace(/\s+/g, "_").substring(0, 30)
     const cnpjFormatado = cnpj.replace(/[^\d]/g, "")
-    return `OS_${nomeFormatado}_${cnpjFormatado}_${dataStr}`
+    return `OS_${nomeFormatado}_${cnpjFormatado}_${dataStr}_${horaStr}`
   }
   return data.numero || `OS-${Date.now()}`
 }
@@ -163,7 +171,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const { id } = await params
     const data = await request.json()
 
-    const numero = generateOSName(data)
+    // Determinar a data de finalização
+    const isFinalizando = data.status === "finalizada" || data.status === "fechada"
+    const finalizedAt = isFinalizando ? new Date() : null
+
+    const numero = generateOSName({ ...data, finalizedAt })
 
     // Atualizar a OS
     const os = await prisma.ordemServico.update({
@@ -172,7 +184,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         numero,
         status: data.status || "rascunho",
         currentStep: data.currentStep || 1,
-        finalizedAt: data.status === "finalizada" ? new Date() : null,
+        finalizedAt,
         empresa: data.empresa || {},
         clienteId: data.cliente?.id || null,
         equipamentoId: data.equipamento?.id || null,
