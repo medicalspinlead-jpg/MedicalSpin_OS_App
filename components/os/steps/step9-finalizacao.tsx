@@ -104,7 +104,7 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
     }
   }
 
-  const handleFechar = async (e: React.MouseEvent) => {
+  const handleFechar = (e: React.MouseEvent) => {
     e.preventDefault()
 
     if (!onFechar) return
@@ -112,40 +112,12 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
     setIsFechando(true)
 
     try {
-      // Prepara as imagens para o webhook
-      const imagensWebhook: ImagemWebhook[] = imagens.map((img) => ({
-        nome: img.nome,
-        tipo: "image/jpeg",
-        tamanho: img.tamanho,
-        base64: img.base64,
-      }))
-
-      // Cria OS atualizada com os dados finais
-      const osAtualizada: OrdemServico = {
-        ...os,
-        finalizacao: formData,
-        midias: { arquivos: imagens.map((img) => img.preview) },
-        status: "fechada",
-        finalizedAt: new Date().toISOString(),
-      }
-
-      // Envia para o webhook
-      const sucesso = await enviarParaWebhook(osAtualizada, imagensWebhook)
-
-      if (sucesso) {
-        toast({
-          title: "OS Fechada",
-          description: "Ordem de serviço fechada e enviada com sucesso! Ainda pode ser editada.",
-        })
-        onFechar({ finalizacao: formData, midias: { arquivos: imagens.map((img) => img.preview) } })
-      } else {
-        toast({
-          title: "Aviso",
-          description: "OS fechada localmente, mas houve um erro ao enviar para o servidor.",
-          variant: "destructive",
-        })
-        onFechar({ finalizacao: formData, midias: { arquivos: imagens.map((img) => img.preview) } })
-      }
+      // Apenas salva a OS com status fechada, sem enviar para o webhook
+      toast({
+        title: "OS Fechada",
+        description: "Ordem de serviço fechada e salva. Ainda pode ser editada.",
+      })
+      onFechar({ finalizacao: formData, midias: { arquivos: imagens.map((img) => img.preview) } })
     } catch (error) {
       console.error("Erro ao fechar:", error)
       toast({
