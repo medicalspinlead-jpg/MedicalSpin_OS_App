@@ -79,12 +79,12 @@ export default function RascunhosPage() {
         ) : (
           <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {rascunhos.map((os) => (
-              <Card key={os.id} className="hover:shadow-md transition-shadow">
+              <Card key={os.id} className="hover:shadow-md transition-shadow overflow-hidden">
                 <CardHeader className="p-4 md:p-6 pb-2 md:pb-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <CardTitle className="text-sm sm:text-base md:text-lg truncate max-w-[180px] sm:max-w-[220px] md:max-w-none">{os.numero}</CardTitle>
-                      <CardDescription className="mt-1 text-xs md:text-sm truncate max-w-[180px] sm:max-w-[220px] md:max-w-none">{os.cliente?.nome || "Sem cliente"}</CardDescription>
+                  <div className="flex items-start gap-3 w-full">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-sm sm:text-base md:text-lg truncate max-w-[180px] sm:max-w-[200px] md:max-w-[280px] lg:max-w-[240px]" title={os.numero}>{os.numero}</CardTitle>
+                      <CardDescription className="mt-1 text-xs md:text-sm truncate max-w-[180px] sm:max-w-[200px] md:max-w-[280px] lg:max-w-[240px]" title={os.cliente?.nomeFantasia || "Sem cliente"}>{os.cliente?.nomeFantasia || "Sem cliente"}</CardDescription>
                     </div>
                     <Badge variant="secondary" className="text-xs shrink-0">Etapa {os.currentStep}/9</Badge>
                   </div>
