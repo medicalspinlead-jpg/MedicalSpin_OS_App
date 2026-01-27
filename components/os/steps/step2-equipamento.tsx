@@ -49,6 +49,12 @@ export const Step2DadosEquipamento = forwardRef(function Step2DadosEquipamento(
         const equips = await getEquipamentosByCliente(selectedCliente.id)
         console.log("[v0] Step2: Equipamentos encontrados:", equips.length)
         setEquipamentos(equips)
+        
+        // Se o cliente tiver apenas 1 equipamento e nenhum estiver selecionado, seleciona automaticamente
+        if (equips.length === 1 && !selectedEquipamento) {
+          console.log("[v0] Step2: Selecionando automaticamente o unico equipamento")
+          setSelectedEquipamento(equips[0])
+        }
       } catch (error) {
         console.error("Erro ao carregar equipamentos:", error)
         setEquipamentos([])
@@ -58,7 +64,7 @@ export const Step2DadosEquipamento = forwardRef(function Step2DadosEquipamento(
     }
 
     loadEquipamentos()
-  }, [selectedCliente?.id])
+  }, [selectedCliente?.id, selectedEquipamento])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -144,22 +150,20 @@ export const Step2DadosEquipamento = forwardRef(function Step2DadosEquipamento(
                 )}
               </>
             ) : (
-              <div className="p-4 border rounded-lg bg-accent/50">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="font-medium">{selectedEquipamento.tipo}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {selectedEquipamento.fabricante} {selectedEquipamento.modelo}
-                    </div>
-                    {selectedEquipamento.numeroSerie && (
-                      <div className="text-sm text-muted-foreground">N/S: {selectedEquipamento.numeroSerie}</div>
-                    )}
-                  </div>
-                  <Button type="button" variant="outline" size="sm" onClick={() => setSelectedEquipamento(undefined)}>
-                    Alterar
-                  </Button>
+              <button
+                type="button"
+                onClick={() => setSelectedEquipamento(undefined)}
+                className="w-full p-4 border rounded-lg bg-accent/50 text-left hover:bg-accent transition-colors cursor-pointer"
+              >
+                <div className="font-medium">{selectedEquipamento.tipo}</div>
+                <div className="text-sm text-muted-foreground">
+                  {selectedEquipamento.fabricante} {selectedEquipamento.modelo}
                 </div>
-              </div>
+                {selectedEquipamento.numeroSerie && (
+                  <div className="text-sm text-muted-foreground">N/S: {selectedEquipamento.numeroSerie}</div>
+                )}
+                <div className="text-xs text-muted-foreground mt-2">Clique para alterar</div>
+              </button>
             )}
           </CardContent>
         </Card>

@@ -212,7 +212,7 @@ function OSEtapaPageClient({ id, step }: { id: string; step: string }) {
 
       <main className="container mx-auto px-4 py-8 max-w-5xl">
 
-        <OSStepIndicator currentStep={currentStep} osNumber={os.numero} osId={id} />
+        <OSStepIndicator currentStep={currentStep} osNumber={os.numero} osId={id} os={os} />
 
         <div className="mt-6">
           <Button asChild variant="ghost" size="sm" className="mb-4">

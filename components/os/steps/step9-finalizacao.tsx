@@ -11,6 +11,7 @@ import { CheckCircle, Save, X, ImageIcon, Loader2, Lock } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { enviarParaWebhook, converterParaJPG, isImageFile, type ImagemWebhook } from "@/lib/webhook"
 import { useToast } from "@/hooks/use-toast"
+import { areSteps1to8Complete } from "@/components/os/step-indicator"
 
 const UFS = [
   "AC",
@@ -76,6 +77,9 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
   const [isUploading, setIsUploading] = useState(false)
   const [isFinalizando, setIsFinalizando] = useState(false)
   const [isFechando, setIsFechando] = useState(false)
+  
+  // Verifica se todas as etapas de 1 a 8 estao completas
+  const canFinalize = areSteps1to8Complete(os)
 
   useEffect(() => {
     if (os.empresa.cidade && !formData.cidade) {
@@ -435,7 +439,12 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
               )}
             </Button>
           )}
-          <Button type="submit" className="flex-1 min-w-[140px] bg-green-600 hover:bg-green-700" disabled={isFinalizando || isFechando}>
+          <Button 
+            type="submit" 
+            className="flex-1 min-w-[140px] bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed" 
+            disabled={!canFinalize || isFinalizando || isFechando}
+            title={!canFinalize ? "Preencha todos os campos das etapas 1 a 8 para finalizar" : undefined}
+          >
             {isFinalizando ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
