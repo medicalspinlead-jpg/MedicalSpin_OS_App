@@ -71,6 +71,19 @@ export function AppHeader() {
               </Button>
             ))}
 
+            {usuario.cargo === "admin" && (
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className={pathname === "/admin" ? "bg-accent ml-2" : "ml-2"}
+              >
+                <Link href="/admin">
+                  <Shield className="h-4 w-4" />
+                </Link>
+              </Button>
+            )}
+
             <Button
               variant="ghost"
               size="sm"
@@ -218,9 +231,22 @@ export function AppHeader() {
                     >
                       <Link href="/documentacao">
                         <BookOpen className="h-4 w-4 mr-2" />
-                        Documentação API
+                        Documentacao API
                       </Link>
                     </Button>
+                    {usuario.cargo === "admin" && (
+                      <Button
+                        asChild
+                        variant={pathname === "/admin" ? "secondary" : "ghost"}
+                        className="justify-start"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Link href="/admin">
+                          <Shield className="h-4 w-4 mr-2" />
+                          Administracao
+                        </Link>
+                      </Button>
+                    )}
                   </nav>
 
                   {/* Logout */}
