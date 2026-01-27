@@ -110,6 +110,7 @@ function mapOS(
       observacoes: p.observacoes || "",
       quantidade: p.quantidade,
       categoria: p.categoria as "cliente" | "medical-spin",
+      tipo: (p.tipo || "removida") as "removida" | "inclusa",
     })),
     maoDeObra: os.maoDeObra.map((m) => ({
       id: m.id,
@@ -215,6 +216,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
             observacoes?: string
             quantidade: number
             categoria: string
+            tipo?: string
           }) => ({
             osId: id,
             nome: p.nome,
@@ -223,6 +225,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
             observacoes: p.observacoes || null,
             quantidade: p.quantidade,
             categoria: p.categoria,
+            tipo: p.tipo || "removida",
           }),
         ),
       })

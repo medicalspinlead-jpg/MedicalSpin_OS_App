@@ -84,6 +84,7 @@ model Peca {
   observacoes String?
   quantidade  Int
   categoria   String       @default("cliente")
+  tipo        String       @default("removida") // "removida" ou "inclusa"
   createdAt   DateTime     @default(now()) @map("created_at")
   ordem       OrdemServico @relation(fields: [osId], references: [id], onDelete: Cascade)
 

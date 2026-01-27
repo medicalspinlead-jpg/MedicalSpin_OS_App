@@ -427,33 +427,78 @@ export default function VisualizarOSPage() {
           {/* Peças Utilizadas */}
           <Card>
             <CardHeader>
-              <CardTitle>5. Peças Utilizadas</CardTitle>
+              <CardTitle>5. Pecas Utilizadas</CardTitle>
             </CardHeader>
             <CardContent>
               {os.pecas.length === 0 ? (
-                <div className="text-muted-foreground">Nenhuma peça utilizada</div>
+                <div className="text-muted-foreground">Nenhuma peca utilizada</div>
               ) : (
-                <div className="space-y-2">
-                  {os.pecas.map((peca) => (
-                    <div key={peca.id} className="flex justify-between items-center p-3 border rounded-lg">
-                      <div>
-                        <div className="font-medium">{peca.nome || peca.descricao}</div>
-                        {peca.modeloRef && (
-                          <div className="text-sm text-muted-foreground">Modelo/Ref: {peca.modeloRef}</div>
-                        )}
-                        {peca.numeroSerie && (
-                          <div className="text-sm text-muted-foreground">Nº Série: {peca.numeroSerie}</div>
-                        )}
-                        {peca.observacoes && (
-                          <div className="text-sm text-muted-foreground">Obs: {peca.observacoes}</div>
-                        )}
-                        <div className="text-sm text-muted-foreground">Quantidade: {peca.quantidade}</div>
+                <div className="space-y-6">
+                  {/* Peças Removidas */}
+                  {os.pecas.filter((p) => !p.tipo || p.tipo === "removida").length > 0 && (
+                    <div>
+                      <h4 className="font-semibold text-base mb-3">Pecas Removidas</h4>
+                      <div className="space-y-2">
+                        {os.pecas
+                          .filter((p) => !p.tipo || p.tipo === "removida")
+                          .map((peca) => (
+                            <div key={peca.id} className="flex justify-between items-center p-3 border rounded-lg">
+                              <div>
+                                <div className="font-medium">{peca.nome || peca.descricao}</div>
+                                {peca.modeloRef && (
+                                  <div className="text-sm text-muted-foreground">Modelo/Ref: {peca.modeloRef}</div>
+                                )}
+                                {peca.numeroSerie && (
+                                  <div className="text-sm text-muted-foreground">N Serie: {peca.numeroSerie}</div>
+                                )}
+                                {peca.observacoes && (
+                                  <div className="text-sm text-muted-foreground">Obs: {peca.observacoes}</div>
+                                )}
+                                <div className="text-sm text-muted-foreground">
+                                  Quantidade: {peca.quantidade} | Posse:{" "}
+                                  {peca.categoria === "medical-spin" ? "Medical Spin" : "Cliente"}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                       </div>
                     </div>
-                  ))}
+                  )}
+
+                  {/* Peças Inclusas */}
+                  {os.pecas.filter((p) => p.tipo === "inclusa").length > 0 && (
+                    <div>
+                      <h4 className="font-semibold text-base mb-3">Pecas Inclusas</h4>
+                      <div className="space-y-2">
+                        {os.pecas
+                          .filter((p) => p.tipo === "inclusa")
+                          .map((peca) => (
+                            <div key={peca.id} className="flex justify-between items-center p-3 border rounded-lg">
+                              <div>
+                                <div className="font-medium">{peca.nome || peca.descricao}</div>
+                                {peca.modeloRef && (
+                                  <div className="text-sm text-muted-foreground">Modelo/Ref: {peca.modeloRef}</div>
+                                )}
+                                {peca.numeroSerie && (
+                                  <div className="text-sm text-muted-foreground">N Serie: {peca.numeroSerie}</div>
+                                )}
+                                {peca.observacoes && (
+                                  <div className="text-sm text-muted-foreground">Obs: {peca.observacoes}</div>
+                                )}
+                                <div className="text-sm text-muted-foreground">
+                                  Quantidade: {peca.quantidade} | Posse:{" "}
+                                  {peca.categoria === "medical-spin" ? "Medical Spin" : "Cliente"}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
                   <Separator className="my-4" />
                   <div className="flex justify-between items-center">
-                    <span className="font-semibold">Total de Peças:</span>
+                    <span className="font-semibold">Total de Pecas:</span>
                     <span className="text-xl font-bold">{os.pecas.length}</span>
                   </div>
                 </div>

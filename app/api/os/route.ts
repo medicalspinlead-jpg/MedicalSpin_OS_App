@@ -79,9 +79,13 @@ function mapOS(
     },
     pecas: os.pecas.map((p) => ({
       id: p.id,
-      descricao: p.descricao,
+      nome: p.nome,
+      modeloRef: p.modeloRef || "",
+      numeroSerie: p.numeroSerie || "",
+      observacoes: p.observacoes || "",
       quantidade: p.quantidade,
       categoria: p.categoria as "cliente" | "medical-spin",
+      tipo: (p.tipo || "removida") as "removida" | "inclusa",
     })),
     maoDeObra: os.maoDeObra.map((m) => ({
       id: m.id,

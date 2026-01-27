@@ -58,6 +58,7 @@ export interface Peca {
   observacoes: string
   quantidade: number
   categoria: "cliente" | "medical-spin"
+  tipo: "removida" | "inclusa"
 }
 
 export interface MaoDeObra {

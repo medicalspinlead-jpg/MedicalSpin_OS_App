@@ -53,6 +53,7 @@ export interface WebhookPayload {
     observacoes: string
     quantidade: number
     categoria: string
+    tipo: string // "removida" ou "inclusa"
   }>
   maoDeObra: Array<{
     data: string
@@ -107,6 +108,7 @@ export async function enviarParaWebhook(os: OrdemServico, imagens: ImagemWebhook
       observacoes: p.observacoes,
       quantidade: p.quantidade,
       categoria: p.categoria,
+      tipo: p.tipo || "removida",
     })),
     maoDeObra: os.maoDeObra.map((m) => ({
       data: m.data,
