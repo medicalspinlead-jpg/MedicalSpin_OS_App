@@ -42,6 +42,7 @@ function mapOS(
       uf: empresa.uf || "",
       telefone: empresa.telefone || "",
       email: empresa.email || "",
+      emails: (empresa.emails as string[]) || [],
       responsavel: empresa.responsavel || "",
     },
     cliente: os.cliente

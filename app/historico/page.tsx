@@ -253,12 +253,18 @@ export default function HistoricoPage() {
   }
 
   const handleEnviarEmail = async (os: OrdemServico) => {
-    const email = os.cliente?.email
+    const emailPrincipal = os.empresa?.email || os.cliente?.email
+    const emailsAdicionais = os.empresa?.emails || []
     
-    if (!email) {
+    // Combina email principal com emails adicionais, removendo duplicatas e vazios
+    const todosEmails = [emailPrincipal, ...emailsAdicionais]
+      .filter((e): e is string => Boolean(e && e.trim()))
+      .filter((email, index, self) => self.indexOf(email) === index)
+    
+    if (todosEmails.length === 0) {
       toast({
-        title: "Email não encontrado",
-        description: "Este cliente não possui email cadastrado.",
+        title: "Email nao encontrado",
+        description: "Este cliente nao possui email cadastrado.",
         variant: "destructive",
       })
       return
@@ -361,7 +367,7 @@ export default function HistoricoPage() {
         console.error("Erro ao buscar link de download:", linkError)
       }
 
-      // Enviar email com o link
+      // Enviar email com o link - envia para todos os emails
       const response = await fetch(
         "https://n8n-www4kggggc4c8k8ow4w8g4g0.95.217.164.173.sslip.io/webhook/6c58efc2-699c-4c59-8be2-2b7169900363",
         {
@@ -370,7 +376,8 @@ export default function HistoricoPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            email: email,
+            email: emailPrincipal,
+            emails: todosEmails,
             osNumero: os.numero,
             osNome: os.nome,
             cliente: os.cliente?.razaoSocial || os.cliente?.nomeFantasia,
@@ -382,9 +389,12 @@ export default function HistoricoPage() {
       )
 
       if (response.ok) {
+        const emailsEnviados = todosEmails.length > 1 
+          ? `${todosEmails.length} destinatarios (${todosEmails.join(", ")})`
+          : todosEmails[0]
         toast({
           title: "Email enviado!",
-          description: `Email enviado com sucesso para ${email}`,
+          description: `Email enviado com sucesso para ${emailsEnviados}`,
         })
       } else {
         throw new Error("Erro ao enviar email")
@@ -393,7 +403,7 @@ export default function HistoricoPage() {
       console.error("Erro ao enviar email:", error)
       toast({
         title: "Erro ao enviar email",
-        description: "Não foi possível enviar o email. Tente novamente.",
+        description: "Nao foi possivel enviar o email. Tente novamente.",
         variant: "destructive",
       })
     } finally {

@@ -222,85 +222,81 @@ export const Step1DadosEmpresa = forwardRef<
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="razaoSocial">Razão Social</Label>
+              <Label htmlFor="razaoSocial" className="text-muted-foreground">Razao Social</Label>
               <Input
                 id="razaoSocial"
                 value={formData.razaoSocial}
-                onChange={(e) => setFormData({ ...formData, razaoSocial: e.target.value })}
-                placeholder="Razão Social"
-                required
+                placeholder="Razao Social"
+                disabled
+                className="bg-muted text-muted-foreground cursor-not-allowed"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="nomeFantasia">Nome Fantasia</Label>
+              <Label htmlFor="nomeFantasia" className="text-muted-foreground">Nome Fantasia</Label>
               <Input
                 id="nomeFantasia"
                 value={formData.nomeFantasia}
-                onChange={(e) => setFormData({ ...formData, nomeFantasia: e.target.value })}
                 placeholder="Nome Fantasia"
+                disabled
+                className="bg-muted text-muted-foreground cursor-not-allowed"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="cnpj">CNPJ</Label>
+            <Label htmlFor="cnpj" className="text-muted-foreground">CNPJ</Label>
             <Input
               id="cnpj"
               value={formData.cnpj}
-              onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
               placeholder="00.000.000/0000-00"
-              required
+              disabled
+              className="bg-muted text-muted-foreground cursor-not-allowed"
             />
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="cidade">Cidade</Label>
+              <Label htmlFor="cidade" className="text-muted-foreground">Cidade</Label>
               <Input
                 id="cidade"
                 value={formData.cidade}
-                onChange={(e) => setFormData({ ...formData, cidade: e.target.value })}
                 placeholder="Cidade"
-                required
+                disabled
+                className="bg-muted text-muted-foreground cursor-not-allowed"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="uf">UF</Label>
-              <Select value={formData.uf} onValueChange={(value) => setFormData({ ...formData, uf: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  {UFS.map((uf) => (
-                    <SelectItem key={uf} value={uf}>
-                      {uf}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="uf" className="text-muted-foreground">UF</Label>
+              <Input
+                id="uf"
+                value={formData.uf}
+                placeholder="UF"
+                disabled
+                className="bg-muted text-muted-foreground cursor-not-allowed"
+              />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="telefone">Telefone</Label>
+            <Label htmlFor="telefone" className="text-muted-foreground">Telefone</Label>
             <Input
               id="telefone"
               value={formData.telefone}
-              onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
               placeholder="(00) 00000-0000"
-              required
+              disabled
+              className="bg-muted text-muted-foreground cursor-not-allowed"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email Principal</Label>
+            <Label htmlFor="email" className="text-muted-foreground">Email Principal</Label>
             <Input
               id="email"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="email@empresa.com"
-              required
+              disabled
+              className="bg-muted text-muted-foreground cursor-not-allowed"
             />
           </div>
 
