@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { saveCliente } from "@/lib/storage"
-import { ArrowLeft, Plus, Trash2 } from "lucide-react"
+import { ArrowLeft, Plus, Trash2, AlertTriangle, X } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { UFS, FABRICANTES, MODELOS } from "@/lib/constants"
@@ -22,10 +22,35 @@ interface EquipamentoForm {
   numeroSerie: string
 }
 
+// Funcao para formatar CNPJ automaticamente
+function formatCNPJ(value: string): string {
+  // Remove tudo que nao for numero
+  const numbers = value.replace(/\D/g, "")
+  
+  // Limita a 14 digitos
+  const limited = numbers.slice(0, 14)
+  
+  // Aplica a mascara XX.XXX.XXX/XXXX-XX
+  if (limited.length <= 2) {
+    return limited
+  }
+  if (limited.length <= 5) {
+    return `${limited.slice(0, 2)}.${limited.slice(2)}`
+  }
+  if (limited.length <= 8) {
+    return `${limited.slice(0, 2)}.${limited.slice(2, 5)}.${limited.slice(5)}`
+  }
+  if (limited.length <= 12) {
+    return `${limited.slice(0, 2)}.${limited.slice(2, 5)}.${limited.slice(5, 8)}/${limited.slice(8)}`
+  }
+  return `${limited.slice(0, 2)}.${limited.slice(2, 5)}.${limited.slice(5, 8)}/${limited.slice(8, 12)}-${limited.slice(12)}`
+}
+
 export default function NovoClientePage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [cnpjError, setCnpjError] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     razaoSocial: "",
@@ -42,6 +67,9 @@ export default function NovoClientePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Limpa erro anterior
+    setCnpjError(null)
 
     if (!formData.razaoSocial || !formData.cnpj) {
       toast({
@@ -76,11 +104,16 @@ export default function NovoClientePage() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro ao cadastrar cliente. Tente novamente."
 
-      toast({
-        title: "Erro ao cadastrar cliente",
-        description: errorMessage,
-        variant: "destructive",
-      })
+      // Verifica se e erro de CNPJ duplicado
+      if (errorMessage.includes("CNPJ já cadastrado") || errorMessage.includes("CNPJ ja cadastrado")) {
+        setCnpjError(`O CNPJ ${formData.cnpj} ja esta cadastrado no sistema. Por favor, verifique os dados ou utilize outro CNPJ.`)
+      } else {
+        toast({
+          title: "Erro ao cadastrar cliente",
+          description: errorMessage,
+          variant: "destructive",
+        })
+      }
     } finally {
       setIsLoading(false)
     }
@@ -169,8 +202,9 @@ const addEquipamento = () => {
                   <Input
                     id="cnpj"
                     value={formData.cnpj}
-                    onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, cnpj: formatCNPJ(e.target.value) })}
                     placeholder="00.000.000/0000-00"
+                    maxLength={18}
                     required
                   />
                 </div>
@@ -340,6 +374,29 @@ const addEquipamento = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Card de erro CNPJ duplicado */}
+          {cnpjError && (
+            <div className="relative overflow-hidden rounded-lg border border-red-500/50 bg-red-500/10 p-4 shadow-[0_0_15px_rgba(239,68,68,0.3)] animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-transparent pointer-events-none" />
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 rounded-full bg-red-500/20 p-2">
+                  <AlertTriangle className="h-5 w-5 text-red-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-red-500 mb-1">CNPJ ja cadastrado</h3>
+                  <p className="text-sm text-red-400/90">{cnpjError}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCnpjError(null)}
+                  className="flex-shrink-0 rounded-full p-1 hover:bg-red-500/20 transition-colors"
+                >
+                  <X className="h-4 w-4 text-red-500" />
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="flex gap-3">
             <Button

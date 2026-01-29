@@ -160,12 +160,22 @@ function ClienteCard({
   )
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="hover:shadow-md transition-shadow overflow-hidden">
       <CardHeader className="p-4 md:p-6 pb-2 md:pb-3">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start gap-3 w-full">
           <div className="flex-1 min-w-0">
-            <CardTitle className="text-base md:text-lg truncate">{cliente.nomeFantasia || cliente.razaoSocial}</CardTitle>
-            <CardDescription className="mt-1 text-xs md:text-sm truncate">{cliente.cnpj}</CardDescription>
+            <CardTitle 
+              className="text-sm sm:text-base md:text-lg truncate max-w-[180px] sm:max-w-[200px] md:max-w-[280px] lg:max-w-[240px]" 
+              title={cliente.nomeFantasia || cliente.razaoSocial}
+            >
+              {cliente.nomeFantasia || cliente.razaoSocial}
+            </CardTitle>
+            <CardDescription 
+              className="mt-1 text-xs md:text-sm truncate max-w-[180px] sm:max-w-[200px] md:max-w-[280px] lg:max-w-[240px]" 
+              title={cliente.cnpj}
+            >
+              {cliente.cnpj}
+            </CardDescription>
           </div>
           <Badge variant="secondary" className="flex items-center gap-1 shrink-0 text-xs">
             <Wrench className="h-3 w-3" />
@@ -177,21 +187,21 @@ function ClienteCard({
         <div className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
           {cliente.responsavel && (
             <div className="flex flex-wrap gap-1">
-              <span className="text-muted-foreground">Responsável:</span>
+              <span className="text-muted-foreground shrink-0">Responsavel:</span>
               <span className="text-foreground truncate">{cliente.responsavel}</span>
             </div>
           )}
           <div className="flex flex-wrap gap-1">
-            <span className="text-muted-foreground">Telefone:</span>
+            <span className="text-muted-foreground shrink-0">Telefone:</span>
             <span className="text-foreground">{cliente.telefone || "-"}</span>
           </div>
           <div className="flex flex-wrap gap-1">
-            <span className="text-muted-foreground">Email:</span>
+            <span className="text-muted-foreground shrink-0">Email:</span>
             <span className="text-foreground truncate">{cliente.email || "-"}</span>
           </div>
           <div className="flex flex-wrap gap-1">
-            <span className="text-muted-foreground">Cidade:</span>
-            <span className="text-foreground">
+            <span className="text-muted-foreground shrink-0">Cidade:</span>
+            <span className="text-foreground truncate">
               {cliente.cidade || "-"} {cliente.uf && `- ${cliente.uf}`}
             </span>
           </div>

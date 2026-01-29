@@ -33,6 +33,30 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
+// Funcao para formatar CNPJ automaticamente
+function formatCNPJ(value: string): string {
+  // Remove tudo que nao for numero
+  const numbers = value.replace(/\D/g, "")
+  
+  // Limita a 14 digitos
+  const limited = numbers.slice(0, 14)
+  
+  // Aplica a mascara XX.XXX.XXX/XXXX-XX
+  if (limited.length <= 2) {
+    return limited
+  }
+  if (limited.length <= 5) {
+    return `${limited.slice(0, 2)}.${limited.slice(2)}`
+  }
+  if (limited.length <= 8) {
+    return `${limited.slice(0, 2)}.${limited.slice(2, 5)}.${limited.slice(5)}`
+  }
+  if (limited.length <= 12) {
+    return `${limited.slice(0, 2)}.${limited.slice(2, 5)}.${limited.slice(5, 8)}/${limited.slice(8)}`
+  }
+  return `${limited.slice(0, 2)}.${limited.slice(2, 5)}.${limited.slice(5, 8)}/${limited.slice(8, 12)}-${limited.slice(12)}`
+}
+
 export default function ClienteDetalhePage() {
   const params = useParams()
   const id = params.id as string
@@ -213,8 +237,9 @@ function ClienteDetalhePageClient({ id }: { id: string }) {
                     <Input
                       id="cnpj"
                       value={formData.cnpj}
-                      onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, cnpj: formatCNPJ(e.target.value) })}
                       placeholder="00.000.000/0000-00"
+                      maxLength={18}
                       required
                     />
                   </div>
