@@ -630,7 +630,7 @@ export default function VisualizarOSPage() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm text-muted-foreground">Nome do Engenheiro</div>
-                  <div className="font-medium">{os.finalizacao.nomeEngenheiro || "Julio Cezar"}</div>
+                  <div className="font-medium">{os.finalizacao.nomeEngenheiro || "Julio Cesar"}</div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">CFT do Engenheiro</div>
