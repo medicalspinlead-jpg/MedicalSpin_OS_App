@@ -46,8 +46,8 @@ export function isStepComplete(stepNumber: number, os: OrdemServico): boolean {
         os.intervencao?.descricaoServicos?.trim()
       )
     case 5:
-      // Etapa 5: Pecas - pelo menos uma peca adicionada
-      return os.pecas?.length > 0
+      // Etapa 5: Pecas - opcional, considera completa se o usuario ja passou por ela
+      return os.currentStep > 5 || os.pecas?.length > 0
     case 6:
       // Etapa 6: Mao de Obra - pelo menos um dia de trabalho adicionado
       return os.maoDeObra?.length > 0
