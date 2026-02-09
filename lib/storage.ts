@@ -71,6 +71,7 @@ export interface MaoDeObra {
 export interface OrdemServico {
   nome: string
   id: string
+  idUnico?: string
   numero: string
   status: "rascunho" | "fechada" | "finalizada"
   currentStep: number

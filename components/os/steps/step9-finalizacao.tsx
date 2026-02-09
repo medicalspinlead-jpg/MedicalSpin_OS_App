@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import type { OrdemServico } from "@/lib/storage"
 import { CheckCircle, Save, X, ImageIcon, Loader2, Lock } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { enviarParaWebhook, converterParaJPG, isImageFile, type ImagemWebhook } from "@/lib/webhook"
+import { enviarParaWebhook, converterParaJPG, isImageFile, gerarIdUnico, type ImagemWebhook } from "@/lib/webhook"
 import { useToast } from "@/hooks/use-toast"
 import { areSteps1to8Complete } from "@/components/os/step-indicator"
 
@@ -71,7 +71,10 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
     ...os.finalizacao,
     cidade: os.finalizacao.cidade || os.empresa.cidade || "",
     uf: os.finalizacao.uf || os.empresa.uf || "",
-    responsavel: os.finalizacao.responsavel|| os.empresa.responsavel || "",
+    responsavel: os.finalizacao.responsavel || os.finalizacao.nomeRecebedor || os.empresa.responsavel || "",
+    nomeRecebedor: os.finalizacao.nomeRecebedor || os.finalizacao.responsavel || os.empresa.responsavel || "",
+    nomeEngenheiro: os.finalizacao.nomeEngenheiro || "Julio Cesar",
+    cftEngenheiro: os.finalizacao.cftEngenheiro || "2000103820",
   })
   const [imagens, setImagens] = useState<ImagemArmazenada[]>([])
   const [isUploading, setIsUploading] = useState(false)
@@ -89,7 +92,7 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
       setFormData((prev) => ({ ...prev, uf: os.empresa.uf }))
     }
     if (os.empresa.responsavel && !formData.responsavel) {
-      setFormData((prev) => ({ ...prev, responsavel: os.empresa.responsavel }))
+      setFormData((prev) => ({ ...prev, responsavel: os.empresa.responsavel, nomeRecebedor: os.empresa.responsavel }))
     }
   }, [os.empresa])
 
@@ -148,9 +151,13 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
         base64: img.base64,
       }))
 
+      // Gera um ID unico para a OS (reutiliza se ja existir)
+      const idUnico = os.idUnico || gerarIdUnico()
+
       // Cria OS atualizada com os dados finais
       const osAtualizada: OrdemServico = {
         ...os,
+        idUnico,
         finalizacao: formData,
         midias: { arquivos: imagens.map((img) => img.preview) },
         status: "finalizada",
@@ -165,14 +172,14 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
           title: "OS Finalizada",
           description: "Ordem de serviço finalizada e enviada com sucesso!",
         })
-        onFinalizar({ finalizacao: formData, midias: { arquivos: imagens.map((img) => img.preview) } })
+        onFinalizar({ finalizacao: formData, midias: { arquivos: imagens.map((img) => img.preview) }, idUnico })
       } else {
         toast({
           title: "Aviso",
           description: "OS finalizada localmente, mas houve um erro ao enviar para o servidor.",
           variant: "destructive",
         })
-        onFinalizar({ finalizacao: formData, midias: { arquivos: imagens.map((img) => img.preview) } })
+        onFinalizar({ finalizacao: formData, midias: { arquivos: imagens.map((img) => img.preview) }, idUnico })
       }
     } catch (error) {
       console.error("[v0] Erro ao finalizar:", error)
@@ -286,7 +293,7 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
                 <Label htmlFor="nomeEngenheiro">Nome do Engenheiro *</Label>
                 <Input
                   id="nomeEngenheiro"
-                  value={formData.nomeEngenheiro || "Julio Cesar"}
+                  value={formData.nomeEngenheiro}
                   onChange={(e) => setFormData({ ...formData, nomeEngenheiro: e.target.value })}
                   placeholder="Nome completo do engenheiro"
                   required
@@ -296,7 +303,7 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
                 <Label htmlFor="cftEngenheiro">CFT do Engenheiro *</Label>
                 <Input
                   id="cftEngenheiro"
-                  value={formData.cftEngenheiro || "2000103820"}
+                  value={formData.cftEngenheiro}
                   onChange={(e) => setFormData({ ...formData, cftEngenheiro: e.target.value })}
                   placeholder="Número do CFT"
                   required
@@ -309,7 +316,7 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
               <Input
                 id="responsavel"
                 value={formData.responsavel} 
-                onChange={(e) => setFormData({ ...formData, responsavel: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, responsavel: e.target.value, nomeRecebedor: e.target.value })}
                 placeholder="Nome de quem recebeu o serviço"
                 required
               />

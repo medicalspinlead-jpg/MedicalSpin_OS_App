@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft } from "lucide-react"
 import useSWR from "swr"
 import { useAuth } from "@/components/auth-provider"
+import { EmailModal } from "@/components/email-modal"
 
 function normalizeText(text: string): string {
   return text
@@ -94,6 +95,8 @@ export default function HistoricoPage() {
   const [showLinkDialog, setShowLinkDialog] = useState(false)
   const [erroLink, setErroLink] = useState<string | null>(null)
   const [enviandoEmail, setEnviandoEmail] = useState<string | null>(null)
+  const [emailModalOpen, setEmailModalOpen] = useState(false)
+  const [emailModalOS, setEmailModalOS] = useState<OrdemServico | null>(null)
   const { toast } = useToast()
   const { config } = useAuth()
 
@@ -113,6 +116,23 @@ export default function HistoricoPage() {
   const handleDelete = async () => {
     if (osToDelete) {
       try {
+        // Envia webhook de exclusao (nao bloqueia a exclusao local)
+        fetch(
+          "https://n8n-www4kggggc4c8k8ow4w8g4g0.95.217.164.173.sslip.io/webhook/40aa4c15-e9ff-4960-a1ee-94a8b6fdf64b",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: osToDelete.id,
+              idUnico: osToDelete.idUnico || null,
+              numero: osToDelete.numero,
+              nome: osToDelete.nome,
+              cliente: osToDelete.cliente?.razaoSocial || osToDelete.cliente?.nomeFantasia || "",
+              excluidoEm: new Date().toISOString(),
+            }),
+          }
+        ).catch((err) => console.error("Erro ao enviar webhook de exclusao:", err))
+
         await deleteOrdemServico(osToDelete.id)
         toast({
           title: "OS excluída",
@@ -155,75 +175,83 @@ export default function HistoricoPage() {
       const rows = data.table?.rows || []
       let linkEncontrado: string | null = null
 
-      const nomeOS = os.nome || os.numero
-      const cnpjLocal = extractNumbers(nomeOS)
-      const dataLocal = extractDate(nomeOS)
-      const nomeNormalizado = normalizeText(nomeOS)
-      
-      // Data/hora de finalizacao da OS local
-      const dataFinalizacaoLocal = os.finalizedAt ? new Date(os.finalizedAt) : null
+      // Coluna A (indice 0): ID
+      // Coluna B (indice 1): OS NOME
+      // Coluna C (indice 2): OS LINK
 
-      // Coleta todos os candidatos que correspondem ao CNPJ e data
-      const candidatos: MatchCandidate[] = []
-
-      for (const row of rows) {
-        const cells = row.c || []
-        // Coluna A (indice 0): OS NOME
-        // Coluna B (indice 1): OS LINK  
-        // Coluna C (indice 2): DATA CADASTRO OS
-        const osNomePlanilha = cells[0]?.v as string | null
-        const osLinkPlanilha = cells[1]?.v as string | null
-        const dataCadastroRaw = cells[2]?.v as string | null
-        
-        if (!osNomePlanilha || !osLinkPlanilha) continue
-
-        const cnpjPlanilha = extractNumbers(osNomePlanilha)
-        const dataPlanilha = extractDate(osNomePlanilha)
-        const nomePlanilhaNormalizado = normalizeText(osNomePlanilha)
-
-        let isMatch = false
-
-        // Verifica match por CNPJ e data
-        if (cnpjLocal.length >= 11 && dataLocal && dataPlanilha) {
-          if (
-            (cnpjPlanilha.includes(cnpjLocal) || cnpjLocal.includes(cnpjPlanilha)) &&
-            dataLocal === dataPlanilha
-          ) {
-            isMatch = true
-          }
-        }
-
-        // Verifica match por nome normalizado
-        if (!isMatch && (nomePlanilhaNormalizado.includes(nomeNormalizado) || nomeNormalizado.includes(nomePlanilhaNormalizado))) {
-          isMatch = true
-        }
-
-        // Verifica match por numero da OS
-        if (!isMatch && (osNomePlanilha.includes(os.numero) || (nomeOS && osNomePlanilha.includes(nomeOS)))) {
-          isMatch = true
-        }
-
-        if (isMatch) {
-          // Calcula diferenca de tempo usando a coluna DATA CADASTRO OS
-          let timeDiff = Number.MAX_SAFE_INTEGER
-          
-          if (dataCadastroRaw && dataFinalizacaoLocal) {
-            const dataCadastroPlanilha = parseGoogleSheetsDate(dataCadastroRaw)
-            if (dataCadastroPlanilha) {
-              // Diferenca em milissegundos convertida para minutos
-              timeDiff = Math.abs(dataFinalizacaoLocal.getTime() - dataCadastroPlanilha.getTime()) / (1000 * 60)
+      // Busca pelo idUnico na coluna A (ID)
+      if (os.idUnico) {
+        for (const row of rows) {
+          const cells = row.c || []
+          const idPlanilha = cells[0]?.v as string | null
+          if (idPlanilha && idPlanilha === os.idUnico) {
+            const osLinkPlanilha = cells[2]?.v as string | null
+            if (osLinkPlanilha) {
+              linkEncontrado = osLinkPlanilha
             }
+            break
           }
-
-          candidatos.push({ row, link: osLinkPlanilha, timeDiff })
         }
       }
 
-      // Se temos candidatos, escolhe o com menor diferenca de horario
-      if (candidatos.length > 0) {
-        // Ordena por diferenca de tempo (menor primeiro)
-        candidatos.sort((a, b) => a.timeDiff - b.timeDiff)
-        linkEncontrado = candidatos[0].link
+      // Fallback: busca por nome/CNPJ/numero na coluna B (OS NOME)
+      if (!linkEncontrado) {
+        const nomeOS = os.nome || os.numero
+        const cnpjLocal = extractNumbers(nomeOS)
+        const dataLocal = extractDate(nomeOS)
+        const nomeNormalizado = normalizeText(nomeOS)
+        const dataFinalizacaoLocal = os.finalizedAt ? new Date(os.finalizedAt) : null
+        const candidatos: MatchCandidate[] = []
+
+        for (const row of rows) {
+          const cells = row.c || []
+          const osNomePlanilha = cells[1]?.v as string | null
+          const osLinkPlanilha = cells[2]?.v as string | null
+          const dataCadastroRaw = cells[3]?.v as string | null
+          
+          if (!osNomePlanilha || !osLinkPlanilha) continue
+
+          const cnpjPlanilha = extractNumbers(osNomePlanilha)
+          const dataPlanilha = extractDate(osNomePlanilha)
+          const nomePlanilhaNormalizado = normalizeText(osNomePlanilha)
+
+          let isMatch = false
+
+          if (cnpjLocal.length >= 11 && dataLocal && dataPlanilha) {
+            if (
+              (cnpjPlanilha.includes(cnpjLocal) || cnpjLocal.includes(cnpjPlanilha)) &&
+              dataLocal === dataPlanilha
+            ) {
+              isMatch = true
+            }
+          }
+
+          if (!isMatch && (nomePlanilhaNormalizado.includes(nomeNormalizado) || nomeNormalizado.includes(nomePlanilhaNormalizado))) {
+            isMatch = true
+          }
+
+          if (!isMatch && (osNomePlanilha.includes(os.numero) || (nomeOS && osNomePlanilha.includes(nomeOS)))) {
+            isMatch = true
+          }
+
+          if (isMatch) {
+            let timeDiff = Number.MAX_SAFE_INTEGER
+            
+            if (dataCadastroRaw && dataFinalizacaoLocal) {
+              const dataCadastroPlanilha = parseGoogleSheetsDate(dataCadastroRaw)
+              if (dataCadastroPlanilha) {
+                timeDiff = Math.abs(dataFinalizacaoLocal.getTime() - dataCadastroPlanilha.getTime()) / (1000 * 60)
+              }
+            }
+
+            candidatos.push({ row, link: osLinkPlanilha, timeDiff })
+          }
+        }
+
+        if (candidatos.length > 0) {
+          candidatos.sort((a, b) => a.timeDiff - b.timeDiff)
+          linkEncontrado = candidatos[0].link
+        }
       }
 
       if (linkEncontrado) {
@@ -252,19 +280,22 @@ export default function HistoricoPage() {
     }
   }
 
-  const handleEnviarEmail = async (os: OrdemServico) => {
-    const emailPrincipal = os.empresa?.email || os.cliente?.email
-    const emailsAdicionais = os.empresa?.emails || []
-    
-    // Combina email principal com emails adicionais, removendo duplicatas e vazios
-    const todosEmails = [emailPrincipal, ...emailsAdicionais]
-      .filter((e): e is string => Boolean(e && e.trim()))
-      .filter((email, index, self) => self.indexOf(email) === index)
-    
-    if (todosEmails.length === 0) {
+  const handleAbrirEmailModal = (os: OrdemServico) => {
+    setEmailModalOS(os)
+    setEmailModalOpen(true)
+  }
+
+  const handleEnviarEmailFromModal = async (data: {
+    destinatarios: string[]
+    assunto: string
+    os: OrdemServico
+  }) => {
+    const { destinatarios, assunto, os } = data
+
+    if (destinatarios.length === 0) {
       toast({
         title: "Email nao encontrado",
-        description: "Este cliente nao possui email cadastrado.",
+        description: "Adicione pelo menos um destinatario.",
         variant: "destructive",
       })
       return
@@ -291,83 +322,91 @@ export default function HistoricoPage() {
           const data = JSON.parse(jsonText)
 
           const rows = data.table?.rows || []
-          const nomeOS = os.nome || os.numero
 
-          const cnpjLocal = extractNumbers(nomeOS)
-          const dataLocal = extractDate(nomeOS)
-          const nomeNormalizado = normalizeText(nomeOS)
-          
-          // Data/hora de finalizacao da OS local
-          const dataFinalizacaoLocal = os.finalizedAt ? new Date(os.finalizedAt) : null
+          // Coluna A (indice 0): ID
+          // Coluna B (indice 1): OS NOME
+          // Coluna C (indice 2): OS LINK
 
-          // Coleta todos os candidatos que correspondem ao CNPJ e data
-          const candidatos: MatchCandidate[] = []
-
-          for (const row of rows) {
-            const cells = row.c || []
-            // Coluna A (indice 0): OS NOME
-            // Coluna B (indice 1): OS LINK  
-            // Coluna C (indice 2): DATA CADASTRO OS
-            const osNomePlanilha = cells[0]?.v as string | null
-            const osLinkPlanilha = cells[1]?.v as string | null
-            const dataCadastroRaw = cells[2]?.v as string | null
-            
-            if (!osNomePlanilha || !osLinkPlanilha) continue
-
-            const cnpjPlanilha = extractNumbers(osNomePlanilha)
-            const dataPlanilha = extractDate(osNomePlanilha)
-            const nomePlanilhaNormalizado = normalizeText(osNomePlanilha)
-
-            let isMatch = false
-
-            // Verifica match por CNPJ e data
-            if (cnpjLocal.length >= 11 && dataLocal && dataPlanilha) {
-              if (
-                (cnpjPlanilha.includes(cnpjLocal) || cnpjLocal.includes(cnpjPlanilha)) &&
-                dataLocal === dataPlanilha
-              ) {
-                isMatch = true
-              }
-            }
-
-            // Verifica match por nome normalizado
-            if (!isMatch && (nomePlanilhaNormalizado.includes(nomeNormalizado) || nomeNormalizado.includes(nomePlanilhaNormalizado))) {
-              isMatch = true
-            }
-
-            // Verifica match por numero da OS
-            if (!isMatch && (osNomePlanilha.includes(os.numero) || (nomeOS && osNomePlanilha.includes(nomeOS)))) {
-              isMatch = true
-            }
-
-            if (isMatch) {
-              // Calcula diferenca de tempo usando a coluna DATA CADASTRO OS
-              let timeDiff = Number.MAX_SAFE_INTEGER
-              
-              if (dataCadastroRaw && dataFinalizacaoLocal) {
-                const dataCadastroPlanilha = parseGoogleSheetsDate(dataCadastroRaw)
-                if (dataCadastroPlanilha) {
-                  // Diferenca em milissegundos convertida para minutos
-                  timeDiff = Math.abs(dataFinalizacaoLocal.getTime() - dataCadastroPlanilha.getTime()) / (1000 * 60)
+          // Busca pelo idUnico na coluna A (ID)
+          if (os.idUnico) {
+            for (const row of rows) {
+              const cells = row.c || []
+              const idPlanilha = cells[0]?.v as string | null
+              if (idPlanilha && idPlanilha === os.idUnico) {
+                const osLinkPlanilha = cells[2]?.v as string | null
+                if (osLinkPlanilha) {
+                  linkDownloadOS = osLinkPlanilha
                 }
+                break
               }
-
-              candidatos.push({ row, link: osLinkPlanilha, timeDiff })
             }
           }
 
-          // Se temos candidatos, escolhe o com menor diferenca de horario
-          if (candidatos.length > 0) {
-            // Ordena por diferenca de tempo (menor primeiro)
-            candidatos.sort((a, b) => a.timeDiff - b.timeDiff)
-            linkDownloadOS = candidatos[0].link
+          // Fallback por nome/CNPJ/numero na coluna B (OS NOME)
+          if (!linkDownloadOS) {
+            const nomeOS = os.nome || os.numero
+            const cnpjLocal = extractNumbers(nomeOS)
+            const dataLocal = extractDate(nomeOS)
+            const nomeNormalizado = normalizeText(nomeOS)
+            const dataFinalizacaoLocal = os.finalizedAt ? new Date(os.finalizedAt) : null
+            const candidatos: MatchCandidate[] = []
+
+            for (const row of rows) {
+              const cells = row.c || []
+              const osNomePlanilha = cells[1]?.v as string | null
+              const osLinkPlanilha = cells[2]?.v as string | null
+              const dataCadastroRaw = cells[3]?.v as string | null
+              
+              if (!osNomePlanilha || !osLinkPlanilha) continue
+
+              const cnpjPlanilha = extractNumbers(osNomePlanilha)
+              const dataPlanilha = extractDate(osNomePlanilha)
+              const nomePlanilhaNormalizado = normalizeText(osNomePlanilha)
+
+              let isMatch = false
+
+              if (cnpjLocal.length >= 11 && dataLocal && dataPlanilha) {
+                if (
+                  (cnpjPlanilha.includes(cnpjLocal) || cnpjLocal.includes(cnpjPlanilha)) &&
+                  dataLocal === dataPlanilha
+                ) {
+                  isMatch = true
+                }
+              }
+
+              if (!isMatch && (nomePlanilhaNormalizado.includes(nomeNormalizado) || nomeNormalizado.includes(nomePlanilhaNormalizado))) {
+                isMatch = true
+              }
+
+              if (!isMatch && (osNomePlanilha.includes(os.numero) || (nomeOS && osNomePlanilha.includes(nomeOS)))) {
+                isMatch = true
+              }
+
+              if (isMatch) {
+                let timeDiff = Number.MAX_SAFE_INTEGER
+                
+                if (dataCadastroRaw && dataFinalizacaoLocal) {
+                  const dataCadastroPlanilha = parseGoogleSheetsDate(dataCadastroRaw)
+                  if (dataCadastroPlanilha) {
+                    timeDiff = Math.abs(dataFinalizacaoLocal.getTime() - dataCadastroPlanilha.getTime()) / (1000 * 60)
+                  }
+                }
+
+                candidatos.push({ row, link: osLinkPlanilha, timeDiff })
+              }
+            }
+
+            if (candidatos.length > 0) {
+              candidatos.sort((a, b) => a.timeDiff - b.timeDiff)
+              linkDownloadOS = candidatos[0].link
+            }
           }
         }
       } catch (linkError) {
         console.error("Erro ao buscar link de download:", linkError)
       }
 
-      // Enviar email com o link - envia para todos os emails
+      // Enviar email com o link - envia para todos os destinatarios do modal
       const response = await fetch(
         "https://n8n-www4kggggc4c8k8ow4w8g4g0.95.217.164.173.sslip.io/webhook/6c58efc2-699c-4c59-8be2-2b7169900363",
         {
@@ -376,8 +415,9 @@ export default function HistoricoPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            email: emailPrincipal,
-            emails: todosEmails,
+            email: destinatarios[0],
+            emails: destinatarios,
+            assunto: assunto,
             osNumero: os.numero,
             osNome: os.nome,
             cliente: os.cliente?.razaoSocial || os.cliente?.nomeFantasia,
@@ -389,13 +429,15 @@ export default function HistoricoPage() {
       )
 
       if (response.ok) {
-        const emailsEnviados = todosEmails.length > 1 
-          ? `${todosEmails.length} destinatarios (${todosEmails.join(", ")})`
-          : todosEmails[0]
+        const emailsEnviados = destinatarios.length > 1 
+          ? `${destinatarios.length} destinatarios (${destinatarios.join(", ")})`
+          : destinatarios[0]
         toast({
           title: "Email enviado!",
           description: `Email enviado com sucesso para ${emailsEnviados}`,
         })
+        setEmailModalOpen(false)
+        setEmailModalOS(null)
       } else {
         throw new Error("Erro ao enviar email")
       }
@@ -409,6 +451,10 @@ export default function HistoricoPage() {
     } finally {
       setEnviandoEmail(null)
     }
+  }
+
+  const handleEnviarEmail = async (os: OrdemServico) => {
+    // Implementação de handleEnviarEmail aqui
   }
 
   const filteredOrdens = ordens.filter((os) => {
@@ -578,12 +624,12 @@ export default function HistoricoPage() {
                             </Link>
                           </Button>
                         )}
-                        {config?.emailHabilitado !== false && (
+                        {os.status !== "fechada" && config?.emailHabilitado !== false && (
                           <Button
                             variant="outline"
                             size="sm"
                             className="flex-1 min-w-[80px] sm:flex-none bg-transparent text-xs sm:text-sm"
-                            onClick={() => handleEnviarEmail(os)}
+                            onClick={() => handleAbrirEmailModal(os)}
                             disabled={enviandoEmail === os.id}
                           >
                             {enviandoEmail === os.id ? (
@@ -595,20 +641,22 @@ export default function HistoricoPage() {
                             <span className="sm:hidden">{enviandoEmail === os.id ? "..." : "Email"}</span>
                           </Button>
                         )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 min-w-[80px] sm:flex-none bg-transparent text-xs sm:text-sm"
-                          onClick={() => handleBaixar(os)}
-                          disabled={buscandoLink === os.id}
-                        >
-                          {buscandoLink === os.id ? (
-                            <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2 animate-spin" />
-                          ) : (
-                            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                          )}
-                          {buscandoLink === os.id ? "..." : "Baixar"}
-                        </Button>
+                        {os.status !== "fechada" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 min-w-[80px] sm:flex-none bg-transparent text-xs sm:text-sm"
+                            onClick={() => handleBaixar(os)}
+                            disabled={buscandoLink === os.id}
+                          >
+                            {buscandoLink === os.id ? (
+                              <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2 animate-spin" />
+                            ) : (
+                              <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                            )}
+                            {buscandoLink === os.id ? "..." : "Baixar"}
+                          </Button>
+                        )}
                         <Button
                           variant="destructive"
                           size="sm"
@@ -675,6 +723,19 @@ export default function HistoricoPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {emailModalOS && (
+        <EmailModal
+          open={emailModalOpen}
+          onOpenChange={(open) => {
+            setEmailModalOpen(open)
+            if (!open) setEmailModalOS(null)
+          }}
+          os={emailModalOS}
+          onSend={handleEnviarEmailFromModal}
+          sending={enviandoEmail === emailModalOS.id}
+        />
+      )}
     </div>
   )
 }

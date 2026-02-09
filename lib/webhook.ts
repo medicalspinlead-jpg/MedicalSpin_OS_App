@@ -13,9 +13,20 @@ export interface ImagemWebhook {
   base64: string
 }
 
+export function gerarIdUnico(): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+  const timestamp = Date.now().toString(36)
+  let random = ""
+  for (let i = 0; i < 8; i++) {
+    random += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return `${timestamp}-${random}`
+}
+
 export interface WebhookPayload {
   os: {
     id: string
+    idUnico: string
     numero: string
     status: string
     criadoEm: string
@@ -82,6 +93,7 @@ export async function enviarParaWebhook(os: OrdemServico, imagens: ImagemWebhook
   const payload: WebhookPayload = {
     os: {
       id: os.id,
+      idUnico: os.idUnico || gerarIdUnico(),
       numero: os.numero,
       status: os.status,
       criadoEm: os.createdAt,
@@ -117,7 +129,13 @@ export async function enviarParaWebhook(os: OrdemServico, imagens: ImagemWebhook
     })),
     pendencias: os.pendencias,
     estadoEquipamento: os.estadoEquipamento,
-    finalizacao: os.finalizacao,
+    finalizacao: {
+      cidade: os.finalizacao.cidade || "",
+      uf: os.finalizacao.uf || "",
+      nomeEngenheiro: os.finalizacao.nomeEngenheiro || "",
+      cftEngenheiro: os.finalizacao.cftEngenheiro || "",
+      nomeRecebedor: os.finalizacao.nomeRecebedor || os.finalizacao.responsavel || "",
+    },
     imagens,
   }
 

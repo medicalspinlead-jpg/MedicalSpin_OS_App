@@ -71,8 +71,6 @@ export default function VisualizarOSPage() {
       const response = await fetch(url)
       const text = await response.text()
 
-      // A resposta vem no formato: /*O_o*/google.visualization.Query.setResponse({...});
-      // Removemos o prefixo e pegamos apenas o JSON
       const startIndex = text.indexOf("(")
       const endIndex = text.lastIndexOf(")")
 
@@ -84,74 +82,82 @@ export default function VisualizarOSPage() {
       const data = JSON.parse(jsonText)
 
       const rows = data.table?.rows || []
-
       let linkEncontrado: string | null = null
 
-      const normalizar = (str: string) => {
-        return str
-          .toLowerCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "") // remove acentos
-          .replace(/[^a-z0-9]/g, "") // remove tudo que não é letra ou número
-      }
+      // Coluna A (indice 0): ID
+      // Coluna B (indice 1): OS NOME
+      // Coluna C (indice 2): OS LINK
 
-      const extrairCNPJ = (str: string) => {
-        // Procura por padrões de CNPJ (14 dígitos ou formatado)
-        const match = str.replace(/[^0-9]/g, "").match(/\d{14}/)
-        return match ? match[0] : null
-      }
-
-      const extrairData = (str: string) => {
-        const match = str.match(/(\d{2}-\d{2}-\d{4})/)
-        return match ? match[1] : null
-      }
-
-      const nomeOS = os.nome || os.numero
-      const cnpjOS = extrairCNPJ(nomeOS) || extrairCNPJ(os.cliente?.cnpj || "")
-      const dataOS = extrairData(nomeOS)
-
-      for (const row of rows) {
-        const cells = row.c || []
-        // Verifica cada célula para encontrar o nome da OS
-        let encontrouOS = false
-        for (let i = 0; i < cells.length; i++) {
-          const cellValue = cells[i]?.v
-          if (cellValue && typeof cellValue === "string") {
-            const cnpjCelula = extrairCNPJ(cellValue)
-            const dataCelula = extrairData(cellValue)
-
-            // Verifica se CNPJ e data coincidem (mais confiável)
-            if (cnpjOS && dataOS && cnpjCelula === cnpjOS && dataCelula === dataOS) {
-              encontrouOS = true
-              break
+      // Busca pelo idUnico na coluna A (ID)
+      if (os.idUnico) {
+        for (const row of rows) {
+          const cells = row.c || []
+          const idPlanilha = cells[0]?.v as string | null
+          if (idPlanilha && idPlanilha === os.idUnico) {
+            const osLinkPlanilha = cells[2]?.v as string | null
+            if (osLinkPlanilha) {
+              linkEncontrado = osLinkPlanilha
             }
-
-            // Fallback: comparação normalizada
-            const nomeNormalizado = normalizar(nomeOS)
-            const celulaNormalizada = normalizar(cellValue)
-            if (celulaNormalizada.includes(nomeNormalizado) || nomeNormalizado.includes(celulaNormalizada)) {
-              encontrouOS = true
-              break
-            }
-
-            // Fallback original: comparação exata
-            if (cellValue.includes(os.numero) || (nomeOS && cellValue.includes(nomeOS))) {
-              encontrouOS = true
-              break
-            }
+            break
           }
         }
+      }
 
-        // Se encontrou a OS, procura o link na mesma linha
-        if (encontrouOS) {
-          for (const cell of cells) {
-            const value = cell?.v
-            if (value && typeof value === "string" && (value.startsWith("http://") || value.startsWith("https://"))) {
-              linkEncontrado = value
-              break
+      // Fallback: busca por nome/CNPJ/numero na coluna B (OS NOME)
+      if (!linkEncontrado) {
+        const normalizar = (str: string) => {
+          return str
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]/g, "")
+        }
+
+        const extrairCNPJ = (str: string) => {
+          const match = str.replace(/[^0-9]/g, "").match(/\d{14}/)
+          return match ? match[0] : null
+        }
+
+        const extrairData = (str: string) => {
+          const match = str.match(/(\d{2}-\d{2}-\d{4})/)
+          return match ? match[1] : null
+        }
+
+        const nomeOS = os.nome || os.numero
+        const cnpjOS = extrairCNPJ(nomeOS) || extrairCNPJ(os.cliente?.cnpj || "")
+        const dataOS = extrairData(nomeOS)
+
+        for (const row of rows) {
+          const cells = row.c || []
+          const osNomePlanilha = cells[1]?.v as string | null
+          const osLinkPlanilha = cells[2]?.v as string | null
+
+          if (!osNomePlanilha || !osLinkPlanilha) continue
+
+          let encontrouOS = false
+          const cnpjCelula = extrairCNPJ(osNomePlanilha)
+          const dataCelula = extrairData(osNomePlanilha)
+
+          if (cnpjOS && dataOS && cnpjCelula === cnpjOS && dataCelula === dataOS) {
+            encontrouOS = true
+          }
+
+          if (!encontrouOS) {
+            const nomeNormalizado = normalizar(nomeOS)
+            const celulaNormalizada = normalizar(osNomePlanilha)
+            if (celulaNormalizada.includes(nomeNormalizado) || nomeNormalizado.includes(celulaNormalizada)) {
+              encontrouOS = true
             }
           }
-          break
+
+          if (!encontrouOS && (osNomePlanilha.includes(os.numero) || (nomeOS && osNomePlanilha.includes(nomeOS)))) {
+            encontrouOS = true
+          }
+
+          if (encontrouOS) {
+            linkEncontrado = osLinkPlanilha
+            break
+          }
         }
       }
 
@@ -238,19 +244,6 @@ export default function VisualizarOSPage() {
                   </Link>
                 </Button>
               )}
-              <Button
-                onClick={handleBaixar}
-                variant="outline"
-                disabled={buscandoLink}
-                className="w-full sm:w-auto bg-transparent"
-              >
-                {buscandoLink ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Download className="h-4 w-4 mr-2" />
-                )}
-                {buscandoLink ? "Buscando..." : "Baixar"}
-              </Button>
             </div>
           </div>
         </div>
