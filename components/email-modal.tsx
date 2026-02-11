@@ -6,8 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { X, Plus, Send, Loader2, Mail } from "lucide-react"
+import { X, Plus, Send, Loader2, Mail, FileText } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import type { OrdemServico } from "@/lib/storage"
 
@@ -28,6 +27,8 @@ export function EmailModal({ open, onOpenChange, os, onSend, sending }: EmailMod
   const [novoEmail, setNovoEmail] = useState("")
   const [assunto, setAssunto] = useState("")
   const [emailError, setEmailError] = useState("")
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
+  const [loadingPdf, setLoadingPdf] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -46,8 +47,84 @@ export function EmailModal({ open, onOpenChange, os, onSend, sending }: EmailMod
       setAssunto(`Ordem de Servico ${os.numero}${clienteNome ? ` - ${clienteNome}` : ""}`)
       setNovoEmail("")
       setEmailError("")
+
+      // Buscar link do PDF na planilha
+      setPdfPreviewUrl(null)
+      setLoadingPdf(true)
+      fetchPdfLink(os).finally(() => setLoadingPdf(false))
+    } else {
+      setPdfPreviewUrl(null)
     }
   }, [open, os])
+
+  const fetchPdfLink = async (osData: OrdemServico) => {
+    try {
+      const url =
+        "https://docs.google.com/spreadsheets/d/1mZ4GlKIZieM_yz-CBjwNk4_8K62w45ez4BDTe-4e1e0/gviz/tq?gid=824063472&tqx=out:json&tq=SELECT%20*"
+      console.log("[v0] fetchPdfLink chamado, osId:", osData.id, "idUnico:", (osData as any).idUnico)
+      const response = await fetch(url)
+      const text = await response.text()
+      console.log("[v0] Spreadsheet response length:", text.length)
+
+      // Buscar o inicio correto do JSON: "setResponse(" 
+      const setResponseIdx = text.indexOf("setResponse(")
+      const startIndex = setResponseIdx !== -1 ? text.indexOf("(", setResponseIdx) : text.indexOf("(")
+      const endIndex = text.lastIndexOf(")")
+
+      if (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
+        const jsonText = text.substring(startIndex + 1, endIndex)
+        const data = JSON.parse(jsonText)
+        const rows = data.table?.rows || []
+        console.log("[v0] Total rows:", rows.length)
+
+        const osId = (osData as any).idUnico || osData.id
+        console.log("[v0] Buscando por osId:", osId)
+        
+        let found = false
+        for (const row of rows) {
+          const cells = row.c || []
+          const idPlanilha = cells[0]?.v as string | null
+          console.log("[v0] Comparando planilha id:", idPlanilha, "com osId:", osId, "match:", idPlanilha && String(idPlanilha).trim() === String(osId).trim())
+          if (idPlanilha && String(idPlanilha).trim() === String(osId).trim()) {
+            const link = cells[2]?.v as string | null
+            console.log("[v0] MATCH! Link encontrado:", link)
+            if (link) {
+              const previewUrl = convertToPreviewUrl(link)
+              console.log("[v0] Preview URL:", previewUrl)
+              setPdfPreviewUrl(previewUrl)
+              found = true
+            }
+            break
+          }
+        }
+        if (!found) {
+          console.log("[v0] Nenhum match encontrado para osId:", osId)
+        }
+      } else {
+        console.log("[v0] Formato de resposta invalido, startIndex:", startIndex, "endIndex:", endIndex)
+      }
+    } catch (error) {
+      console.error("[v0] Erro ao buscar link do PDF:", error)
+    }
+  }
+
+  const convertToPreviewUrl = (link: string): string => {
+    // Google Drive: https://drive.google.com/file/d/FILE_ID/view -> embed preview
+    const driveMatch = link.match(/\/d\/([a-zA-Z0-9_-]+)/)
+    if (driveMatch) {
+      return `https://drive.google.com/file/d/${driveMatch[1]}/preview`
+    }
+    // Google Drive export link: https://drive.google.com/uc?id=FILE_ID&export=download
+    const ucMatch = link.match(/[?&]id=([a-zA-Z0-9_-]+)/)
+    if (ucMatch) {
+      return `https://drive.google.com/file/d/${ucMatch[1]}/preview`
+    }
+    // If it's already an embeddable URL or direct PDF link, use Google Docs viewer
+    if (link.endsWith(".pdf") || link.includes("pdf")) {
+      return `https://docs.google.com/viewer?url=${encodeURIComponent(link)}&embedded=true`
+    }
+    return link
+  }
 
   const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -100,7 +177,7 @@ export function EmailModal({ open, onOpenChange, os, onSend, sending }: EmailMod
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-2xl sm:max-w-2xl mx-auto p-0 gap-0 overflow-hidden">
+      <DialogContent className="w-[95vw] max-w-2xl sm:max-w-2xl mx-auto !p-0 !gap-0 overflow-hidden max-h-[90vh] !flex !flex-col">
         {/* Header - Gmail style */}
         <DialogHeader className="px-5 py-4 border-b bg-muted/40">
           <DialogTitle className="flex items-center gap-2 text-base font-medium">
@@ -109,7 +186,7 @@ export function EmailModal({ open, onOpenChange, os, onSend, sending }: EmailMod
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-col">
+        <form onSubmit={handleSubmit} className="flex flex-col overflow-hidden flex-1">
           {/* Recipients */}
           <div className="px-5 py-3 border-b">
             <div className="flex items-start gap-2">
@@ -177,7 +254,7 @@ export function EmailModal({ open, onOpenChange, os, onSend, sending }: EmailMod
           </div>
 
           {/* Email body preview (read-only) */}
-          <div className="px-5 py-4 min-h-[180px] max-h-[300px] overflow-y-auto">
+          <div className="px-5 py-4 overflow-y-auto flex-1">
             <div className="text-sm text-muted-foreground space-y-3">
               <p className="text-foreground">Segue em anexo a Ordem de Servico:</p>
               <div className="rounded-lg border bg-muted/30 p-3 text-xs">
@@ -208,9 +285,37 @@ export function EmailModal({ open, onOpenChange, os, onSend, sending }: EmailMod
                   </tbody>
                 </table>
               </div>
-              <p className="text-xs text-muted-foreground italic">
-                O documento PDF sera anexado automaticamente ao email.
-              </p>
+
+              {/* PDF Preview */}
+              <div className="rounded-lg border overflow-hidden">
+                <div className="flex items-center gap-2 px-3 py-2 bg-muted/40 border-b">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs font-medium text-foreground">Documento PDF anexo</span>
+                </div>
+                {loadingPdf ? (
+                  <div className="flex flex-col items-center justify-center h-[300px] sm:h-[400px] bg-muted/10">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
+                    <span className="text-xs text-muted-foreground">Carregando documento...</span>
+                  </div>
+                ) : pdfPreviewUrl ? (
+                  <iframe
+                    src={pdfPreviewUrl}
+                    className="w-full h-[300px] sm:h-[400px] border-0"
+                    title="Preview do PDF da Ordem de Servico"
+                    allow="autoplay"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-[120px] bg-muted/10">
+                    <FileText className="h-8 w-8 text-muted-foreground/50 mb-2" />
+                    <span className="text-xs text-muted-foreground">
+                      PDF nao disponivel para visualizacao
+                    </span>
+                    <span className="text-xs text-muted-foreground/70 mt-1">
+                      O documento sera anexado automaticamente ao email.
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
