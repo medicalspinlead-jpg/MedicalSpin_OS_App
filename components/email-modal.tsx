@@ -100,7 +100,7 @@ export function EmailModal({ open, onOpenChange, os, onSend, sending }: EmailMod
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-2xl mx-auto p-0 gap-0 overflow-hidden">
+      <DialogContent className="w-[95vw] max-w-2xl sm:max-w-2xl mx-auto p-0 gap-0 overflow-hidden">
         {/* Header - Gmail style */}
         <DialogHeader className="px-5 py-4 border-b bg-muted/40">
           <DialogTitle className="flex items-center gap-2 text-base font-medium">
@@ -180,29 +180,33 @@ export function EmailModal({ open, onOpenChange, os, onSend, sending }: EmailMod
           <div className="px-5 py-4 min-h-[180px] max-h-[300px] overflow-y-auto">
             <div className="text-sm text-muted-foreground space-y-3">
               <p className="text-foreground">Segue em anexo a Ordem de Servico:</p>
-              <div className="rounded-lg border bg-muted/30 p-3 space-y-1.5 text-xs">
-                <div className="flex gap-2">
-                  <span className="text-muted-foreground w-24 shrink-0">OS Numero:</span>
-                  <span className="text-foreground font-medium">{os.numero}</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-muted-foreground w-24 shrink-0">Cliente:</span>
-                  <span className="text-foreground font-medium">
-                    {os.cliente?.razaoSocial || os.cliente?.nomeFantasia || os.empresa?.nomeFantasia || "-"}
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-muted-foreground w-24 shrink-0">Equipamento:</span>
-                  <span className="text-foreground font-medium">{os.equipamento?.tipo || "-"}</span>
-                </div>
-                {os.finalizedAt && (
-                  <div className="flex gap-2">
-                    <span className="text-muted-foreground w-24 shrink-0">Finalizada em:</span>
-                    <span className="text-foreground font-medium">
-                      {new Date(os.finalizedAt).toLocaleDateString("pt-BR")}
-                    </span>
-                  </div>
-                )}
+              <div className="rounded-lg border bg-muted/30 p-3 text-xs">
+                <table className="w-full">
+                  <tbody>
+                    <tr>
+                      <td className="text-muted-foreground py-1 pr-3 align-top whitespace-nowrap">OS Numero:</td>
+                      <td className="text-foreground font-medium py-1 break-all">{os.numero}</td>
+                    </tr>
+                    <tr>
+                      <td className="text-muted-foreground py-1 pr-3 align-top whitespace-nowrap">Cliente:</td>
+                      <td className="text-foreground font-medium py-1">
+                        {os.cliente?.razaoSocial || os.cliente?.nomeFantasia || os.empresa?.nomeFantasia || "-"}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="text-muted-foreground py-1 pr-3 align-top whitespace-nowrap">Equipamento:</td>
+                      <td className="text-foreground font-medium py-1">{os.equipamento?.tipo || "-"}</td>
+                    </tr>
+                    {os.finalizedAt && (
+                      <tr>
+                        <td className="text-muted-foreground py-1 pr-3 align-top whitespace-nowrap">Finalizada em:</td>
+                        <td className="text-foreground font-medium py-1">
+                          {new Date(os.finalizedAt).toLocaleDateString("pt-BR")}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
               <p className="text-xs text-muted-foreground italic">
                 O documento PDF sera anexado automaticamente ao email.

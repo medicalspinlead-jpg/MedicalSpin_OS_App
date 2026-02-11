@@ -26,66 +26,6 @@ import useSWR from "swr"
 import { useAuth } from "@/components/auth-provider"
 import { EmailModal } from "@/components/email-modal"
 
-function normalizeText(text: string): string {
-  return text
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9]/g, "")
-    .toLowerCase()
-}
-
-function extractNumbers(text: string): string {
-  return text.replace(/\D/g, "")
-}
-
-function extractDate(text: string): string | null {
-  const match = text.match(/(\d{2}-\d{2}-\d{4})/)
-  return match ? match[1] : null
-}
-
-// Extrai hora no formato HHhMM ou HH:MM do texto
-function extractTime(text: string): { hours: number; minutes: number } | null {
-  // Formato HHhMM (ex: 14h30)
-  const matchH = text.match(/(\d{2})h(\d{2})/)
-  if (matchH) {
-    return { hours: parseInt(matchH[1], 10), minutes: parseInt(matchH[2], 10) }
-  }
-  // Formato HH:MM
-  const matchColon = text.match(/(\d{2}):(\d{2})/)
-  if (matchColon) {
-    return { hours: parseInt(matchColon[1], 10), minutes: parseInt(matchColon[2], 10) }
-  }
-  return null
-}
-
-// Parseia o formato Date() do Google Sheets: "Date(ano,mes,dia,hora,minuto,segundo)"
-// Nota: o mês é 0-indexed no formato do Google Sheets
-function parseGoogleSheetsDate(dateStr: string): Date | null {
-  const match = dateStr.match(/Date\((\d+),(\d+),(\d+),(\d+),(\d+),(\d+)\)/)
-  if (match) {
-    const [, year, month, day, hour, minute, second] = match.map(Number)
-    return new Date(year, month, day, hour, minute, second)
-  }
-  return null
-}
-
-// Calcula diferença em minutos entre dois horários
-function timeDifferenceInMinutes(
-  time1: { hours: number; minutes: number },
-  time2: { hours: number; minutes: number }
-): number {
-  const totalMinutes1 = time1.hours * 60 + time1.minutes
-  const totalMinutes2 = time2.hours * 60 + time2.minutes
-  return Math.abs(totalMinutes1 - totalMinutes2)
-}
-
-// Interface para candidatos de match
-interface MatchCandidate {
-  row: { c: Array<{ v: unknown }> }
-  link: string
-  timeDiff: number
-}
-
 export default function HistoricoPage() {
   const [search, setSearch] = useState("")
   const [filtroMes, setFiltroMes] = useState("todos")
@@ -175,82 +115,21 @@ export default function HistoricoPage() {
       const rows = data.table?.rows || []
       let linkEncontrado: string | null = null
 
-      // Coluna A (indice 0): ID
+      // Coluna A (indice 0): ID da OS
       // Coluna B (indice 1): OS NOME
       // Coluna C (indice 2): OS LINK
 
-      // Busca pelo idUnico na coluna A (ID)
-      if (os.idUnico) {
-        for (const row of rows) {
-          const cells = row.c || []
-          const idPlanilha = cells[0]?.v as string | null
-          if (idPlanilha && idPlanilha === os.idUnico) {
-            const osLinkPlanilha = cells[2]?.v as string | null
-            if (osLinkPlanilha) {
-              linkEncontrado = osLinkPlanilha
-            }
-            break
-          }
-        }
-      }
-
-      // Fallback: busca por nome/CNPJ/numero na coluna B (OS NOME)
-      if (!linkEncontrado) {
-        const nomeOS = os.nome || os.numero
-        const cnpjLocal = extractNumbers(nomeOS)
-        const dataLocal = extractDate(nomeOS)
-        const nomeNormalizado = normalizeText(nomeOS)
-        const dataFinalizacaoLocal = os.finalizedAt ? new Date(os.finalizedAt) : null
-        const candidatos: MatchCandidate[] = []
-
-        for (const row of rows) {
-          const cells = row.c || []
-          const osNomePlanilha = cells[1]?.v as string | null
+      // Busca exclusivamente pelo ID da OS na coluna A
+      const osId = os.idUnico || os.id
+      for (const row of rows) {
+        const cells = row.c || []
+        const idPlanilha = cells[0]?.v as string | null
+        if (idPlanilha && String(idPlanilha).trim() === String(osId).trim()) {
           const osLinkPlanilha = cells[2]?.v as string | null
-          const dataCadastroRaw = cells[3]?.v as string | null
-          
-          if (!osNomePlanilha || !osLinkPlanilha) continue
-
-          const cnpjPlanilha = extractNumbers(osNomePlanilha)
-          const dataPlanilha = extractDate(osNomePlanilha)
-          const nomePlanilhaNormalizado = normalizeText(osNomePlanilha)
-
-          let isMatch = false
-
-          if (cnpjLocal.length >= 11 && dataLocal && dataPlanilha) {
-            if (
-              (cnpjPlanilha.includes(cnpjLocal) || cnpjLocal.includes(cnpjPlanilha)) &&
-              dataLocal === dataPlanilha
-            ) {
-              isMatch = true
-            }
+          if (osLinkPlanilha) {
+            linkEncontrado = osLinkPlanilha
           }
-
-          if (!isMatch && (nomePlanilhaNormalizado.includes(nomeNormalizado) || nomeNormalizado.includes(nomePlanilhaNormalizado))) {
-            isMatch = true
-          }
-
-          if (!isMatch && (osNomePlanilha.includes(os.numero) || (nomeOS && osNomePlanilha.includes(nomeOS)))) {
-            isMatch = true
-          }
-
-          if (isMatch) {
-            let timeDiff = Number.MAX_SAFE_INTEGER
-            
-            if (dataCadastroRaw && dataFinalizacaoLocal) {
-              const dataCadastroPlanilha = parseGoogleSheetsDate(dataCadastroRaw)
-              if (dataCadastroPlanilha) {
-                timeDiff = Math.abs(dataFinalizacaoLocal.getTime() - dataCadastroPlanilha.getTime()) / (1000 * 60)
-              }
-            }
-
-            candidatos.push({ row, link: osLinkPlanilha, timeDiff })
-          }
-        }
-
-        if (candidatos.length > 0) {
-          candidatos.sort((a, b) => a.timeDiff - b.timeDiff)
-          linkEncontrado = candidatos[0].link
+          break
         }
       }
 
@@ -323,82 +202,21 @@ export default function HistoricoPage() {
 
           const rows = data.table?.rows || []
 
-          // Coluna A (indice 0): ID
+          // Coluna A (indice 0): ID da OS
           // Coluna B (indice 1): OS NOME
           // Coluna C (indice 2): OS LINK
 
-          // Busca pelo idUnico na coluna A (ID)
-          if (os.idUnico) {
-            for (const row of rows) {
-              const cells = row.c || []
-              const idPlanilha = cells[0]?.v as string | null
-              if (idPlanilha && idPlanilha === os.idUnico) {
-                const osLinkPlanilha = cells[2]?.v as string | null
-                if (osLinkPlanilha) {
-                  linkDownloadOS = osLinkPlanilha
-                }
-                break
-              }
-            }
-          }
-
-          // Fallback por nome/CNPJ/numero na coluna B (OS NOME)
-          if (!linkDownloadOS) {
-            const nomeOS = os.nome || os.numero
-            const cnpjLocal = extractNumbers(nomeOS)
-            const dataLocal = extractDate(nomeOS)
-            const nomeNormalizado = normalizeText(nomeOS)
-            const dataFinalizacaoLocal = os.finalizedAt ? new Date(os.finalizedAt) : null
-            const candidatos: MatchCandidate[] = []
-
-            for (const row of rows) {
-              const cells = row.c || []
-              const osNomePlanilha = cells[1]?.v as string | null
+          // Busca exclusivamente pelo ID da OS na coluna A
+          const osIdEmail = os.idUnico || os.id
+          for (const row of rows) {
+            const cells = row.c || []
+            const idPlanilha = cells[0]?.v as string | null
+            if (idPlanilha && String(idPlanilha).trim() === String(osIdEmail).trim()) {
               const osLinkPlanilha = cells[2]?.v as string | null
-              const dataCadastroRaw = cells[3]?.v as string | null
-              
-              if (!osNomePlanilha || !osLinkPlanilha) continue
-
-              const cnpjPlanilha = extractNumbers(osNomePlanilha)
-              const dataPlanilha = extractDate(osNomePlanilha)
-              const nomePlanilhaNormalizado = normalizeText(osNomePlanilha)
-
-              let isMatch = false
-
-              if (cnpjLocal.length >= 11 && dataLocal && dataPlanilha) {
-                if (
-                  (cnpjPlanilha.includes(cnpjLocal) || cnpjLocal.includes(cnpjPlanilha)) &&
-                  dataLocal === dataPlanilha
-                ) {
-                  isMatch = true
-                }
+              if (osLinkPlanilha) {
+                linkDownloadOS = osLinkPlanilha
               }
-
-              if (!isMatch && (nomePlanilhaNormalizado.includes(nomeNormalizado) || nomeNormalizado.includes(nomePlanilhaNormalizado))) {
-                isMatch = true
-              }
-
-              if (!isMatch && (osNomePlanilha.includes(os.numero) || (nomeOS && osNomePlanilha.includes(nomeOS)))) {
-                isMatch = true
-              }
-
-              if (isMatch) {
-                let timeDiff = Number.MAX_SAFE_INTEGER
-                
-                if (dataCadastroRaw && dataFinalizacaoLocal) {
-                  const dataCadastroPlanilha = parseGoogleSheetsDate(dataCadastroRaw)
-                  if (dataCadastroPlanilha) {
-                    timeDiff = Math.abs(dataFinalizacaoLocal.getTime() - dataCadastroPlanilha.getTime()) / (1000 * 60)
-                  }
-                }
-
-                candidatos.push({ row, link: osLinkPlanilha, timeDiff })
-              }
-            }
-
-            if (candidatos.length > 0) {
-              candidatos.sort((a, b) => a.timeDiff - b.timeDiff)
-              linkDownloadOS = candidatos[0].link
+              break
             }
           }
         }
