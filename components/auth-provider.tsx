@@ -37,7 +37,7 @@ export function useAuth() {
   return useContext(AuthContext)
 }
 
-const publicPaths = ["/login", "/setup"]
+const publicPaths = ["/login", "/setup", "/solicitar"]
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null)

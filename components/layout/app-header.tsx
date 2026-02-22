@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Home, FileText, Users, History, Moon, Sun, LogOut, User, Menu, BookOpen, Mail, Shield } from "lucide-react"
+import { Home, FileText, Users, History, Moon, Sun, LogOut, User, Menu, BookOpen, Mail, Shield, Inbox } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/components/auth-provider"
 import { useState } from "react"
@@ -37,6 +37,7 @@ export function AppHeader() {
 
   const navItems = [
     { href: "/", label: "Início", icon: Home },
+    { href: "/solicitacoes", label: "Solicitações", icon: Inbox },
     { href: "/clientes", label: "Clientes", icon: Users },
     { href: "/os/rascunhos", label: "Rascunhos", icon: FileText },
     { href: "/historico", label: "Histórico", icon: History },

@@ -1,13 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { FileText, Users, History, Plus } from "lucide-react"
+import { FileText, Users, History, Plus, Inbox } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useEffect, useState } from "react"
-import { getRascunhos, getOSFinalizadas, getClientes, getEquipamentos } from "@/lib/storage"
+import { getRascunhos, getOSFinalizadas, getClientes, getEquipamentos, getSolicitacoes } from "@/lib/storage"
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts"
 
 export default function HomePage() {
@@ -16,6 +16,7 @@ export default function HomePage() {
     finalizadas: 0,
     clientes: 0,
     equipamentos: 0,
+    solicitacoesPendentes: 0,
   })
   const [clientesPorEstado, setClientesPorEstado] = useState<{ estado: string; quantidade: number }[]>([])
   const [clientesPorCidade, setClientesPorCidade] = useState<{ cidade: string; quantidade: number }[]>([])
@@ -26,17 +27,20 @@ export default function HomePage() {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const [rascunhos, finalizadas, clientes, equipamentos] = await Promise.all([
+        const [rascunhos, finalizadas, clientes, equipamentos, solicitacoes] = await Promise.all([
           getRascunhos(),
           getOSFinalizadas(),
           getClientes(),
           getEquipamentos(),
+          getSolicitacoes(),
         ])
+        const pendentes = solicitacoes.filter((s) => s.status === "recebida").length
         setStats({
           rascunhos: rascunhos.length,
           finalizadas: finalizadas.length,
           clientes: clientes.length,
           equipamentos: equipamentos.length,
+          solicitacoesPendentes: pendentes,
         })
 
         // Agrupa clientes por estado
@@ -99,7 +103,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-muted/30">
       {/* Main Content */}
       <main className="container mx-auto px-4 py-4 md:py-8">
-        <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-3">
+        <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           {/* Nova OS */}
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
@@ -122,6 +126,36 @@ export default function HomePage() {
               </Button>
               <Button asChild className="w-full bg-transparent" variant="outline" size="sm">
                 <Link href="/os/rascunhos">Ver Rascunhos</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Solicitações */}
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-amber-500/10 rounded-lg">
+                  <Inbox className="h-5 w-5 md:h-6 md:w-6 text-amber-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-base md:text-lg">Solicitações</CardTitle>
+                  <CardDescription className="text-xs md:text-sm">
+                    {stats.solicitacoesPendentes > 0
+                      ? `${stats.solicitacoesPendentes} pendente${stats.solicitacoesPendentes > 1 ? "s" : ""}`
+                      : "Solicitações de clientes"}
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button asChild className="w-full" variant="default" size="sm">
+                <Link href="/solicitacoes">
+                  <Inbox className="h-4 w-4 mr-2" />
+                  Ver Solicitações
+                </Link>
+              </Button>
+              <Button asChild className="w-full bg-transparent" variant="outline" size="sm">
+                <Link href="/solicitar" target="_blank" rel="noopener noreferrer">Link Público</Link>
               </Button>
             </CardContent>
           </Card>
@@ -177,7 +211,15 @@ export default function HomePage() {
         </div>
 
         {/* Quick Stats */}
-        <div className="mt-6 md:mt-8 grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-4">
+        <div className="mt-6 md:mt-8 grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-5">
+          <Card>
+            <CardHeader className="pb-2 md:pb-3">
+              <CardDescription className="text-xs md:text-sm">Solicitações Pendentes</CardDescription>
+              <CardTitle className="text-2xl md:text-3xl">
+                <span className="text-amber-600">{loading ? "..." : stats.solicitacoesPendentes}</span>
+              </CardTitle>
+            </CardHeader>
+          </Card>
           <Card>
             <CardHeader className="pb-2 md:pb-3">
               <CardDescription className="text-xs md:text-sm">Rascunhos</CardDescription>

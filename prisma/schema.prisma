@@ -134,3 +134,36 @@ model Configuracao {
 
   @@map("configuracoes")
 }
+
+model Solicitacao {
+  id                 String   @id @default(uuid())
+  protocolo          String   @unique
+  status             String   @default("recebida")
+
+  // Dados do solicitante
+  nomeEmpresa        String   @map("nome_empresa")
+  cnpj               String?
+  nomeContato        String   @map("nome_contato")
+  telefone           String
+  email              String
+  cidade             String
+  uf                 String
+
+  // Dados do equipamento
+  tipoEquipamento    String   @map("tipo_equipamento")
+  fabricante         String
+  modelo             String
+  numeroSerie        String?  @map("numero_serie")
+
+  // Descricao do problema
+  descricaoProblema  String   @map("descricao_problema")
+  urgencia           String   @default("normal")
+
+  // Vinculo com OS
+  ordemServicoId     String?  @map("ordem_servico_id")
+
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("solicitacoes")
+}

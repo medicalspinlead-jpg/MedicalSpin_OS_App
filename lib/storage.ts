@@ -295,6 +295,56 @@ export async function fecharOrdemServico(id: string): Promise<void> {
   }
 }
 
+// Solicitações
+export interface Solicitacao {
+  id: string
+  protocolo: string
+  status: "recebida" | "em_progresso" | "finalizada"
+  nomeEmpresa: string
+  cnpj: string
+  nomeContato: string
+  telefone: string
+  email: string
+  cidade: string
+  uf: string
+  tipoEquipamento: string
+  fabricante: string
+  modelo: string
+  numeroSerie: string
+  descricaoProblema: string
+  urgencia: "normal" | "urgente"
+  ordemServicoId: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export async function getSolicitacoes(): Promise<Solicitacao[]> {
+  const res = await fetchNoCache("/api/solicitacoes")
+  if (!res.ok) return []
+  return res.json()
+}
+
+export async function getSolicitacao(id: string): Promise<Solicitacao | undefined> {
+  const res = await fetchNoCache(`/api/solicitacoes/${id}`)
+  if (!res.ok) return undefined
+  return res.json()
+}
+
+export async function updateSolicitacao(id: string, data: Partial<Solicitacao>): Promise<Solicitacao> {
+  const res = await fetchNoCache(`/api/solicitacoes/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) {
+    throw new Error("Erro ao atualizar solicitação")
+  }
+  return res.json()
+}
+
+export async function deleteSolicitacao(id: string): Promise<void> {
+  await fetchNoCache(`/api/solicitacoes/${id}`, { method: "DELETE" })
+}
+
 // Helper para criar OS inicial
 export function createNovaOS(): Omit<OrdemServico, "id"> & { id?: string } {
   return {
