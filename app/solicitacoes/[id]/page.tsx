@@ -19,6 +19,16 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import {
   getSolicitacao,
   updateSolicitacao,
   deleteSolicitacao,
@@ -46,6 +56,8 @@ import {
   MapPin,
   ExternalLink,
   XCircle,
+  ImageIcon,
+  Video,
 } from "lucide-react"
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; icon: React.ElementType }> = {
@@ -61,6 +73,8 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
   const [solicitacao, setSolicitacao] = useState<Solicitacao | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState("")
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+  const [motivoCancelamento, setMotivoCancelamento] = useState("")
 
   useEffect(() => {
     loadSolicitacao()
@@ -103,6 +117,14 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
         eventosRelevantes: "",
       }
 
+      // Copiar apenas imagens da solicitação para a OS (videos ficam só na solicitação)
+      const solicitacaoMidias = solicitacao.midias as { imagens?: string[]; videos?: string[] } | undefined
+      if (solicitacaoMidias?.imagens && solicitacaoMidias.imagens.length > 0) {
+        novaOS.midias = {
+          arquivos: [...solicitacaoMidias.imagens],
+        }
+      }
+
       const osCriada = await saveOrdemServico(novaOS)
 
       // Atualizar status da solicitação
@@ -133,6 +155,27 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
       setSolicitacao((prev) => (prev ? { ...prev, status: newStatus } : prev))
     } catch (error) {
       console.error("Erro ao atualizar status:", error)
+    } finally {
+      setActionLoading("")
+    }
+  }
+
+  async function handleCancelamento() {
+    if (!solicitacao || !motivoCancelamento.trim()) return
+    setActionLoading("cancelada")
+
+    try {
+      await updateSolicitacao(id, {
+        status: "cancelada",
+        motivoCancelamento: motivoCancelamento.trim(),
+      })
+      setSolicitacao((prev) =>
+        prev ? { ...prev, status: "cancelada", motivoCancelamento: motivoCancelamento.trim() } : prev
+      )
+      setCancelDialogOpen(false)
+      setMotivoCancelamento("")
+    } catch (error) {
+      console.error("Erro ao cancelar solicitacao:", error)
     } finally {
       setActionLoading("")
     }
@@ -311,6 +354,66 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
           </CardContent>
         </Card>
 
+        {/* Midias do Cliente */}
+        {(() => {
+          const midiasData = solicitacao.midias as { imagens?: string[]; videos?: string[] } | undefined
+          const hasImagens = midiasData?.imagens && midiasData.imagens.length > 0
+          const hasVideos = midiasData?.videos && midiasData.videos.length > 0
+          if (!hasImagens && !hasVideos) return null
+          return (
+            <Card className="mb-4">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4 text-primary" />
+                  <CardTitle className="text-sm">Fotos e Videos do Cliente</CardTitle>
+                </div>
+                <CardDescription>Midias enviadas pelo cliente junto com a solicitacao</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {hasImagens && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground font-medium">
+                      Fotos ({midiasData!.imagens!.length})
+                    </p>
+                    <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                      {midiasData!.imagens!.map((img, index) => (
+                        <div key={index} className="aspect-square border rounded-lg overflow-hidden bg-muted">
+                          <img
+                            src={img || "/placeholder.svg"}
+                            alt={`Foto do cliente ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {hasVideos && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground font-medium">
+                      Videos ({midiasData!.videos!.length})
+                    </p>
+                    <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
+                      {midiasData!.videos!.map((vid, index) => (
+                        <div key={index} className="border rounded-lg overflow-hidden bg-muted">
+                          <video
+                            src={vid}
+                            controls
+                            className="w-full max-h-64 object-contain"
+                            preload="metadata"
+                          >
+                            Seu navegador nao suporta videos.
+                          </video>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )
+        })()}
+
         {/* OS Vinculada */}
         {solicitacao.ordemServicoId && (
           <Card className="mb-4">
@@ -370,35 +473,19 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
               )}
 
               {solicitacao.status !== "cancelada" && solicitacao.status !== "finalizada" && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline" className="flex-1 text-red-600 border-red-200 hover:bg-red-50 bg-transparent">
-                      {actionLoading === "cancelada" ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <XCircle className="h-4 w-4 mr-2" />
-                      )}
-                      Cancelar Solicitacao
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Cancelar solicitacao?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        A solicitacao {solicitacao.protocolo} sera marcada como cancelada. Esta acao pode ser revertida alterando o status novamente.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Voltar</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => handleStatusChange("cancelada")}
-                        className="bg-red-600 text-white hover:bg-red-700"
-                      >
-                        Confirmar Cancelamento
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <Button
+                  variant="outline"
+                  className="flex-1 text-red-600 border-red-200 hover:bg-red-50 bg-transparent"
+                  onClick={() => setCancelDialogOpen(true)}
+                  disabled={actionLoading !== ""}
+                >
+                  {actionLoading === "cancelada" ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <XCircle className="h-4 w-4 mr-2" />
+                  )}
+                  Cancelar Solicitacao
+                </Button>
               )}
 
               {solicitacao.ordemServicoId && solicitacao.status !== "finalizada" && solicitacao.status !== "cancelada" && (
@@ -442,6 +529,62 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
           </CardContent>
         </Card>
       </main>
+
+      {/* Dialog de cancelamento com motivo obrigatorio */}
+      <Dialog open={cancelDialogOpen} onOpenChange={(open) => {
+        setCancelDialogOpen(open)
+        if (!open) setMotivoCancelamento("")
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-700">Cancelar Solicitacao</DialogTitle>
+            <DialogDescription>
+              A solicitacao <span className="font-mono font-medium">{solicitacao?.protocolo}</span> sera
+              marcada como cancelada. O motivo sera exibido para o cliente.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="motivo-cancelamento" className="text-sm font-medium">
+              Motivo do cancelamento <span className="text-red-600">*</span>
+            </Label>
+            <Textarea
+              id="motivo-cancelamento"
+              placeholder="Descreva o motivo do cancelamento desta solicitacao..."
+              value={motivoCancelamento}
+              onChange={(e) => setMotivoCancelamento(e.target.value)}
+              rows={4}
+              className="resize-none"
+            />
+            {motivoCancelamento.trim() === "" && (
+              <p className="text-xs text-red-500">O motivo e obrigatorio para cancelar.</p>
+            )}
+          </div>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCancelDialogOpen(false)
+                setMotivoCancelamento("")
+              }}
+              className="bg-transparent"
+            >
+              Voltar
+            </Button>
+            <Button
+              onClick={handleCancelamento}
+              disabled={motivoCancelamento.trim() === "" || actionLoading === "cancelada"}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              {actionLoading === "cancelada" ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <XCircle className="h-4 w-4 mr-2" />
+              )}
+              Confirmar Cancelamento
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

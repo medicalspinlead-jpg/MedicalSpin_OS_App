@@ -250,3 +250,50 @@ export function isImageFile(file: File): boolean {
 
   return tiposPermitidos.includes(file.type) || isHeicExtension
 }
+
+// Função para validar se é um vídeo
+export function isVideoFile(file: File): boolean {
+  const tiposPermitidos = [
+    "video/mp4",
+    "video/webm",
+    "video/ogg",
+    "video/quicktime",
+    "video/x-msvideo",
+    "video/x-ms-wmv",
+    "video/3gpp",
+  ]
+
+  const extensao = file.name.toLowerCase()
+  const isVideoExtension =
+    extensao.endsWith(".mp4") ||
+    extensao.endsWith(".webm") ||
+    extensao.endsWith(".ogg") ||
+    extensao.endsWith(".mov") ||
+    extensao.endsWith(".avi") ||
+    extensao.endsWith(".wmv") ||
+    extensao.endsWith(".3gp")
+
+  return tiposPermitidos.includes(file.type) || isVideoExtension
+}
+
+// Função para converter vídeo para base64
+export function converterVideoParaBase64(file: File): Promise<{ nome: string; base64: string; tamanho: number; tipo: string }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onload = (e) => {
+      const result = e.target?.result as string
+      const base64SemPrefixo = result.split(",")[1]
+
+      resolve({
+        nome: file.name,
+        base64: base64SemPrefixo,
+        tamanho: file.size,
+        tipo: file.type || "video/mp4",
+      })
+    }
+
+    reader.onerror = () => reject(new Error("Erro ao ler arquivo de video"))
+    reader.readAsDataURL(file)
+  })
+}

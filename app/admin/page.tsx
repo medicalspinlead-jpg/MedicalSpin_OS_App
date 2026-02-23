@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Plus, Search, Trash2, Edit, Users, ArrowLeft, Shield, Wrench, Eye, EyeOff, UserCircle } from "lucide-react"
+import { Plus, Search, Trash2, Edit, Users, ArrowLeft, Shield, Wrench, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -300,17 +300,15 @@ export default function AdminPage() {
                       <CardDescription className="mt-1 text-xs md:text-sm truncate">{user.email}</CardDescription>
                     </div>
                     <Badge 
-                      variant={user.cargo === "admin" ? "default" : user.cargo === "cliente" ? "outline" : "secondary"} 
+                      variant={user.cargo === "admin" ? "default" : "secondary"} 
                       className="flex items-center gap-1 shrink-0 text-xs"
                     >
                       {user.cargo === "admin" ? (
                         <Shield className="h-3 w-3" />
-                      ) : user.cargo === "cliente" ? (
-                        <UserCircle className="h-3 w-3" />
                       ) : (
                         <Wrench className="h-3 w-3" />
                       )}
-                      {user.cargo === "admin" ? "Admin" : user.cargo === "cliente" ? "Cliente" : "Tecnico"}
+                      {user.cargo === "admin" ? "Admin" : "Tecnico"}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -424,7 +422,6 @@ export default function AdminPage() {
                 <SelectContent>
                   <SelectItem value="tecnico">Tecnico</SelectItem>
                   <SelectItem value="admin">Administrador</SelectItem>
-                  <SelectItem value="cliente">Cliente</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -507,7 +504,6 @@ export default function AdminPage() {
                 <SelectContent>
                   <SelectItem value="tecnico">Tecnico</SelectItem>
                   <SelectItem value="admin">Administrador</SelectItem>
-                  <SelectItem value="cliente">Cliente</SelectItem>
                 </SelectContent>
               </Select>
             </div>

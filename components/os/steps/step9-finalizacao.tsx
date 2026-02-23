@@ -76,7 +76,23 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
     nomeEngenheiro: os.finalizacao.nomeEngenheiro || "Julio Cesar",
     cftEngenheiro: os.finalizacao.cftEngenheiro || "2000103820",
   })
-  const [imagens, setImagens] = useState<ImagemArmazenada[]>([])
+  const [imagens, setImagens] = useState<ImagemArmazenada[]>(() => {
+    // Carregar imagens pre-existentes da OS (ex: vindas de solicitação do cliente)
+    if (os.midias?.arquivos && os.midias.arquivos.length > 0) {
+      return os.midias.arquivos
+        .filter((arq) => arq && arq.startsWith("data:image/"))
+        .map((arq, index) => {
+          const base64SemPrefixo = arq.split(",")[1] || ""
+          return {
+            nome: `foto-${index + 1}.jpg`,
+            preview: arq,
+            base64: base64SemPrefixo,
+            tamanho: Math.round((base64SemPrefixo.length * 3) / 4),
+          }
+        })
+    }
+    return []
+  })
   const [isUploading, setIsUploading] = useState(false)
   const [isFinalizando, setIsFinalizando] = useState(false)
   const [isFechando, setIsFechando] = useState(false)

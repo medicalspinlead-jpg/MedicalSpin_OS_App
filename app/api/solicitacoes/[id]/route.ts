@@ -27,6 +27,8 @@ function mapSolicitacao(s: NonNullable<Awaited<ReturnType<typeof prisma.solicita
     descricaoProblema: s.descricaoProblema,
     urgencia: s.urgencia,
     ordemServicoId: s.ordemServicoId,
+    midias: (s.midias as Record<string, unknown>) || {},
+    motivoCancelamento: s.motivoCancelamento || null,
     createdAt: s.createdAt.toISOString(),
     updatedAt: s.updatedAt.toISOString(),
   }
@@ -66,6 +68,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       data: {
         ...(data.status && { status: data.status }),
         ...(data.ordemServicoId !== undefined && { ordemServicoId: data.ordemServicoId }),
+        ...(data.motivoCancelamento !== undefined && { motivoCancelamento: data.motivoCancelamento }),
       },
     })
 

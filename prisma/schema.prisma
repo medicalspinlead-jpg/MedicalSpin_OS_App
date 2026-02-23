@@ -163,6 +163,12 @@ model Solicitacao {
   descricaoProblema  String   @map("descricao_problema")
   urgencia           String   @default("normal")
 
+  // Midias (fotos e videos)
+  midias             Json     @default("{}")
+
+  // Motivo de cancelamento (obrigatorio quando cancelar)
+  motivoCancelamento String?  @map("motivo_cancelamento")
+
   // Vinculo com OS
   ordemServicoId     String?  @map("ordem_servico_id")
 

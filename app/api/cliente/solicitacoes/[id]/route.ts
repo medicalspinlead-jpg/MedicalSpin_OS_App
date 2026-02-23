@@ -51,6 +51,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         urgencia: solicitacao.urgencia,
         ordemServicoId: solicitacao.ordemServicoId,
         clienteId: solicitacao.clienteId,
+        midias: (solicitacao.midias as Record<string, unknown>) || {},
+        motivoCancelamento: solicitacao.motivoCancelamento || null,
         createdAt: solicitacao.createdAt.toISOString(),
         updatedAt: solicitacao.updatedAt.toISOString(),
       },

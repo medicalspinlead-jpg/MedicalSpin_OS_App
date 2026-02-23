@@ -49,6 +49,8 @@ export async function GET() {
       urgencia: s.urgencia,
       ordemServicoId: s.ordemServicoId,
       clienteId: s.clienteId,
+      midias: (s.midias as Record<string, unknown>) || {},
+      motivoCancelamento: s.motivoCancelamento || null,
       createdAt: s.createdAt.toISOString(),
       updatedAt: s.updatedAt.toISOString(),
     }))
@@ -110,6 +112,7 @@ export async function POST(request: Request) {
         descricaoProblema: data.descricaoProblema,
         urgencia: data.urgencia || "normal",
         clienteId: usuario.clienteId,
+        midias: data.midias || {},
       },
     })
 
@@ -133,6 +136,8 @@ export async function POST(request: Request) {
         urgencia: solicitacao.urgencia,
         ordemServicoId: solicitacao.ordemServicoId,
         clienteId: solicitacao.clienteId,
+        midias: (solicitacao.midias as Record<string, unknown>) || {},
+        motivoCancelamento: solicitacao.motivoCancelamento || null,
         createdAt: solicitacao.createdAt.toISOString(),
         updatedAt: solicitacao.updatedAt.toISOString(),
       },

@@ -36,6 +36,8 @@ function mapSolicitacao(s: NonNullable<Awaited<ReturnType<typeof prisma.solicita
     descricaoProblema: s.descricaoProblema,
     urgencia: s.urgencia,
     ordemServicoId: s.ordemServicoId,
+    midias: (s.midias as Record<string, unknown>) || {},
+    motivoCancelamento: s.motivoCancelamento || null,
     createdAt: s.createdAt.toISOString(),
     updatedAt: s.updatedAt.toISOString(),
   }

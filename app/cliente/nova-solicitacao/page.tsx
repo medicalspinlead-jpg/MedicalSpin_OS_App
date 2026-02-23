@@ -11,8 +11,18 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FABRICANTES, MODELOS } from "@/lib/constants"
-import { Send, CheckCircle, AlertTriangle, Wrench, MessageSquare, ArrowLeft, Loader2 } from "lucide-react"
+import { Send, CheckCircle, AlertTriangle, Wrench, MessageSquare, ArrowLeft, Loader2, ImageIcon, X, Video } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { converterParaJPG, isImageFile, isVideoFile, converterVideoParaBase64 } from "@/lib/webhook"
+
+interface MidiaArmazenada {
+  nome: string
+  preview: string
+  base64: string
+  tamanho: number
+  tipo: "imagem" | "video"
+  mimeType?: string
+}
 
 interface ClientePerfil {
   razaoSocial: string
@@ -34,6 +44,9 @@ export default function NovaSolicitacaoCliente() {
   const [loadingPerfil, setLoadingPerfil] = useState(true)
   const [error, setError] = useState("")
   const [perfil, setPerfil] = useState<ClientePerfil | null>(null)
+
+  const [midias, setMidias] = useState<MidiaArmazenada[]>([])
+  const [isUploading, setIsUploading] = useState(false)
 
   const [form, setForm] = useState({
     tipoEquipamento: "",
@@ -95,11 +108,18 @@ export default function NovaSolicitacaoCliente() {
 
     setLoading(true)
     try {
+      // Separar imagens e videos
+      const imagens = midias.filter((m) => m.tipo === "imagem").map((m) => m.preview)
+      const videos = midias.filter((m) => m.tipo === "video").map((m) => m.preview)
+
       const res = await fetch("/api/cliente/solicitacoes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          midias: { imagens, videos },
+        }),
       })
 
       if (!res.ok) {
@@ -148,6 +168,7 @@ export default function NovaSolicitacaoCliente() {
                 onClick={() => {
                   setStep("form")
                   setProtocolo("")
+                  setMidias([])
                   setForm({
                     tipoEquipamento: "",
                     fabricante: "",
@@ -282,6 +303,156 @@ export default function NovaSolicitacaoCliente() {
                 </SelectContent>
               </Select>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Fotos e Videos */}
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-2">
+              <ImageIcon className="h-5 w-5 text-primary" />
+              <CardTitle className="text-base">Fotos e Videos</CardTitle>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Anexe fotos ou videos do problema para auxiliar o diagnostico. (Opcional)
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="midias">Arquivos ({midias.length})</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="midias"
+                  type="file"
+                  multiple
+                  accept="image/*,video/*,.heic,.heif"
+                  onChange={async (e) => {
+                    const files = e.target.files
+                    if (!files || files.length === 0) return
+
+                    const arquivosValidos = Array.from(files).filter((file) => {
+                      if (!isImageFile(file) && !isVideoFile(file)) {
+                        toast({
+                          title: "Arquivo nao permitido",
+                          description: `"${file.name}" nao e uma imagem ou video valido.`,
+                          variant: "destructive",
+                        })
+                        return false
+                      }
+                      // Limite de 50MB por video
+                      if (isVideoFile(file) && file.size > 50 * 1024 * 1024) {
+                        toast({
+                          title: "Video muito grande",
+                          description: `"${file.name}" excede o limite de 50MB.`,
+                          variant: "destructive",
+                        })
+                        return false
+                      }
+                      return true
+                    })
+
+                    if (arquivosValidos.length === 0) return
+
+                    setIsUploading(true)
+
+                    try {
+                      const novasMidias: MidiaArmazenada[] = []
+
+                      for (const file of arquivosValidos) {
+                        if (isImageFile(file)) {
+                          const resultado = await converterParaJPG(file)
+                          novasMidias.push({
+                            nome: resultado.nome,
+                            preview: `data:image/jpeg;base64,${resultado.base64}`,
+                            base64: resultado.base64,
+                            tamanho: resultado.tamanho,
+                            tipo: "imagem",
+                          })
+                        } else if (isVideoFile(file)) {
+                          const resultado = await converterVideoParaBase64(file)
+                          novasMidias.push({
+                            nome: resultado.nome,
+                            preview: `data:${resultado.tipo};base64,${resultado.base64}`,
+                            base64: resultado.base64,
+                            tamanho: resultado.tamanho,
+                            tipo: "video",
+                            mimeType: resultado.tipo,
+                          })
+                        }
+                      }
+
+                      setMidias((prev) => [...prev, ...novasMidias])
+
+                      const numImagens = novasMidias.filter((m) => m.tipo === "imagem").length
+                      const numVideos = novasMidias.filter((m) => m.tipo === "video").length
+                      const parts = []
+                      if (numImagens > 0) parts.push(`${numImagens} imagem(ns)`)
+                      if (numVideos > 0) parts.push(`${numVideos} video(s)`)
+
+                      toast({
+                        title: "Arquivos adicionados",
+                        description: `${parts.join(" e ")} adicionado(s) com sucesso.`,
+                      })
+                    } catch (error) {
+                      toast({
+                        title: "Erro",
+                        description: "Ocorreu um erro ao processar os arquivos.",
+                        variant: "destructive",
+                      })
+                    } finally {
+                      setIsUploading(false)
+                      e.target.value = ""
+                    }
+                  }}
+                  disabled={isUploading}
+                  className="flex-1"
+                />
+                {isUploading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Imagens: JPG, PNG, WebP, HEIC. Videos: MP4, MOV, WebM (max 50MB).
+              </p>
+            </div>
+
+            {midias.length > 0 && (
+              <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {midias.map((midia, index) => (
+                  <div key={index} className="relative group">
+                    <div className="aspect-square border rounded-lg overflow-hidden bg-muted">
+                      {midia.tipo === "imagem" ? (
+                        <img
+                          src={midia.preview || "/placeholder.svg"}
+                          alt={midia.nome}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-muted">
+                          <Video className="h-8 w-8 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground text-center px-2 truncate max-w-full">
+                            {midia.nome}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => setMidias((prev) => prev.filter((_, i) => i !== index))}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                    <div className="flex items-center gap-1 mt-1">
+                      {midia.tipo === "video" && <Video className="h-3 w-3 text-muted-foreground shrink-0" />}
+                      <p className="text-xs text-muted-foreground truncate" title={midia.nome}>
+                        {midia.nome}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 

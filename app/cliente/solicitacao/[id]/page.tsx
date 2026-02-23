@@ -20,6 +20,8 @@ import {
   MapPin,
   FileText,
   XCircle,
+  ImageIcon,
+  Video,
 } from "lucide-react"
 
 interface Solicitacao {
@@ -40,6 +42,11 @@ interface Solicitacao {
   descricaoProblema: string
   urgencia: string
   ordemServicoId: string | null
+  midias?: {
+    imagens?: string[]
+    videos?: string[]
+  }
+  motivoCancelamento?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -169,12 +176,22 @@ export default function SolicitacaoDetalhes() {
           </CardHeader>
           <CardContent>
             {solicitacao.status === "cancelada" ? (
-              <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <XCircle className="h-5 w-5 text-red-600 shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-red-800">Solicitacao Cancelada</p>
-                  <p className="text-xs text-red-600">Esta solicitacao foi cancelada pela equipe tecnica.</p>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <XCircle className="h-5 w-5 text-red-600 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-red-800">Solicitacao Cancelada</p>
+                    <p className="text-xs text-red-600">Esta solicitacao foi cancelada pela equipe tecnica.</p>
+                  </div>
                 </div>
+                {solicitacao.motivoCancelamento && (
+                  <div className="p-3 bg-red-50/50 border border-red-100 rounded-lg">
+                    <p className="text-xs font-medium text-red-700 mb-1">Motivo do cancelamento:</p>
+                    <p className="text-sm text-red-900 leading-relaxed whitespace-pre-wrap">
+                      {solicitacao.motivoCancelamento}
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex items-center gap-2">
@@ -261,6 +278,59 @@ export default function SolicitacaoDetalhes() {
             </p>
           </CardContent>
         </Card>
+
+        {/* Midias */}
+        {solicitacao.midias && ((solicitacao.midias.imagens && solicitacao.midias.imagens.length > 0) || (solicitacao.midias.videos && solicitacao.midias.videos.length > 0)) && (
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <ImageIcon className="h-4 w-4 text-primary" />
+                <CardTitle className="text-base">Fotos e Videos Anexados</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {solicitacao.midias.imagens && solicitacao.midias.imagens.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground font-medium">
+                    Fotos ({solicitacao.midias.imagens.length})
+                  </p>
+                  <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                    {solicitacao.midias.imagens.map((img, index) => (
+                      <div key={index} className="aspect-square border rounded-lg overflow-hidden bg-muted">
+                        <img
+                          src={img || "/placeholder.svg"}
+                          alt={`Foto ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {solicitacao.midias.videos && solicitacao.midias.videos.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground font-medium">
+                    Videos ({solicitacao.midias.videos.length})
+                  </p>
+                  <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
+                    {solicitacao.midias.videos.map((vid, index) => (
+                      <div key={index} className="border rounded-lg overflow-hidden bg-muted">
+                        <video
+                          src={vid}
+                          controls
+                          className="w-full max-h-64 object-contain"
+                          preload="metadata"
+                        >
+                          Seu navegador nao suporta videos.
+                        </video>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Contato */}
         <Card>

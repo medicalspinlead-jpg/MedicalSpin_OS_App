@@ -314,6 +314,11 @@ export interface Solicitacao {
   descricaoProblema: string
   urgencia: "normal" | "urgente"
   ordemServicoId: string | null
+  midias?: {
+    imagens?: string[] // base64 com prefixo data:image/jpeg;base64,...
+    videos?: string[]  // base64 com prefixo data:video/...;base64,...
+  }
+  motivoCancelamento?: string | null
   createdAt: string
   updatedAt: string
 }
