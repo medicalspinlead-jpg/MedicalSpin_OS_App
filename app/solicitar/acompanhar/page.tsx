@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Search, ArrowLeft, Clock, Loader2, AlertTriangle, CheckCircle, Settings, Inbox } from "lucide-react"
+import { Search, ArrowLeft, Clock, Loader2, AlertTriangle, CheckCircle, Settings, Inbox, XCircle } from "lucide-react"
 
 interface SolicitacaoPublica {
   protocolo: string
@@ -27,9 +27,22 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
   recebida: { label: "Recebida", color: "bg-blue-100 text-blue-800 border-blue-200", icon: Inbox, step: 1 },
   em_progresso: { label: "Em Progresso", color: "bg-amber-100 text-amber-800 border-amber-200", icon: Settings, step: 2 },
   finalizada: { label: "Finalizada", color: "bg-green-100 text-green-800 border-green-200", icon: CheckCircle, step: 3 },
+  cancelada: { label: "Cancelada", color: "bg-red-100 text-red-800 border-red-200", icon: XCircle, step: 0 },
 }
 
 function StatusTimeline({ currentStatus }: { currentStatus: string }) {
+  if (currentStatus === "cancelada") {
+    return (
+      <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg my-4">
+        <XCircle className="h-5 w-5 text-red-600 shrink-0" />
+        <div>
+          <p className="text-sm font-medium text-red-800">Solicitacao Cancelada</p>
+          <p className="text-xs text-red-600">Esta solicitacao foi cancelada pela equipe tecnica.</p>
+        </div>
+      </div>
+    )
+  }
+
   const steps = [
     { key: "recebida", label: "Recebida", icon: Inbox },
     { key: "em_progresso", label: "Em Progresso", icon: Settings },

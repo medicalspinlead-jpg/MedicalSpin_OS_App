@@ -23,6 +23,8 @@ model Cliente {
   updatedAt    DateTime      @updatedAt @map("updated_at")
   equipamentos Equipamento[]
   ordens       OrdemServico[]
+  usuarios     Usuario[]
+  solicitacoes Solicitacao[]
 
   @@map("clientes")
 }
@@ -108,8 +110,10 @@ model Usuario {
   nome      String
   email     String   @unique
   senha     String
-  cargo     String   @default("tecnico")
+  cargo     String   @default("tecnico") // "admin", "tecnico", "cliente"
   ativo     Boolean  @default(true)
+  clienteId String?  @map("cliente_id")
+  cliente   Cliente? @relation(fields: [clienteId], references: [id])
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -161,6 +165,10 @@ model Solicitacao {
 
   // Vinculo com OS
   ordemServicoId     String?  @map("ordem_servico_id")
+
+  // Vinculo com Cliente
+  clienteId          String?  @map("cliente_id")
+  cliente            Cliente? @relation(fields: [clienteId], references: [id])
 
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")

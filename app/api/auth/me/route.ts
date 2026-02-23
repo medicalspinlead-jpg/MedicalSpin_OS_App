@@ -16,10 +16,18 @@ export async function GET() {
     console.log("[v0] Auth/me: Usuário encontrado:", !!usuario)
 
     if (!usuario) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
+      return NextResponse.json({ error: "Nao autenticado" }, { status: 401 })
     }
 
-    return NextResponse.json({ usuario })
+    return NextResponse.json({
+      usuario: {
+        id: usuario.id,
+        nome: usuario.nome,
+        email: usuario.email,
+        cargo: usuario.cargo,
+        clienteId: usuario.clienteId || null,
+      },
+    })
   } catch (error) {
     console.error("[v0] Auth/me ERRO:", error)
     return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 })

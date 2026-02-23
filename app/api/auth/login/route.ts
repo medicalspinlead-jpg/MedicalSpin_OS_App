@@ -62,6 +62,7 @@ export async function POST(request: Request) {
         nome: usuario.nome,
         email: usuario.email,
         cargo: usuario.cargo,
+        clienteId: usuario.clienteId || null,
       },
     })
   } catch (error) {

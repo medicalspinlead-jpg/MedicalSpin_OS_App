@@ -57,7 +57,7 @@ export async function validateSession(token: string) {
 
   const usuario = await prisma.usuario.findUnique({
     where: { id: sessao.usuarioId },
-    select: { id: true, nome: true, email: true, cargo: true, ativo: true },
+    select: { id: true, nome: true, email: true, cargo: true, ativo: true, clienteId: true },
   })
 
   if (!usuario || !usuario.ativo) return null

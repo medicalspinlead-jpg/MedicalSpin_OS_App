@@ -12,6 +12,7 @@ import { Loader2, Lock, Mail, AlertTriangle, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useTheme } from "@/components/theme-provider"
 import { Moon, Sun } from "lucide-react"
+import Link from "next/link"
 
 
 export default function LoginPage() {
@@ -49,7 +50,12 @@ export default function LoginPage() {
         description: `Bem-vindo, ${data.usuario.nome}!`,
       })
 
-      window.location.href = "/"
+      // Redirecionar com base no cargo
+      if (data.usuario.cargo === "cliente") {
+        window.location.href = "/cliente"
+      } else {
+        window.location.href = "/"
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro ao fazer login"
       
@@ -166,6 +172,13 @@ export default function LoginPage() {
                 "Entrar"
               )}
             </Button>
+
+            <p className="text-center text-sm text-muted-foreground">
+              E cliente?{" "}
+              <Link href="/registro" className="text-primary hover:underline font-medium">
+                Crie sua conta aqui
+              </Link>
+            </p>
           </form>
         </CardContent>
       </Card>

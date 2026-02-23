@@ -9,7 +9,8 @@ interface Usuario {
   id: string
   nome: string
   email: string
-  cargo: "admin" | "tecnico" | string
+  cargo: "admin" | "tecnico" | "cliente" | string
+  clienteId?: string | null
 }
 
 interface Configuracao {
@@ -37,7 +38,7 @@ export function useAuth() {
   return useContext(AuthContext)
 }
 
-const publicPaths = ["/login", "/setup", "/solicitar"]
+const publicPaths = ["/login", "/setup", "/solicitar", "/registro"]
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null)
@@ -91,12 +92,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth()
   }, [])
 
+  // Usar regex para match exato: /cliente ou /cliente/... mas NAO /clientes
+  const isClientePath = pathname === "/cliente" || pathname.startsWith("/cliente/")
+
   useEffect(() => {
-    if (!loading && !usuario && !isPublicPath && !isRedirecting.current) {
+    if (loading || isRedirecting.current) return
+
+    // Nao autenticado e em rota protegida
+    if (!usuario && !isPublicPath) {
       isRedirecting.current = true
       window.location.href = "/login"
+      return
     }
-  }, [loading, usuario, isPublicPath])
+
+    // Cliente tentando acessar rotas de tecnico
+    if (usuario && usuario.cargo === "cliente" && !isClientePath && !isPublicPath) {
+      isRedirecting.current = true
+      window.location.href = "/cliente"
+      return
+    }
+
+    // Tecnico/admin tentando acessar rotas de cliente
+    if (usuario && usuario.cargo !== "cliente" && isClientePath) {
+      isRedirecting.current = true
+      window.location.href = "/"
+      return
+    }
+  }, [loading, usuario, isPublicPath, isClientePath, pathname])
 
   const logout = useCallback(async () => {
     try {

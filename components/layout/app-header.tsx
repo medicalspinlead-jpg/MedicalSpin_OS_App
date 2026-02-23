@@ -27,7 +27,7 @@ export function AppHeader() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  if (pathname === "/login" || pathname === "/setup") {
+  if (pathname === "/login" || pathname === "/setup" || pathname.startsWith("/cliente") || pathname === "/registro") {
     return null
   }
 
