@@ -19,6 +19,7 @@ import {
   Phone,
   MapPin,
   FileText,
+  XCircle,
 } from "lucide-react"
 
 interface Solicitacao {
@@ -47,6 +48,7 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
   recebida: { label: "Recebida", variant: "secondary", icon: Clock, color: "text-muted-foreground" },
   em_progresso: { label: "Em Progresso", variant: "default", icon: Wrench, color: "text-blue-600" },
   finalizada: { label: "Finalizada", variant: "outline", icon: CheckCircle, color: "text-green-600" },
+  cancelada: { label: "Cancelada", variant: "destructive", icon: XCircle, color: "text-red-600" },
 }
 
 export default function SolicitacaoDetalhes() {
@@ -166,40 +168,50 @@ export default function SolicitacaoDetalhes() {
             <CardTitle className="text-base">Andamento</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2">
-              {["recebida", "em_progresso", "finalizada"].map((s, i) => {
-                const sc = statusConfig[s]
-                const isActive = s === solicitacao.status
-                const isPast =
-                  (s === "recebida") ||
-                  (s === "em_progresso" && ["em_progresso", "finalizada"].includes(solicitacao.status)) ||
-                  (s === "finalizada" && solicitacao.status === "finalizada")
+            {solicitacao.status === "cancelada" ? (
+              <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <XCircle className="h-5 w-5 text-red-600 shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-red-800">Solicitacao Cancelada</p>
+                  <p className="text-xs text-red-600">Esta solicitacao foi cancelada pela equipe tecnica.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                {["recebida", "em_progresso", "finalizada"].map((s, i) => {
+                  const sc = statusConfig[s]
+                  const isActive = s === solicitacao.status
+                  const isPast =
+                    (s === "recebida") ||
+                    (s === "em_progresso" && ["em_progresso", "finalizada"].includes(solicitacao.status)) ||
+                    (s === "finalizada" && solicitacao.status === "finalizada")
 
-                return (
-                  <div key={s} className="flex items-center gap-2 flex-1">
-                    <div
-                      className={`flex items-center justify-center w-8 h-8 rounded-full border-2 shrink-0 ${
-                        isPast
-                          ? "bg-primary border-primary text-primary-foreground"
-                          : "border-muted-foreground/30 text-muted-foreground"
-                      }`}
-                    >
-                      <sc.icon className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-xs font-medium ${isPast ? "text-foreground" : "text-muted-foreground"}`}>
-                        {sc.label}
-                      </p>
-                    </div>
-                    {i < 2 && (
+                  return (
+                    <div key={s} className="flex items-center gap-2 flex-1">
                       <div
-                        className={`h-0.5 flex-1 ${isPast ? "bg-primary" : "bg-muted-foreground/20"}`}
-                      />
-                    )}
-                  </div>
-                )
-              })}
-            </div>
+                        className={`flex items-center justify-center w-8 h-8 rounded-full border-2 shrink-0 ${
+                          isPast
+                            ? "bg-primary border-primary text-primary-foreground"
+                            : "border-muted-foreground/30 text-muted-foreground"
+                        }`}
+                      >
+                        <sc.icon className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-xs font-medium ${isPast ? "text-foreground" : "text-muted-foreground"}`}>
+                          {sc.label}
+                        </p>
+                      </div>
+                      {i < 2 && (
+                        <div
+                          className={`h-0.5 flex-1 ${isPast ? "bg-primary" : "bg-muted-foreground/20"}`}
+                        />
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
 

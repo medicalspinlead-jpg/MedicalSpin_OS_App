@@ -19,12 +19,14 @@ import {
   Building2,
   Wrench,
   Loader2,
+  XCircle,
 } from "lucide-react"
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; icon: React.ElementType }> = {
   recebida: { label: "Recebida", badgeClass: "bg-blue-100 text-blue-800 border-blue-200", icon: Inbox },
   em_progresso: { label: "Em Progresso", badgeClass: "bg-amber-100 text-amber-800 border-amber-200", icon: Settings },
   finalizada: { label: "Finalizada", badgeClass: "bg-green-100 text-green-800 border-green-200", icon: CheckCircle },
+  cancelada: { label: "Cancelada", badgeClass: "bg-red-100 text-red-800 border-red-200", icon: XCircle },
 }
 
 export default function SolicitacoesPage() {
@@ -67,6 +69,7 @@ export default function SolicitacoesPage() {
     recebida: solicitacoes.filter((s) => s.status === "recebida").length,
     em_progresso: solicitacoes.filter((s) => s.status === "em_progresso").length,
     finalizada: solicitacoes.filter((s) => s.status === "finalizada").length,
+    cancelada: solicitacoes.filter((s) => s.status === "cancelada").length,
   }
 
   if (loading) {
@@ -90,11 +93,6 @@ export default function SolicitacoesPage() {
               Gerencie as solicitações enviadas pelos clientes.
             </p>
           </div>
-          <Button asChild variant="outline" size="sm" className="bg-transparent w-fit">
-            <Link href="/solicitar" target="_blank" rel="noopener noreferrer">
-              Link Público
-            </Link>
-          </Button>
         </div>
 
         {/* Filters */}
@@ -121,6 +119,9 @@ export default function SolicitacoesPage() {
               </TabsTrigger>
               <TabsTrigger value="finalizada" className="flex-1 md:flex-initial text-xs md:text-sm">
                 Finalizadas ({counts.finalizada})
+              </TabsTrigger>
+              <TabsTrigger value="cancelada" className="flex-1 md:flex-initial text-xs md:text-sm">
+                Canceladas ({counts.cancelada})
               </TabsTrigger>
             </TabsList>
           </Tabs>

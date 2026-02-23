@@ -299,7 +299,7 @@ export async function fecharOrdemServico(id: string): Promise<void> {
 export interface Solicitacao {
   id: string
   protocolo: string
-  status: "recebida" | "em_progresso" | "finalizada"
+  status: "recebida" | "em_progresso" | "finalizada" | "cancelada"
   nomeEmpresa: string
   cnpj: string
   nomeContato: string

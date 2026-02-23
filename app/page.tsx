@@ -154,9 +154,6 @@ export default function HomePage() {
                   Ver Solicitações
                 </Link>
               </Button>
-              <Button asChild className="w-full bg-transparent" variant="outline" size="sm">
-                <Link href="/solicitar" target="_blank" rel="noopener noreferrer">Link Público</Link>
-              </Button>
             </CardContent>
           </Card>
 

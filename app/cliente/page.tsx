@@ -18,6 +18,7 @@ import {
   Building2,
   Wrench,
   Eye,
+  XCircle,
 } from "lucide-react"
 
 interface Solicitacao {
@@ -43,6 +44,7 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
   recebida: { label: "Recebida", variant: "secondary", icon: Clock },
   em_progresso: { label: "Em Progresso", variant: "default", icon: Wrench },
   finalizada: { label: "Finalizada", variant: "outline", icon: CheckCircle },
+  cancelada: { label: "Cancelada", variant: "destructive", icon: XCircle },
 }
 
 export default function ClienteDashboard() {
@@ -95,6 +97,7 @@ export default function ClienteDashboard() {
     recebida: solicitacoes.filter((s) => s.status === "recebida").length,
     em_progresso: solicitacoes.filter((s) => s.status === "em_progresso").length,
     finalizada: solicitacoes.filter((s) => s.status === "finalizada").length,
+    cancelada: solicitacoes.filter((s) => s.status === "cancelada").length,
   }
 
   if (loading) {
@@ -140,7 +143,7 @@ export default function ClienteDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-3 mb-6">
+      <div className="grid gap-4 md:grid-cols-4 mb-6">
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
             <div className="rounded-lg bg-muted p-2">
@@ -171,6 +174,17 @@ export default function ClienteDashboard() {
             <div>
               <p className="text-2xl font-bold">{counts.finalizada}</p>
               <p className="text-xs text-muted-foreground">Finalizadas</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 p-4">
+            <div className="rounded-lg bg-muted p-2">
+              <XCircle className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{counts.cancelada}</p>
+              <p className="text-xs text-muted-foreground">Canceladas</p>
             </div>
           </CardContent>
         </Card>

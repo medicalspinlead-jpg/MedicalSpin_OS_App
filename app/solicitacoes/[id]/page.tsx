@@ -45,12 +45,14 @@ import {
   Mail,
   MapPin,
   ExternalLink,
+  XCircle,
 } from "lucide-react"
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; icon: React.ElementType }> = {
   recebida: { label: "Recebida", badgeClass: "bg-blue-100 text-blue-800 border-blue-200", icon: Inbox },
   em_progresso: { label: "Em Progresso", badgeClass: "bg-amber-100 text-amber-800 border-amber-200", icon: Settings },
   finalizada: { label: "Finalizada", badgeClass: "bg-green-100 text-green-800 border-green-200", icon: CheckCircle },
+  cancelada: { label: "Cancelada", badgeClass: "bg-red-100 text-red-800 border-red-200", icon: XCircle },
 }
 
 export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -122,7 +124,7 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
     }
   }
 
-  async function handleStatusChange(newStatus: "em_progresso" | "finalizada") {
+  async function handleStatusChange(newStatus: "em_progresso" | "finalizada" | "cancelada") {
     if (!solicitacao) return
     setActionLoading(newStatus)
 
@@ -367,7 +369,39 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
                 </Button>
               )}
 
-              {solicitacao.ordemServicoId && solicitacao.status !== "finalizada" && (
+              {solicitacao.status !== "cancelada" && solicitacao.status !== "finalizada" && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" className="flex-1 text-red-600 border-red-200 hover:bg-red-50 bg-transparent">
+                      {actionLoading === "cancelada" ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <XCircle className="h-4 w-4 mr-2" />
+                      )}
+                      Cancelar Solicitacao
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Cancelar solicitacao?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        A solicitacao {solicitacao.protocolo} sera marcada como cancelada. Esta acao pode ser revertida alterando o status novamente.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Voltar</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleStatusChange("cancelada")}
+                        className="bg-red-600 text-white hover:bg-red-700"
+                      >
+                        Confirmar Cancelamento
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+
+              {solicitacao.ordemServicoId && solicitacao.status !== "finalizada" && solicitacao.status !== "cancelada" && (
                 <Button asChild variant="outline" className="flex-1 bg-transparent">
                   <Link href={`/os/${solicitacao.ordemServicoId}/etapa/1`}>
                     <FileText className="h-4 w-4 mr-2" />
