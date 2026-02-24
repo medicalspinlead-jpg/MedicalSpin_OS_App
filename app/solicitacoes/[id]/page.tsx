@@ -414,26 +414,6 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
           )
         })()}
 
-        {/* OS Vinculada */}
-        {solicitacao.ordemServicoId && (
-          <Card className="mb-4">
-            <CardContent className="py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium text-foreground">Ordem de Serviço Vinculada</span>
-                </div>
-                <Button asChild variant="outline" size="sm" className="bg-transparent">
-                  <Link href={`/os/${solicitacao.ordemServicoId}/etapa/1`}>
-                    <ExternalLink className="h-3 w-3 mr-2" />
-                    Abrir OS
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Actions */}
         <Card>
           <CardHeader className="pb-3">
