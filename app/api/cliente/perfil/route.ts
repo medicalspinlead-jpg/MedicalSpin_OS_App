@@ -43,3 +43,46 @@ export async function GET() {
     return NextResponse.json({ error: "Erro interno" }, { status: 500, headers: noCacheHeaders })
   }
 }
+
+// PUT - Atualizar dados do perfil do cliente
+export async function PUT(request: Request) {
+  try {
+    const usuario = await getCurrentUser()
+    if (!usuario || usuario.cargo !== "cliente" || !usuario.clienteId) {
+      return NextResponse.json({ error: "Nao autorizado" }, { status: 401, headers: noCacheHeaders })
+    }
+
+    const data = await request.json()
+
+    const cliente = await prisma.cliente.update({
+      where: { id: usuario.clienteId },
+      data: {
+        ...(data.razaoSocial !== undefined && { razaoSocial: data.razaoSocial.trim() }),
+        ...(data.nomeFantasia !== undefined && { nomeFantasia: data.nomeFantasia.trim() }),
+        ...(data.cidade !== undefined && { cidade: data.cidade.trim() }),
+        ...(data.uf !== undefined && { uf: data.uf.trim().toUpperCase() }),
+        ...(data.telefone !== undefined && { telefone: data.telefone.trim() }),
+        ...(data.email !== undefined && { email: data.email.trim().toLowerCase() }),
+        ...(data.responsavel !== undefined && { responsavel: data.responsavel.trim() }),
+      },
+    })
+
+    return NextResponse.json(
+      {
+        id: cliente.id,
+        razaoSocial: cliente.razaoSocial,
+        nomeFantasia: cliente.nomeFantasia,
+        cnpj: cliente.cnpj,
+        cidade: cliente.cidade,
+        uf: cliente.uf,
+        telefone: cliente.telefone,
+        email: cliente.email,
+        responsavel: cliente.responsavel,
+      },
+      { headers: noCacheHeaders }
+    )
+  } catch (error) {
+    console.error("Erro ao atualizar perfil do cliente:", error)
+    return NextResponse.json({ error: "Erro interno" }, { status: 500, headers: noCacheHeaders })
+  }
+}

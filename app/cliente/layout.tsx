@@ -4,7 +4,7 @@ import type React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Inbox, PlusCircle, Moon, Sun, LogOut, User, Menu, Building2, MessageCircle, Mail, Bell } from "lucide-react"
+import { Inbox, PlusCircle, Moon, Sun, LogOut, User, Menu, Building2, MessageCircle, Mail, Bell, Settings } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/components/auth-provider"
 import { useState, useEffect, useCallback } from "react"
@@ -78,6 +78,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
   const navItems = [
     { href: "/cliente", label: "Minhas Solicitacoes", icon: Inbox },
     { href: "/cliente/nova-solicitacao", label: "Nova Solicitacao", icon: PlusCircle },
+    { href: "/cliente/perfil", label: "Meus Dados", icon: Settings },
   ]
 
   return (
