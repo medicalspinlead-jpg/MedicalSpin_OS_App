@@ -4,10 +4,12 @@ import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
+import { Input } from "@/components/ui/input"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   ArrowLeft,
   Clock,
@@ -22,6 +24,11 @@ import {
   XCircle,
   ImageIcon,
   Video,
+  Download,
+  Loader2,
+  Copy,
+  ExternalLink,
+  AlertCircle,
 } from "lucide-react"
 
 interface Solicitacao {
@@ -51,6 +58,78 @@ interface Solicitacao {
   updatedAt: string
 }
 
+interface OSData {
+  id: string
+  numero: string
+  idUnico?: string | null
+  status: string
+  createdAt: string
+  finalizedAt: string | null
+  empresa: {
+    razaoSocial: string
+    nomeFantasia: string
+    cnpj: string
+    cidade: string
+    uf: string
+    telefone: string
+    email: string
+  }
+  cliente?: {
+    razaoSocial: string
+    nomeFantasia: string
+    cnpj: string
+    responsavel: string
+  }
+  equipamento?: {
+    tipo: string
+    fabricante: string
+    modelo: string
+    numeroSerie: string
+  }
+  motivo: {
+    motivacaoServico: string
+    eventosRelevantes: string
+  }
+  intervencao: {
+    tipo: string
+    descricaoServicos: string
+  }
+  pecas: Array<{
+    id: string
+    nome: string
+    modeloRef: string
+    numeroSerie: string
+    observacoes: string
+    quantidade: number
+    categoria: string
+    tipo: string
+  }>
+  maoDeObra: Array<{
+    id: string
+    data: string
+    descricao: string
+    horas: number
+  }>
+  pendencias: {
+    medicalSpin: string
+    cliente: string
+  }
+  estadoEquipamento: {
+    estadoInicial: string
+    estadoFinal: string
+  }
+  finalizacao: {
+    cidade: string
+    uf: string
+    nomeEngenheiro: string
+    cftEngenheiro: string
+    nomeRecebedor: string
+  }
+  midias: {
+    arquivos: string[]
+  }
+}
+
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: typeof Clock; color: string }> = {
   recebida: { label: "Recebida", variant: "secondary", icon: Clock, color: "text-muted-foreground" },
   em_progresso: { label: "Em Progresso", variant: "default", icon: Wrench, color: "text-blue-600" },
@@ -61,8 +140,13 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
 export default function SolicitacaoDetalhes() {
   const params = useParams()
   const [solicitacao, setSolicitacao] = useState<Solicitacao | null>(null)
+  const [osData, setOsData] = useState<OSData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [showOsPreview, setShowOsPreview] = useState(false)
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
+  const [pdfDownloadUrl, setPdfDownloadUrl] = useState<string | null>(null)
+  const [loadingPdf, setLoadingPdf] = useState(false)
 
   useEffect(() => {
     async function fetchSolicitacao() {
@@ -84,6 +168,21 @@ export default function SolicitacaoDetalhes() {
 
         const data = await res.json()
         setSolicitacao(data)
+
+        // Se finalizada e tem OS vinculada, carregar dados da OS
+        if (data.status === "finalizada" && data.ordemServicoId) {
+          try {
+            const osRes = await fetch(`/api/cliente/os/${data.ordemServicoId}`, {
+              credentials: "include",
+            })
+            if (osRes.ok) {
+              const osJson = await osRes.json()
+              setOsData(osJson)
+            }
+          } catch {
+            // OS pode nao estar disponivel
+          }
+        }
       } catch (err) {
         setError("Erro ao carregar solicitacao.")
       } finally {
@@ -95,6 +194,75 @@ export default function SolicitacaoDetalhes() {
       fetchSolicitacao()
     }
   }, [params.id])
+
+  const convertToPreviewUrl = (link: string): string => {
+    const driveMatch = link.match(/\/d\/([a-zA-Z0-9_-]+)/)
+    if (driveMatch) {
+      return `https://drive.google.com/file/d/${driveMatch[1]}/preview`
+    }
+    const ucMatch = link.match(/[?&]id=([a-zA-Z0-9_-]+)/)
+    if (ucMatch) {
+      return `https://drive.google.com/file/d/${ucMatch[1]}/preview`
+    }
+    if (link.endsWith(".pdf") || link.includes("pdf")) {
+      return `https://docs.google.com/viewer?url=${encodeURIComponent(link)}&embedded=true`
+    }
+    return link
+  }
+
+  const fetchPdfLink = async () => {
+    if (!osData) return
+    setLoadingPdf(true)
+    setPdfPreviewUrl(null)
+    setPdfDownloadUrl(null)
+
+    try {
+      const url =
+        "https://docs.google.com/spreadsheets/d/1mZ4GlKIZieM_yz-CBjwNk4_8K62w45ez4BDTe-4e1e0/gviz/tq?gid=824063472&tqx=out:json&tq=SELECT%20*"
+
+      const response = await fetch(url)
+      const text = await response.text()
+
+      const setResponseIdx = text.indexOf("setResponse(")
+      const startIndex = setResponseIdx !== -1 ? text.indexOf("(", setResponseIdx) : text.indexOf("(")
+      const endIndex = text.lastIndexOf(")")
+
+      if (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
+        const jsonText = text.substring(startIndex + 1, endIndex)
+        const data = JSON.parse(jsonText)
+        const rows = data.table?.rows || []
+
+        const osId = osData.idUnico || osData.id
+        for (const row of rows) {
+          const cells = row.c || []
+          const idPlanilha = cells[0]?.v as string | null
+          if (idPlanilha && String(idPlanilha).trim() === String(osId).trim()) {
+            const link = cells[2]?.v as string | null
+            if (link) {
+              setPdfDownloadUrl(link)
+              setPdfPreviewUrl(convertToPreviewUrl(link))
+            }
+            break
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao buscar link do PDF:", error)
+    } finally {
+      setLoadingPdf(false)
+    }
+  }
+
+  const handleAbrirPreview = () => {
+    setShowOsPreview(true)
+    fetchPdfLink()
+  }
+
+  const handleCopiarLink = () => {
+    if (pdfDownloadUrl) {
+      navigator.clipboard.writeText(pdfDownloadUrl)
+    }
+  }
 
   if (loading) {
     return (
@@ -373,7 +541,392 @@ export default function SolicitacaoDetalhes() {
             </div>
           </CardContent>
         </Card>
+
+        {/* OS Finalizada - Visualizacao completa */}
+        {solicitacao.status === "finalizada" && osData && (
+          <>
+            <Separator className="my-6" />
+            
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">Ordem de Servico</h3>
+                  <p className="text-sm text-muted-foreground font-mono">{osData.numero}</p>
+                </div>
+                <Button
+                  onClick={handleAbrirPreview}
+                  size="sm"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Ver Documento da OS
+                </Button>
+              </div>
+
+              {/* Dados da Empresa */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">1. Dados da Empresa</CardTitle>
+                </CardHeader>
+                <CardContent className="grid md:grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Razao Social</p>
+                    <p className="font-medium">{osData.empresa.razaoSocial || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">CNPJ</p>
+                    <p className="font-medium">{osData.empresa.cnpj || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Cidade/UF</p>
+                    <p className="font-medium">{osData.empresa.cidade || "-"} {osData.empresa.uf ? `- ${osData.empresa.uf}` : ""}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Telefone</p>
+                    <p className="font-medium">{osData.empresa.telefone || "-"}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Equipamento */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">2. Equipamento</CardTitle>
+                </CardHeader>
+                <CardContent className="grid md:grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Tipo</p>
+                    <p className="font-medium">{osData.equipamento?.tipo || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Fabricante / Modelo</p>
+                    <p className="font-medium">{osData.equipamento?.fabricante || "-"} {osData.equipamento?.modelo || ""}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">N. de Serie</p>
+                    <p className="font-medium">{osData.equipamento?.numeroSerie || "-"}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Motivo */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">3. Motivo e Eventos</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Motivacao do Servico</p>
+                    <p className="font-medium whitespace-pre-wrap">{osData.motivo.motivacaoServico || "-"}</p>
+                  </div>
+                  {osData.motivo.eventosRelevantes && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Eventos Relevantes</p>
+                      <p className="font-medium whitespace-pre-wrap">{osData.motivo.eventosRelevantes}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Intervencao */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">4. Intervencao</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Tipo de Intervencao</p>
+                    <Badge variant="secondary">{osData.intervencao.tipo || "-"}</Badge>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Descricao dos Servicos</p>
+                    <p className="font-medium whitespace-pre-wrap">{osData.intervencao.descricaoServicos || "-"}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Pecas */}
+              {osData.pecas.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm">5. Pecas ({osData.pecas.length})</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {osData.pecas.filter((p) => !p.tipo || p.tipo === "removida").length > 0 && (
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground mb-2">Pecas Removidas</p>
+                        <div className="space-y-2">
+                          {osData.pecas
+                            .filter((p) => !p.tipo || p.tipo === "removida")
+                            .map((peca) => (
+                              <div key={peca.id} className="p-2 border rounded-lg text-sm">
+                                <p className="font-medium">{peca.nome}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  Qtd: {peca.quantidade}
+                                  {peca.modeloRef ? ` | Ref: ${peca.modeloRef}` : ""}
+                                  {peca.numeroSerie ? ` | Serie: ${peca.numeroSerie}` : ""}
+                                </p>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                    {osData.pecas.filter((p) => p.tipo === "inclusa").length > 0 && (
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground mb-2">Pecas Inclusas</p>
+                        <div className="space-y-2">
+                          {osData.pecas
+                            .filter((p) => p.tipo === "inclusa")
+                            .map((peca) => (
+                              <div key={peca.id} className="p-2 border rounded-lg text-sm">
+                                <p className="font-medium">{peca.nome}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  Qtd: {peca.quantidade}
+                                  {peca.modeloRef ? ` | Ref: ${peca.modeloRef}` : ""}
+                                  {peca.numeroSerie ? ` | Serie: ${peca.numeroSerie}` : ""}
+                                </p>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Mao de Obra */}
+              {osData.maoDeObra.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm">6. Mao de Obra ({osData.maoDeObra.length} servico(s))</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {osData.maoDeObra.map((m) => (
+                        <div key={m.id} className="p-2 border rounded-lg text-sm">
+                          <p className="font-medium">{m.descricao}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(m.data).toLocaleDateString("pt-BR")} - {m.horas}h
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Pendencias */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    7. Pendencias
+                    {osData.pendencias.medicalSpin || osData.pendencias.cliente ? (
+                      <AlertCircle className="h-4 w-4 text-orange-600" />
+                    ) : (
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm">
+                  {osData.pendencias.medicalSpin || osData.pendencias.cliente ? (
+                    <div className="space-y-2">
+                      {osData.pendencias.medicalSpin && (
+                        <div>
+                          <p className="text-xs text-muted-foreground">Pendencias Medical Spin</p>
+                          <p className="font-medium whitespace-pre-wrap">{osData.pendencias.medicalSpin}</p>
+                        </div>
+                      )}
+                      {osData.pendencias.cliente && (
+                        <div>
+                          <p className="text-xs text-muted-foreground">Pendencias do Cliente</p>
+                          <p className="font-medium whitespace-pre-wrap">{osData.pendencias.cliente}</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-green-600 font-medium">Nenhuma pendencia registrada</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Estado do Equipamento */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">8. Estado do Equipamento</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Estado Inicial</p>
+                      <Badge
+                        variant={
+                          osData.estadoEquipamento.estadoInicial === "Funcional"
+                            ? "default"
+                            : osData.estadoEquipamento.estadoInicial === "Inoperante"
+                              ? "destructive"
+                              : "secondary"
+                        }
+                        className="mt-1"
+                      >
+                        {osData.estadoEquipamento.estadoInicial || "-"}
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Estado Final</p>
+                      <Badge
+                        variant={
+                          osData.estadoEquipamento.estadoFinal === "Funcional"
+                            ? "default"
+                            : osData.estadoEquipamento.estadoFinal === "Inoperante"
+                              ? "destructive"
+                              : "secondary"
+                        }
+                        className="mt-1"
+                      >
+                        {osData.estadoEquipamento.estadoFinal || "-"}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Finalizacao */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">9. Finalizacao</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  <div className="grid md:grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Local</p>
+                      <p className="font-medium">{osData.finalizacao.cidade || "-"} {osData.finalizacao.uf ? `- ${osData.finalizacao.uf}` : ""}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Engenheiro</p>
+                      <p className="font-medium">{osData.finalizacao.nomeEngenheiro || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">CFT</p>
+                      <p className="font-medium">{osData.finalizacao.cftEngenheiro || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Recebedor</p>
+                      <p className="font-medium">{osData.finalizacao.nomeRecebedor || osData.cliente?.responsavel || "-"}</p>
+                    </div>
+                  </div>
+                  {osData.finalizedAt && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Data de Finalizacao</p>
+                      <p className="font-medium">
+                        {new Date(osData.finalizedAt).toLocaleDateString("pt-BR")} as{" "}
+                        {new Date(osData.finalizedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Registro Fotografico */}
+              {osData.midias.arquivos.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-2">
+                      <ImageIcon className="h-4 w-4 text-primary" />
+                      <CardTitle className="text-sm">Registro Fotografico ({osData.midias.arquivos.length})</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                      {osData.midias.arquivos.map((arq, i) => (
+                        <div key={i} className="aspect-square border rounded-lg overflow-hidden bg-muted">
+                          <img
+                            src={arq || "/placeholder.svg"}
+                            alt={`Foto ${i + 1}`}
+                            className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                            onClick={() => window.open(arq, "_blank")}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </>
+        )}
       </div>
+
+      {/* OS Preview Dialog */}
+      <Dialog open={showOsPreview} onOpenChange={setShowOsPreview}>
+        <DialogContent className="w-[95vw] max-w-3xl mx-auto !p-0 !gap-0 overflow-hidden max-h-[90vh] flex flex-col">
+          <DialogHeader className="px-5 py-4 border-b bg-muted/40">
+            <DialogTitle className="flex items-center gap-2 text-base font-medium">
+              <FileText className="h-4 w-4" />
+              Documento da OS
+            </DialogTitle>
+            {osData && (
+              <DialogDescription className="font-mono text-xs">
+                {osData.numero}
+              </DialogDescription>
+            )}
+          </DialogHeader>
+
+          {/* PDF Preview */}
+          <div className="flex-1 overflow-hidden">
+            {loadingPdf ? (
+              <div className="flex flex-col items-center justify-center h-[400px] sm:h-[500px] bg-muted/10">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
+                <span className="text-sm text-muted-foreground">Carregando documento...</span>
+              </div>
+            ) : pdfPreviewUrl ? (
+              <iframe
+                src={pdfPreviewUrl}
+                className="w-full h-[400px] sm:h-[500px] border-0"
+                title="Documento da Ordem de Servico"
+                allow="autoplay"
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-[200px] bg-muted/10">
+                <FileText className="h-10 w-10 text-muted-foreground/50 mb-3" />
+                <span className="text-sm text-muted-foreground font-medium">
+                  Documento nao disponivel
+                </span>
+                <span className="text-xs text-muted-foreground/70 mt-1">
+                  O PDF ainda esta sendo gerado. Tente novamente em alguns minutos.
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Footer com acoes */}
+          <div className="px-5 py-3 border-t bg-muted/20 flex items-center justify-between gap-3 flex-wrap">
+            {pdfDownloadUrl ? (
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <Input value={pdfDownloadUrl} readOnly className="flex-1 text-xs h-9 min-w-0" />
+                <Button
+                  onClick={handleCopiarLink}
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0 h-9 w-9 bg-transparent"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div />
+            )}
+            <div className="flex items-center gap-2">
+              {pdfDownloadUrl && (
+                <Button asChild size="sm">
+                  <a href={pdfDownloadUrl} target="_blank" rel="noopener noreferrer">
+                    <Download className="h-4 w-4 mr-2" />
+                    Baixar
+                  </a>
+                </Button>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

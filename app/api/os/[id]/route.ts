@@ -245,6 +245,18 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       })
     }
 
+    // Quando OS e finalizada, marcar solicitacoes vinculadas como finalizadas
+    if (data.status === "finalizada") {
+      try {
+        await prisma.solicitacao.updateMany({
+          where: { ordemServicoId: id },
+          data: { status: "finalizada" },
+        })
+      } catch (solError) {
+        console.error("Erro ao atualizar solicitacoes vinculadas:", solError)
+      }
+    }
+
     // Buscar OS atualizada com relacionamentos
     const updatedOS = await prisma.ordemServico.findUnique({
       where: { id },
