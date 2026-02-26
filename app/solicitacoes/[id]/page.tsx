@@ -34,7 +34,11 @@ import {
   deleteSolicitacao,
   saveOrdemServico,
   createNovaOS,
+  getOrdemServico,
+  getClientes,
+  getEquipamentosByCliente,
   type Solicitacao,
+  type OrdemServico,
 } from "@/lib/storage"
 import {
   ArrowLeft,
@@ -58,6 +62,8 @@ import {
   XCircle,
   ImageIcon,
   Video,
+  CalendarCheck,
+  CalendarPlus,
 } from "lucide-react"
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; icon: React.ElementType }> = {
@@ -71,6 +77,7 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
   const { id } = use(params)
   const router = useRouter()
   const [solicitacao, setSolicitacao] = useState<Solicitacao | null>(null)
+  const [osVinculada, setOsVinculada] = useState<OrdemServico | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState("")
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
@@ -86,6 +93,17 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
       const data = await getSolicitacao(id)
       if (data) {
         setSolicitacao(data)
+        // Carregar dados da OS vinculada
+        if (data.ordemServicoId) {
+          try {
+            const osData = await getOrdemServico(data.ordemServicoId)
+            if (osData) {
+              setOsVinculada(osData)
+            }
+          } catch {
+            // OS pode ter sido excluída
+          }
+        }
       }
     } catch (error) {
       console.error("Erro ao carregar solicitação:", error)
@@ -100,7 +118,7 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
 
     try {
       // Criar OS rascunho pré-preenchida com dados da solicitação
-      const novaOS = createNovaOS()
+      const novaOS = createNovaOS() as any
       novaOS.empresa = {
         razaoSocial: solicitacao.nomeEmpresa,
         nomeFantasia: solicitacao.nomeEmpresa,
@@ -117,7 +135,81 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
         eventosRelevantes: "",
       }
 
-      // Copiar apenas imagens da solicitação para a OS (videos ficam só na solicitação)
+      // Buscar cliente cadastrado pelo CNPJ para preencher etapa 1 automaticamente
+      let clienteEncontrado = null
+      try {
+        const clientes = await getClientes()
+        if (solicitacao.cnpj) {
+          clienteEncontrado = clientes.find(
+            (c) => c.cnpj.replace(/\D/g, "") === solicitacao.cnpj.replace(/\D/g, "")
+          ) || null
+        }
+        // Se nao achou por CNPJ, tentar por razao social
+        if (!clienteEncontrado) {
+          clienteEncontrado = clientes.find(
+            (c) => c.razaoSocial.toLowerCase().trim() === solicitacao.nomeEmpresa.toLowerCase().trim()
+          ) || null
+        }
+      } catch {
+        // Se falhar a busca, continua sem vincular cliente
+      }
+
+      if (clienteEncontrado) {
+        // Preenche os dados da empresa com os dados do cliente cadastrado
+        novaOS.empresa = {
+          razaoSocial: clienteEncontrado.razaoSocial,
+          nomeFantasia: clienteEncontrado.nomeFantasia,
+          cnpj: clienteEncontrado.cnpj,
+          cidade: clienteEncontrado.cidade,
+          uf: clienteEncontrado.uf,
+          telefone: clienteEncontrado.telefone,
+          email: clienteEncontrado.email,
+          emails: clienteEncontrado.email ? [clienteEncontrado.email] : [],
+          responsavel: clienteEncontrado.responsavel || solicitacao.nomeContato,
+        }
+        novaOS.cliente = clienteEncontrado
+        novaOS.finalizacao = {
+          ...novaOS.finalizacao,
+          cidade: clienteEncontrado.cidade,
+          uf: clienteEncontrado.uf,
+        }
+
+        // Buscar equipamento correspondente para preencher etapa 2 automaticamente
+        try {
+          const equipamentos = await getEquipamentosByCliente(clienteEncontrado.id)
+          if (equipamentos.length > 0) {
+            // Tentar match exato por numero de serie
+            let equipEncontrado = solicitacao.numeroSerie
+              ? equipamentos.find(
+                  (e) => e.numeroSerie && e.numeroSerie.toLowerCase().trim() === solicitacao.numeroSerie.toLowerCase().trim()
+                )
+              : undefined
+
+            // Se nao achou por serie, tentar por tipo + fabricante + modelo
+            if (!equipEncontrado) {
+              equipEncontrado = equipamentos.find(
+                (e) =>
+                  e.tipo.toLowerCase().trim() === solicitacao.tipoEquipamento.toLowerCase().trim() &&
+                  e.fabricante.toLowerCase().trim() === solicitacao.fabricante.toLowerCase().trim() &&
+                  e.modelo.toLowerCase().trim() === solicitacao.modelo.toLowerCase().trim()
+              )
+            }
+
+            // Se nao achou match exato e tem apenas 1 equipamento, usa ele
+            if (!equipEncontrado && equipamentos.length === 1) {
+              equipEncontrado = equipamentos[0]
+            }
+
+            if (equipEncontrado) {
+              novaOS.equipamento = equipEncontrado
+            }
+          }
+        } catch {
+          // Se falhar a busca de equipamentos, continua sem vincular
+        }
+      }
+
+      // Copiar apenas imagens da solicitação para a OS (videos ficam so na solicitação)
       const solicitacaoMidias = solicitacao.midias as { imagens?: string[]; videos?: string[] } | undefined
       if (solicitacaoMidias?.imagens && solicitacaoMidias.imagens.length > 0) {
         novaOS.midias = {
@@ -137,8 +229,9 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
         prev ? { ...prev, status: "em_progresso", ordemServicoId: osCriada.id } : prev
       )
 
-      // Redirecionar para a OS criada
-      router.push(`/os/${osCriada.id}/etapa/1`)
+      // Redirecionar para a OS criada - pula para etapa 3 se etapas 1 e 2 ja estao preenchidas
+      const startStep = clienteEncontrado && novaOS.equipamento ? 3 : 1
+      router.push(`/os/${osCriada.id}/etapa/${startStep}`)
     } catch (error) {
       console.error("Erro ao aceitar solicitação:", error)
     } finally {
@@ -272,6 +365,105 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
             </div>
           </CardHeader>
         </Card>
+
+        {/* OS Vinculada */}
+        {osVinculada && (
+          <Card className="mb-4 border-primary/20">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                <CardTitle className="text-sm">Ordem de Servico Vinculada</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <p className="text-xs text-muted-foreground">Nome da OS</p>
+                <p className="text-sm font-medium text-foreground font-mono break-all">
+                  {osVinculada.numero || "-"}
+                </p>
+              </div>
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+                <div className="flex items-start gap-2">
+                  <CalendarPlus className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Criada em</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {new Date(osVinculada.createdAt).toLocaleDateString("pt-BR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}{" "}
+                      <span className="text-muted-foreground">
+                        {new Date(osVinculada.createdAt).toLocaleTimeString("pt-BR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CalendarCheck className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Finalizada em</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {osVinculada.finalizedAt ? (
+                        <>
+                          {new Date(osVinculada.finalizedAt).toLocaleDateString("pt-BR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          })}{" "}
+                          <span className="text-muted-foreground">
+                            {new Date(osVinculada.finalizedAt).toLocaleTimeString("pt-BR", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground italic">Ainda nao finalizada</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 pt-1">
+                <Badge
+                  className={
+                    osVinculada.status === "finalizada"
+                      ? "bg-green-100 text-green-800 border-green-200 border"
+                      : osVinculada.status === "fechada"
+                        ? "bg-amber-100 text-amber-800 border-amber-200 border"
+                        : "bg-orange-100 text-orange-800 border-orange-200 border"
+                  }
+                >
+                  {osVinculada.status === "finalizada"
+                    ? "Finalizada"
+                    : osVinculada.status === "fechada"
+                      ? "Fechada"
+                      : "Rascunho"}
+                </Badge>
+                {(osVinculada.status !== "finalizada" && osVinculada.status !== "cancelada") && (
+                  <Button asChild variant="outline" size="sm" className="bg-transparent">
+                    <Link href={`/os/${osVinculada.id}/etapa/1`}>
+                      <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                      Abrir OS
+                    </Link>
+                  </Button>
+                )}
+                {(osVinculada.status === "finalizada" || osVinculada.status === "fechada") && (
+                  <Button asChild variant="outline" size="sm" className="bg-transparent">
+                    <Link href={`/os/${osVinculada.id}/visualizar`}>
+                      <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                      Visualizar OS
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Details Grid */}
         <div className="grid gap-4 md:grid-cols-2 mb-4">
