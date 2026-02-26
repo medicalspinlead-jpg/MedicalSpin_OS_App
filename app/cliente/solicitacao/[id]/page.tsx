@@ -47,7 +47,6 @@ interface Solicitacao {
   modelo: string
   numeroSerie: string
   descricaoProblema: string
-  urgencia: string
   ordemServicoId: string | null
   midias?: {
     imagens?: string[]
@@ -317,12 +316,6 @@ export default function SolicitacaoDetalhes() {
             <StatusIcon className="h-3.5 w-3.5 mr-1" />
             {config.label}
           </Badge>
-          {solicitacao.urgencia === "urgente" && (
-            <Badge variant="destructive">
-              <AlertTriangle className="h-3.5 w-3.5 mr-1" />
-              Urgente
-            </Badge>
-          )}
         </div>
         <p className="text-sm text-muted-foreground">
           Criada em{" "}

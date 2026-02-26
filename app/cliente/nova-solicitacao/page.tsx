@@ -12,7 +12,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FABRICANTES, MODELOS } from "@/lib/constants"
 import { Send, CheckCircle, AlertTriangle, Wrench, MessageSquare, ArrowLeft, Loader2, ImageIcon, X, Video, Plus, ChevronDown, Check } from "lucide-react"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useToast } from "@/hooks/use-toast"
 import { converterParaJPG, isImageFile, isVideoFile, converterVideoParaBase64 } from "@/lib/webhook"
 
@@ -72,7 +71,6 @@ export default function NovaSolicitacaoCliente() {
     modelo: "",
     numeroSerie: "",
     descricaoProblema: "",
-    urgencia: "normal",
     nomeContato: "",
     telefone: "",
     email: "",
@@ -278,7 +276,6 @@ export default function NovaSolicitacaoCliente() {
                       modelo: primeiro.modelo,
                       numeroSerie: primeiro.numeroSerie || "",
                       descricaoProblema: "",
-                      urgencia: "normal",
                       nomeContato: perfil?.responsavel || "",
                       telefone: perfil?.telefone || "",
                       email: perfil?.email || "",
@@ -292,7 +289,6 @@ export default function NovaSolicitacaoCliente() {
                       modelo: "",
                       numeroSerie: "",
                       descricaoProblema: "",
-                      urgencia: "normal",
                       nomeContato: perfil?.responsavel || "",
                       telefone: perfil?.telefone || "",
                       email: perfil?.email || "",
@@ -513,18 +509,6 @@ export default function NovaSolicitacaoCliente() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="urgencia">Urgencia</Label>
-              <Select value={form.urgencia} onValueChange={(v) => updateField("urgencia", v)}>
-                <SelectTrigger id="urgencia">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="urgente">Urgente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </CardContent>
         </Card>
 

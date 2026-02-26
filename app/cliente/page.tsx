@@ -14,7 +14,6 @@ import {
   Inbox,
   Clock,
   CheckCircle,
-  AlertTriangle,
   Building2,
   Wrench,
   Eye,
@@ -30,7 +29,6 @@ interface Solicitacao {
   fabricante: string
   modelo: string
   descricaoProblema: string
-  urgencia: string
   createdAt: string
 }
 
@@ -242,12 +240,6 @@ export default function ClienteDashboard() {
                           <StatusIcon className="h-3 w-3 mr-1" />
                           {config.label}
                         </Badge>
-                        {sol.urgencia === "urgente" && (
-                          <Badge variant="destructive">
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                            Urgente
-                          </Badge>
-                        )}
                       </div>
                       <p className="text-sm text-foreground font-medium">
                         {sol.tipoEquipamento} - {sol.fabricante} {sol.modelo}
