@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { validateApiKey } from "@/lib/api-auth"
+import { enviarNotificacaoStatus } from "@/lib/webhook-notificacao"
 
 const noCacheHeaders = {
   "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
@@ -248,10 +249,46 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     // Quando OS e finalizada, marcar solicitacoes vinculadas como finalizadas
     if (data.status === "finalizada") {
       try {
+        // Buscar solicitacoes vinculadas antes de atualizar para capturar status anterior
+        const solicitacoesVinculadas = await prisma.solicitacao.findMany({
+          where: { ordemServicoId: id },
+          include: { cliente: true },
+        })
+
         await prisma.solicitacao.updateMany({
           where: { ordemServicoId: id },
           data: { status: "finalizada" },
         })
+
+        // Enviar webhook de notificacao para cada solicitacao vinculada com cliente
+        for (const sol of solicitacoesVinculadas) {
+          if (sol.cliente && (sol.cliente.notifEmail || sol.cliente.notifWhatsapp)) {
+            try {
+              await enviarNotificacaoStatus(
+                {
+                  id: sol.cliente.id,
+                  razaoSocial: sol.cliente.razaoSocial,
+                  nomeFantasia: sol.cliente.nomeFantasia,
+                  cnpj: sol.cliente.cnpj,
+                  email: sol.cliente.email,
+                  telefone: sol.cliente.telefone,
+                  notifEmail: sol.cliente.notifEmail,
+                  notifWhatsapp: sol.cliente.notifWhatsapp,
+                },
+                {
+                  id: sol.id,
+                  protocolo: sol.protocolo,
+                  descricaoProblema: sol.descricaoProblema,
+                  urgencia: sol.urgencia,
+                },
+                sol.status,
+                "finalizada"
+              )
+            } catch (notifErr) {
+              console.error("Erro ao notificar solicitacao", sol.id, notifErr)
+            }
+          }
+        }
       } catch (solError) {
         console.error("Erro ao atualizar solicitacoes vinculadas:", solError)
       }

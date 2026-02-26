@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { validateApiKey } from "@/lib/api-auth"
+import { enviarNotificacaoStatus } from "@/lib/webhook-notificacao"
 
 const noCacheHeaders = {
   "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
@@ -63,6 +64,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const { id } = await params
     const data = await request.json()
 
+    // Buscar solicitacao antes do update para capturar status anterior
+    const solicitacaoAntes = await prisma.solicitacao.findUnique({ where: { id } })
+    const statusAnterior = solicitacaoAntes?.status || ""
+
     const solicitacao = await prisma.solicitacao.update({
       where: { id },
       data: {
@@ -71,6 +76,37 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         ...(data.motivoCancelamento !== undefined && { motivoCancelamento: data.motivoCancelamento }),
       },
     })
+
+    // Enviar notificacao ao webhook se o status mudou e ha cliente vinculado
+    if (data.status && data.status !== statusAnterior && solicitacao.clienteId) {
+      try {
+        const cliente = await prisma.cliente.findUnique({ where: { id: solicitacao.clienteId } })
+        if (cliente && (cliente.notifEmail || cliente.notifWhatsapp)) {
+          await enviarNotificacaoStatus(
+            {
+              id: cliente.id,
+              razaoSocial: cliente.razaoSocial,
+              nomeFantasia: cliente.nomeFantasia,
+              cnpj: cliente.cnpj,
+              email: cliente.email,
+              telefone: cliente.telefone,
+              notifEmail: cliente.notifEmail,
+              notifWhatsapp: cliente.notifWhatsapp,
+            },
+            {
+              id: solicitacao.id,
+              protocolo: solicitacao.protocolo,
+              descricaoProblema: solicitacao.descricaoProblema,
+              urgencia: solicitacao.urgencia,
+            },
+            statusAnterior,
+            data.status
+          )
+        }
+      } catch (notifError) {
+        console.error("Erro ao enviar notificacao de status:", notifError)
+      }
+    }
 
     return NextResponse.json(mapSolicitacao(solicitacao), { headers: noCacheHeaders })
   } catch (error) {

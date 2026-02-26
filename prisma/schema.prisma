@@ -27,6 +27,9 @@ model Cliente {
   usuarios     Usuario[]
   solicitacoes Solicitacao[]
 
+  notifEmail    Boolean  @default(false) @map("notif_email")
+  notifWhatsapp Boolean  @default(false) @map("notif_whatsapp")
+
   @@map("clientes")
 }
 

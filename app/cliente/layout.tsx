@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Inbox, PlusCircle, Moon, Sun, LogOut, User, Menu, Building2, MessageCircle, Mail, Bell } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/components/auth-provider"
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +28,50 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [notifWhatsapp, setNotifWhatsapp] = useState(false)
   const [notifEmail, setNotifEmail] = useState(false)
+  const [notifLoading, setNotifLoading] = useState(false)
+
+  // Carregar preferencias de notificacao do banco
+  useEffect(() => {
+    async function loadNotif() {
+      try {
+        const res = await fetch("/api/cliente/notificacoes")
+        if (res.ok) {
+          const data = await res.json()
+          setNotifEmail(data.notifEmail)
+          setNotifWhatsapp(data.notifWhatsapp)
+        }
+      } catch {
+        // silenciar erro - manter defaults
+      }
+    }
+    loadNotif()
+  }, [])
+
+  // Persistir alteracao no banco
+  const salvarNotificacoes = useCallback(async (email: boolean, whatsapp: boolean) => {
+    setNotifLoading(true)
+    try {
+      await fetch("/api/cliente/notificacoes", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notifEmail: email, notifWhatsapp: whatsapp }),
+      })
+    } catch {
+      // silenciar erro
+    } finally {
+      setNotifLoading(false)
+    }
+  }, [])
+
+  const handleNotifWhatsapp = useCallback((checked: boolean) => {
+    setNotifWhatsapp(checked)
+    salvarNotificacoes(notifEmail, checked)
+  }, [notifEmail, salvarNotificacoes])
+
+  const handleNotifEmail = useCallback((checked: boolean) => {
+    setNotifEmail(checked)
+    salvarNotificacoes(checked, notifWhatsapp)
+  }, [notifWhatsapp, salvarNotificacoes])
 
   if (!usuario) return null
 
@@ -110,7 +154,8 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                       <Switch
                         id="notif-whatsapp-desktop"
                         checked={notifWhatsapp}
-                        onCheckedChange={setNotifWhatsapp}
+                        onCheckedChange={handleNotifWhatsapp}
+                        disabled={notifLoading}
                       />
                     </div>
                     <div className="flex items-center justify-between gap-3 py-1">
@@ -121,7 +166,8 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                       <Switch
                         id="notif-email-desktop"
                         checked={notifEmail}
-                        onCheckedChange={setNotifEmail}
+                        onCheckedChange={handleNotifEmail}
+                        disabled={notifLoading}
                       />
                     </div>
                   </div>
@@ -197,7 +243,8 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                         <Switch
                           id="notif-whatsapp-mobile"
                           checked={notifWhatsapp}
-                          onCheckedChange={setNotifWhatsapp}
+                          onCheckedChange={handleNotifWhatsapp}
+                          disabled={notifLoading}
                         />
                       </div>
                       <div className="flex items-center justify-between px-3 py-2">
@@ -208,7 +255,8 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                         <Switch
                           id="notif-email-mobile"
                           checked={notifEmail}
-                          onCheckedChange={setNotifEmail}
+                          onCheckedChange={handleNotifEmail}
+                          disabled={notifLoading}
                         />
                       </div>
                     </div>
