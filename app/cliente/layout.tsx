@@ -4,7 +4,7 @@ import type React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Inbox, PlusCircle, Moon, Sun, LogOut, User, Menu, Building2 } from "lucide-react"
+import { Inbox, PlusCircle, Moon, Sun, LogOut, User, Menu, Building2, MessageCircle, Mail, Bell } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/components/auth-provider"
 import { useState } from "react"
@@ -18,12 +18,16 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 
 export default function ClienteLayout({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme()
   const { usuario, logout } = useAuth()
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [notifWhatsapp, setNotifWhatsapp] = useState(false)
+  const [notifEmail, setNotifEmail] = useState(false)
 
   if (!usuario) return null
 
@@ -93,6 +97,35 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs text-muted-foreground font-normal flex items-center gap-1.5">
+                    <Bell className="h-3 w-3" />
+                    Notificacoes de status
+                  </DropdownMenuLabel>
+                  <div className="px-2 py-1.5">
+                    <div className="flex items-center justify-between gap-3 py-1">
+                      <Label htmlFor="notif-whatsapp-desktop" className="flex items-center gap-2 text-sm font-normal cursor-pointer">
+                        <MessageCircle className="h-4 w-4 text-green-600" />
+                        WhatsApp
+                      </Label>
+                      <Switch
+                        id="notif-whatsapp-desktop"
+                        checked={notifWhatsapp}
+                        onCheckedChange={setNotifWhatsapp}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between gap-3 py-1">
+                      <Label htmlFor="notif-email-desktop" className="flex items-center gap-2 text-sm font-normal cursor-pointer">
+                        <Mail className="h-4 w-4 text-blue-600" />
+                        E-mail
+                      </Label>
+                      <Switch
+                        id="notif-email-desktop"
+                        checked={notifEmail}
+                        onCheckedChange={setNotifEmail}
+                      />
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout} className="text-red-600 cursor-pointer">
                     <LogOut className="h-4 w-4 mr-2" />
                     Sair
@@ -149,6 +182,36 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                         </Button>
                       ))}
                     </nav>
+
+                    {/* Notificacoes */}
+                    <div className="border-t pt-4">
+                      <div className="flex items-center gap-1.5 mb-3 px-3">
+                        <Bell className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground font-medium">Notificacoes de status</span>
+                      </div>
+                      <div className="flex items-center justify-between px-3 py-2">
+                        <Label htmlFor="notif-whatsapp-mobile" className="flex items-center gap-2 text-sm font-normal cursor-pointer">
+                          <MessageCircle className="h-4 w-4 text-green-600" />
+                          WhatsApp
+                        </Label>
+                        <Switch
+                          id="notif-whatsapp-mobile"
+                          checked={notifWhatsapp}
+                          onCheckedChange={setNotifWhatsapp}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between px-3 py-2">
+                        <Label htmlFor="notif-email-mobile" className="flex items-center gap-2 text-sm font-normal cursor-pointer">
+                          <Mail className="h-4 w-4 text-blue-600" />
+                          E-mail
+                        </Label>
+                        <Switch
+                          id="notif-email-mobile"
+                          checked={notifEmail}
+                          onCheckedChange={setNotifEmail}
+                        />
+                      </div>
+                    </div>
 
                     {/* Logout */}
                     <Button
