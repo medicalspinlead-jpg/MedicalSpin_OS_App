@@ -38,11 +38,11 @@ interface ClientePerfil {
   cnpj: string
 }
 
-const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: typeof Clock }> = {
-  recebida: { label: "Recebida", variant: "secondary", icon: Clock },
-  em_progresso: { label: "Em Progresso", variant: "default", icon: Wrench },
-  finalizada: { label: "Finalizada", variant: "outline", icon: CheckCircle },
-  cancelada: { label: "Cancelada", variant: "destructive", icon: XCircle },
+const statusConfig: Record<string, { label: string; badgeClass: string; icon: typeof Clock }> = {
+  recebida: { label: "Recebida", badgeClass: "bg-blue-100 text-blue-800 border-blue-200", icon: Clock },
+  em_progresso: { label: "Em Progresso", badgeClass: "bg-amber-100 text-amber-800 border-amber-200", icon: Wrench },
+  finalizada: { label: "Finalizada", badgeClass: "bg-green-100 text-green-800 border-green-200", icon: CheckCircle },
+  cancelada: { label: "Cancelada", badgeClass: "bg-red-100 text-red-800 border-red-200", icon: XCircle },
 }
 
 export default function ClienteDashboard() {
@@ -236,7 +236,7 @@ export default function ClienteDashboard() {
                         <span className="font-mono text-sm font-medium text-foreground">
                           {sol.protocolo}
                         </span>
-                        <Badge variant={config.variant}>
+                        <Badge className={`${config.badgeClass} border`}>
                           <StatusIcon className="h-3 w-3 mr-1" />
                           {config.label}
                         </Badge>

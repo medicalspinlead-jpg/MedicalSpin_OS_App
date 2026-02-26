@@ -129,11 +129,11 @@ interface OSData {
   }
 }
 
-const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: typeof Clock; color: string }> = {
-  recebida: { label: "Recebida", variant: "secondary", icon: Clock, color: "text-muted-foreground" },
-  em_progresso: { label: "Em Progresso", variant: "default", icon: Wrench, color: "text-blue-600" },
-  finalizada: { label: "Finalizada", variant: "outline", icon: CheckCircle, color: "text-green-600" },
-  cancelada: { label: "Cancelada", variant: "destructive", icon: XCircle, color: "text-red-600" },
+const statusConfig: Record<string, { label: string; badgeClass: string; icon: typeof Clock; color: string }> = {
+  recebida: { label: "Recebida", badgeClass: "bg-blue-100 text-blue-800 border-blue-200", icon: Clock, color: "text-blue-600" },
+  em_progresso: { label: "Em Progresso", badgeClass: "bg-amber-100 text-amber-800 border-amber-200", icon: Wrench, color: "text-amber-600" },
+  finalizada: { label: "Finalizada", badgeClass: "bg-green-100 text-green-800 border-green-200", icon: CheckCircle, color: "text-green-600" },
+  cancelada: { label: "Cancelada", badgeClass: "bg-red-100 text-red-800 border-red-200", icon: XCircle, color: "text-red-600" },
 }
 
 export default function SolicitacaoDetalhes() {
@@ -312,7 +312,7 @@ export default function SolicitacaoDetalhes() {
           <h2 className="text-xl md:text-2xl font-bold text-foreground font-mono">
             {solicitacao.protocolo}
           </h2>
-          <Badge variant={config.variant} className="text-sm">
+          <Badge className={`${config.badgeClass} border text-sm`}>
             <StatusIcon className="h-3.5 w-3.5 mr-1" />
             {config.label}
           </Badge>
