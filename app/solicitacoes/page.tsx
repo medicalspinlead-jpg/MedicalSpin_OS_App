@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getSolicitacoes, type Solicitacao } from "@/lib/storage"
+import { SolicitacoesCharts } from "@/components/solicitacoes/charts"
 import {
   Inbox,
   Settings,
@@ -94,6 +95,9 @@ export default function SolicitacoesPage() {
             </p>
           </div>
         </div>
+
+        {/* Graficos */}
+        <SolicitacoesCharts />
 
         {/* Filters */}
         <div className="flex flex-col gap-3 mb-6">

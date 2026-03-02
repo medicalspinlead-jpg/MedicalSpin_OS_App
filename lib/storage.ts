@@ -350,6 +350,24 @@ export async function deleteSolicitacao(id: string): Promise<void> {
   await fetchNoCache(`/api/solicitacoes/${id}`, { method: "DELETE" })
 }
 
+export interface SolicitacaoStats {
+  porStatus: Record<string, number>
+  porTecnico: {
+    nome: string
+    em_progresso: number
+    finalizada: number
+    cancelada: number
+    total: number
+  }[]
+  total: number
+}
+
+export async function getSolicitacoesStats(): Promise<SolicitacaoStats | null> {
+  const res = await fetchNoCache("/api/solicitacoes/stats")
+  if (!res.ok) return null
+  return res.json()
+}
+
 // Helper para criar OS inicial
 export function createNovaOS(): Omit<OrdemServico, "id"> & { id?: string } {
   return {
