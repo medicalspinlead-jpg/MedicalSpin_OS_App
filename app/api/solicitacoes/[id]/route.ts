@@ -63,6 +63,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
           id: h.id,
           status: h.status,
           observacao: h.observacao,
+          usuarioNome: h.usuarioNome || null,
           criadoEm: h.criadoEm.toISOString(),
         })),
       },
@@ -111,6 +112,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
             solicitacaoId: id,
             status: data.status,
             observacao: observacaoMap[data.status] || `Status alterado para ${data.status}`,
+            usuarioNome: data.usuarioNome || null,
           },
         })
       } catch (histError) {

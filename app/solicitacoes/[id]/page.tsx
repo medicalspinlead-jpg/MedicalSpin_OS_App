@@ -40,6 +40,7 @@ import {
   type Solicitacao,
   type OrdemServico,
 } from "@/lib/storage"
+import { useAuth } from "@/components/auth-provider"
 import {
   ArrowLeft,
   Building2,
@@ -76,6 +77,7 @@ const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; icon: R
 export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
+  const { usuario } = useAuth()
   const [solicitacao, setSolicitacao] = useState<Solicitacao | null>(null)
   const [osVinculada, setOsVinculada] = useState<OrdemServico | null>(null)
   const [loading, setLoading] = useState(true)
@@ -223,7 +225,8 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
       await updateSolicitacao(id, {
         status: "em_progresso",
         ordemServicoId: osCriada.id,
-      })
+        usuarioNome: usuario?.nome || undefined,
+      } as any)
 
       setSolicitacao((prev) =>
         prev ? { ...prev, status: "em_progresso", ordemServicoId: osCriada.id } : prev
@@ -244,7 +247,7 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
     setActionLoading(newStatus)
 
     try {
-      await updateSolicitacao(id, { status: newStatus })
+      await updateSolicitacao(id, { status: newStatus, usuarioNome: usuario?.nome || undefined } as any)
       setSolicitacao((prev) => (prev ? { ...prev, status: newStatus } : prev))
     } catch (error) {
       console.error("Erro ao atualizar status:", error)
@@ -261,7 +264,8 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
       await updateSolicitacao(id, {
         status: "cancelada",
         motivoCancelamento: motivoCancelamento.trim(),
-      })
+        usuarioNome: usuario?.nome || undefined,
+      } as any)
       setSolicitacao((prev) =>
         prev ? { ...prev, status: "cancelada", motivoCancelamento: motivoCancelamento.trim() } : prev
       )

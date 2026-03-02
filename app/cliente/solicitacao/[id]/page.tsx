@@ -29,6 +29,7 @@ import {
   Copy,
   ExternalLink,
   AlertCircle,
+  User,
 } from "lucide-react"
 
 interface Solicitacao {
@@ -62,6 +63,7 @@ interface HistoricoStatus {
   id: string
   status: string
   observacao: string | null
+  usuarioNome: string | null
   criadoEm: string
 }
 
@@ -399,6 +401,12 @@ export default function SolicitacaoDetalhes() {
                             minute: "2-digit",
                           })}
                         </p>
+                        {h.usuarioNome && (
+                          <p className="text-xs text-foreground/70 mt-1 flex items-center gap-1">
+                            <User className="h-3 w-3" />
+                            <span className="font-medium">{h.usuarioNome}</span>
+                          </p>
+                        )}
                         {h.observacao && (
                           <p className="text-xs text-muted-foreground/80 mt-0.5">{h.observacao}</p>
                         )}

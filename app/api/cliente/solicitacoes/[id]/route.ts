@@ -64,6 +64,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
           id: h.id,
           status: h.status,
           observacao: h.observacao,
+          usuarioNome: h.usuarioNome || null,
           criadoEm: h.criadoEm.toISOString(),
         })),
       },
