@@ -42,13 +42,32 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   try {
     const { id } = await params
-    const solicitacao = await prisma.solicitacao.findUnique({ where: { id } })
+    const solicitacao = await prisma.solicitacao.findUnique({
+      where: { id },
+      include: {
+        historicoStatus: {
+          orderBy: { criadoEm: "asc" },
+        },
+      },
+    })
 
     if (!solicitacao) {
       return NextResponse.json({ error: "Solicitação não encontrada" }, { status: 404, headers: noCacheHeaders })
     }
 
-    return NextResponse.json(mapSolicitacao(solicitacao), { headers: noCacheHeaders })
+    const mapped = mapSolicitacao(solicitacao)
+    return NextResponse.json(
+      {
+        ...mapped,
+        historicoStatus: solicitacao.historicoStatus.map((h) => ({
+          id: h.id,
+          status: h.status,
+          observacao: h.observacao,
+          criadoEm: h.criadoEm.toISOString(),
+        })),
+      },
+      { headers: noCacheHeaders }
+    )
   } catch (error) {
     console.error("Erro ao buscar solicitação:", error)
     return NextResponse.json({ error: "Erro ao buscar solicitação" }, { status: 500, headers: noCacheHeaders })
@@ -76,6 +95,28 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         ...(data.motivoCancelamento !== undefined && { motivoCancelamento: data.motivoCancelamento }),
       },
     })
+
+    // Registrar historico se o status mudou
+    if (data.status && data.status !== statusAnterior) {
+      try {
+        const observacaoMap: Record<string, string> = {
+          em_progresso: "Solicitacao em andamento",
+          finalizada: "Solicitacao finalizada",
+          cancelada: data.motivoCancelamento
+            ? `Solicitacao cancelada: ${data.motivoCancelamento}`
+            : "Solicitacao cancelada",
+        }
+        await prisma.historicoStatusSolicitacao.create({
+          data: {
+            solicitacaoId: id,
+            status: data.status,
+            observacao: observacaoMap[data.status] || `Status alterado para ${data.status}`,
+          },
+        })
+      } catch (histError) {
+        console.error("Erro ao registrar historico de status:", histError)
+      }
+    }
 
     // Enviar notificacao ao webhook se o status mudou e ha cliente vinculado
     if (data.status && data.status !== statusAnterior && solicitacao.clienteId) {

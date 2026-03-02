@@ -104,6 +104,19 @@ export async function POST(request: Request) {
       },
     })
 
+    // Registrar historico do status inicial
+    try {
+      await prisma.historicoStatusSolicitacao.create({
+        data: {
+          solicitacaoId: solicitacao.id,
+          status: "recebida",
+          observacao: "Solicitacao criada",
+        },
+      })
+    } catch (histError) {
+      console.error("Erro ao registrar historico de status:", histError)
+    }
+
     return NextResponse.json(mapSolicitacao(solicitacao), { status: 201, headers: noCacheHeaders })
   } catch (error) {
     console.error("Erro ao criar solicitação:", error)

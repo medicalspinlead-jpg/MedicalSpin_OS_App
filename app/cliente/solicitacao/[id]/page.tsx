@@ -55,6 +55,14 @@ interface Solicitacao {
   motivoCancelamento?: string | null
   createdAt: string
   updatedAt: string
+  historicoStatus?: HistoricoStatus[]
+}
+
+interface HistoricoStatus {
+  id: string
+  status: string
+  observacao: string | null
+  criadoEm: string
 }
 
 interface OSData {
@@ -330,64 +338,138 @@ export default function SolicitacaoDetalhes() {
       </div>
 
       <div className="space-y-4">
-        {/* Status Timeline */}
+        {/* Status Timeline com historico */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Andamento</CardTitle>
+            <CardDescription className="text-xs">Historico de status da solicitacao</CardDescription>
           </CardHeader>
           <CardContent>
-            {solicitacao.status === "cancelada" ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <XCircle className="h-5 w-5 text-red-600 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-red-800">Solicitacao Cancelada</p>
-                    <p className="text-xs text-red-600">Esta solicitacao foi cancelada pela equipe tecnica.</p>
-                  </div>
-                </div>
-                {solicitacao.motivoCancelamento && (
-                  <div className="p-3 bg-red-50/50 border border-red-100 rounded-lg">
-                    <p className="text-xs font-medium text-red-700 mb-1">Motivo do cancelamento:</p>
-                    <p className="text-sm text-red-900 leading-relaxed whitespace-pre-wrap">
-                      {solicitacao.motivoCancelamento}
-                    </p>
-                  </div>
-                )}
+            {solicitacao.status === "cancelada" && solicitacao.motivoCancelamento && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-xs font-medium text-red-700 mb-1">Motivo do cancelamento:</p>
+                <p className="text-sm text-red-900 leading-relaxed whitespace-pre-wrap">
+                  {solicitacao.motivoCancelamento}
+                </p>
               </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                {["recebida", "em_progresso", "finalizada"].map((s, i) => {
-                  const sc = statusConfig[s]
-                  const isActive = s === solicitacao.status
-                  const isPast =
-                    (s === "recebida") ||
-                    (s === "em_progresso" && ["em_progresso", "finalizada"].includes(solicitacao.status)) ||
-                    (s === "finalizada" && solicitacao.status === "finalizada")
+            )}
+
+            {/* Timeline vertical com datas */}
+            {solicitacao.historicoStatus && solicitacao.historicoStatus.length > 0 ? (
+              <div className="relative">
+                {solicitacao.historicoStatus.map((h, index) => {
+                  const hConfig = statusConfig[h.status] || statusConfig.recebida
+                  const HIcon = hConfig.icon
+                  const isLast = index === solicitacao.historicoStatus!.length - 1
 
                   return (
-                    <div key={s} className="flex items-center gap-2 flex-1">
-                      <div
-                        className={`flex items-center justify-center w-8 h-8 rounded-full border-2 shrink-0 ${
-                          isPast
-                            ? "bg-primary border-primary text-primary-foreground"
-                            : "border-muted-foreground/30 text-muted-foreground"
-                        }`}
-                      >
-                        <sc.icon className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-xs font-medium ${isPast ? "text-foreground" : "text-muted-foreground"}`}>
-                          {sc.label}
-                        </p>
-                      </div>
-                      {i < 2 && (
+                    <div key={h.id} className="flex gap-3">
+                      {/* Linha vertical + Icone */}
+                      <div className="flex flex-col items-center">
                         <div
-                          className={`h-0.5 flex-1 ${isPast ? "bg-primary" : "bg-muted-foreground/20"}`}
-                        />
-                      )}
+                          className={`flex items-center justify-center w-8 h-8 rounded-full border-2 shrink-0 ${
+                            isLast
+                              ? "bg-primary border-primary text-primary-foreground"
+                              : "bg-muted border-muted-foreground/30 text-muted-foreground"
+                          }`}
+                        >
+                          <HIcon className="h-4 w-4" />
+                        </div>
+                        {!isLast && (
+                          <div className="w-0.5 flex-1 min-h-6 bg-muted-foreground/20" />
+                        )}
+                      </div>
+
+                      {/* Conteudo */}
+                      <div className={`pb-5 flex-1 ${isLast ? "" : ""}`}>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge className={`${hConfig.badgeClass} border text-xs`}>
+                            {hConfig.label}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(h.criadoEm).toLocaleDateString("pt-BR", {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          })}{" "}
+                          as{" "}
+                          {new Date(h.criadoEm).toLocaleTimeString("pt-BR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                        {h.observacao && (
+                          <p className="text-xs text-muted-foreground/80 mt-0.5">{h.observacao}</p>
+                        )}
+                      </div>
                     </div>
                   )
                 })}
+              </div>
+            ) : (
+              /* Fallback: timeline simples sem historico (retrocompatibilidade) */
+              <div className="relative">
+                {/* Status criacao */}
+                <div className="flex gap-3">
+                  <div className="flex flex-col items-center">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full border-2 bg-primary border-primary text-primary-foreground shrink-0">
+                      <Clock className="h-4 w-4" />
+                    </div>
+                    {solicitacao.status !== "recebida" && (
+                      <div className="w-0.5 flex-1 min-h-6 bg-muted-foreground/20" />
+                    )}
+                  </div>
+                  <div className="pb-5 flex-1">
+                    <Badge className={`${statusConfig.recebida.badgeClass} border text-xs`}>
+                      Recebida
+                    </Badge>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {new Date(solicitacao.createdAt).toLocaleDateString("pt-BR", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      })}{" "}
+                      as{" "}
+                      {new Date(solicitacao.createdAt).toLocaleTimeString("pt-BR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Status atual se diferente de recebida */}
+                {solicitacao.status !== "recebida" && (() => {
+                  const currentConfig = statusConfig[solicitacao.status] || statusConfig.recebida
+                  const CurrentIcon = currentConfig.icon
+                  return (
+                    <div className="flex gap-3">
+                      <div className="flex flex-col items-center">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full border-2 bg-primary border-primary text-primary-foreground shrink-0">
+                          <CurrentIcon className="h-4 w-4" />
+                        </div>
+                      </div>
+                      <div className="pb-5 flex-1">
+                        <Badge className={`${currentConfig.badgeClass} border text-xs`}>
+                          {currentConfig.label}
+                        </Badge>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(solicitacao.updatedAt).toLocaleDateString("pt-BR", {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          })}{" "}
+                          as{" "}
+                          {new Date(solicitacao.updatedAt).toLocaleTimeString("pt-BR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
             )}
           </CardContent>

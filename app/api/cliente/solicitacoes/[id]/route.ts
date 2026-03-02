@@ -20,6 +20,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     const solicitacao = await prisma.solicitacao.findUnique({
       where: { id },
+      include: {
+        historicoStatus: {
+          orderBy: { criadoEm: "asc" },
+        },
+      },
     })
 
     if (!solicitacao) {
@@ -55,6 +60,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         motivoCancelamento: solicitacao.motivoCancelamento || null,
         createdAt: solicitacao.createdAt.toISOString(),
         updatedAt: solicitacao.updatedAt.toISOString(),
+        historicoStatus: solicitacao.historicoStatus.map((h) => ({
+          id: h.id,
+          status: h.status,
+          observacao: h.observacao,
+          criadoEm: h.criadoEm.toISOString(),
+        })),
       },
       { headers: noCacheHeaders }
     )
