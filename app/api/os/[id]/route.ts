@@ -260,8 +260,25 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           data: { status: "finalizada" },
         })
 
-        // Enviar webhook de notificacao para cada solicitacao vinculada com cliente
+        // Registrar historico de status e enviar notificacoes para cada solicitacao vinculada
         for (const sol of solicitacoesVinculadas) {
+          // Registrar historico de status para que o cliente veja a mudanca
+          if (sol.status !== "finalizada") {
+            try {
+              await prisma.historicoStatusSolicitacao.create({
+                data: {
+                  solicitacaoId: sol.id,
+                  status: "finalizada",
+                  observacao: "Solicitacao finalizada automaticamente ao concluir a Ordem de Servico",
+                  usuarioNome: data.finalizacao?.nomeEngenheiro || null,
+                },
+              })
+            } catch (histErr) {
+              console.error("Erro ao registrar historico da solicitacao", sol.id, histErr)
+            }
+          }
+
+          // Enviar webhook de notificacao para solicitacoes vinculadas com cliente
           if (sol.cliente && (sol.cliente.notifEmail || sol.cliente.notifWhatsapp)) {
             try {
               await enviarNotificacaoStatus(
