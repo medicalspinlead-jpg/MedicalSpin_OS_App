@@ -24,23 +24,32 @@ export async function GET(request: Request) {
       porStatus[s.status] = (porStatus[s.status] || 0) + 1
     }
 
-    // Contagem por tecnico (busca no historico de status quem alterou)
-    const historico = await prisma.historicoStatusSolicitacao.findMany({
+    // Contagem por tecnico baseada no STATUS ATUAL de cada solicitacao
+    // Para cada solicitacao, pega o ultimo registro do historico com tecnico identificado
+    // e conta apenas o status atual da solicitacao (nao todos os historicos)
+    const solicitacoesComHistorico = await prisma.solicitacao.findMany({
       where: {
-        usuarioNome: { not: null },
+        status: { in: ["em_progresso", "finalizada", "cancelada"] },
       },
       select: {
-        usuarioNome: true,
+        id: true,
         status: true,
+        historicoStatus: {
+          where: { usuarioNome: { not: null } },
+          orderBy: { criadoEm: "desc" },
+          take: 1,
+          select: { usuarioNome: true },
+        },
       },
     })
 
-    // Agrupa por tecnico e status
+    // Agrupa: para cada solicitacao, atribui o status atual ao ultimo tecnico que atuou
     const tecnicoMap: Record<string, Record<string, number>> = {}
-    for (const h of historico) {
-      const nome = h.usuarioNome || "Desconhecido"
-      if (!tecnicoMap[nome]) tecnicoMap[nome] = {}
-      tecnicoMap[nome][h.status] = (tecnicoMap[nome][h.status] || 0) + 1
+    for (const sol of solicitacoesComHistorico) {
+      const ultimoTecnico = sol.historicoStatus[0]?.usuarioNome
+      if (!ultimoTecnico) continue
+      if (!tecnicoMap[ultimoTecnico]) tecnicoMap[ultimoTecnico] = {}
+      tecnicoMap[ultimoTecnico][sol.status] = (tecnicoMap[ultimoTecnico][sol.status] || 0) + 1
     }
 
     const porTecnico = Object.entries(tecnicoMap).map(([nome, statusCounts]) => ({

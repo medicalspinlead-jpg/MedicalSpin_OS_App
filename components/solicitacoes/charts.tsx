@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, type ChartConfig } from "@/components/ui/chart"
 import { getSolicitacoesStats, type SolicitacaoStats } from "@/lib/storage"
 import { Loader2 } from "lucide-react"
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts"
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts"
 
 const STATUS_COLORS: Record<string, string> = {
   recebida: "hsl(217, 91%, 60%)",
@@ -34,6 +34,11 @@ const barChartConfig: ChartConfig = {
   cancelada: { label: "Cancelada", color: STATUS_COLORS.cancelada },
 }
 
+function truncateName(name: string, maxLen: number = 14): string {
+  if (name.length <= maxLen) return name
+  return name.slice(0, maxLen - 1).trimEnd() + "\u2026"
+}
+
 export function SolicitacoesCharts() {
   const [stats, setStats] = useState<SolicitacaoStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -51,6 +56,16 @@ export function SolicitacoesCharts() {
     }
     load()
   }, [])
+
+  const barData = useMemo(() => {
+    if (!stats?.porTecnico.length) return []
+    return stats.porTecnico
+      .sort((a, b) => b.total - a.total)
+      .map((t) => ({
+        ...t,
+        nomeExibicao: truncateName(t.nome),
+      }))
+  }, [stats])
 
   if (loading) {
     return (
@@ -79,7 +94,8 @@ export function SolicitacoesCharts() {
     fill: STATUS_COLORS[status] || "hsl(var(--muted))",
   }))
 
-  const hasTecnicoData = stats.porTecnico.length > 0
+  const hasTecnicoData = barData.length > 0
+  const barHeight = Math.max(220, barData.length * 48 + 60)
 
   return (
     <div className="grid gap-4 md:grid-cols-2 mb-6">
@@ -121,12 +137,7 @@ export function SolicitacoesCharts() {
                   <Cell key={`cell-${index}`} fill={entry.fill} />
                 ))}
               </Pie>
-              <Legend
-                verticalAlign="bottom"
-                formatter={(value: string) => (
-                  <span className="text-xs text-foreground">{value}</span>
-                )}
-              />
+              <ChartLegend content={<ChartLegendContent nameKey="name" />} />
             </PieChart>
           </ChartContainer>
         </CardContent>
@@ -144,34 +155,67 @@ export function SolicitacoesCharts() {
         </CardHeader>
         <CardContent>
           {hasTecnicoData ? (
-            <ChartContainer config={barChartConfig} className="mx-auto aspect-[4/3] max-h-[260px]">
+            <ChartContainer
+              config={barChartConfig}
+              className="w-full"
+              style={{ height: `${barHeight}px` }}
+            >
               <BarChart
-                data={stats.porTecnico}
+                data={barData}
                 layout="vertical"
-                margin={{ left: 10, right: 10 }}
+                margin={{ left: 0, right: 12, top: 4, bottom: 4 }}
+                barCategoryGap="20%"
               >
                 <CartesianGrid horizontal={false} strokeDasharray="3 3" />
                 <YAxis
-                  dataKey="nome"
+                  dataKey="nomeExibicao"
                   type="category"
                   tickLine={false}
                   axisLine={false}
-                  width={90}
+                  width={110}
+                  tick={{ fontSize: 11, fill: "hsl(var(--foreground))" }}
+                />
+                <XAxis
+                  type="number"
+                  tickLine={false}
+                  axisLine={false}
+                  allowDecimals={false}
                   tick={{ fontSize: 11 }}
                 />
-                <XAxis type="number" tickLine={false} axisLine={false} allowDecimals={false} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Legend
-                  verticalAlign="bottom"
-                  formatter={(value: string) => (
-                    <span className="text-xs text-foreground">
-                      {STATUS_LABELS[value] || value}
-                    </span>
-                  )}
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent
+                      labelFormatter={(_, payload) => {
+                        if (payload?.[0]?.payload?.nome) {
+                          return payload[0].payload.nome
+                        }
+                        return String(_)
+                      }}
+                    />
+                  }
                 />
-                <Bar dataKey="em_progresso" stackId="a" fill={STATUS_COLORS.em_progresso} radius={[0, 0, 0, 0]} />
-                <Bar dataKey="finalizada" stackId="a" fill={STATUS_COLORS.finalizada} radius={[0, 0, 0, 0]} />
-                <Bar dataKey="cancelada" stackId="a" fill={STATUS_COLORS.cancelada} radius={[4, 4, 4, 4]} />
+                <ChartLegend content={<ChartLegendContent />} />
+                <Bar
+                  dataKey="em_progresso"
+                  name="Em Progresso"
+                  stackId="a"
+                  fill={STATUS_COLORS.em_progresso}
+                  radius={0}
+                />
+                <Bar
+                  dataKey="finalizada"
+                  name="Finalizada"
+                  stackId="a"
+                  fill={STATUS_COLORS.finalizada}
+                  radius={0}
+                />
+                <Bar
+                  dataKey="cancelada"
+                  name="Cancelada"
+                  stackId="a"
+                  fill={STATUS_COLORS.cancelada}
+                  radius={[4, 4, 4, 4]}
+                />
               </BarChart>
             </ChartContainer>
           ) : (
