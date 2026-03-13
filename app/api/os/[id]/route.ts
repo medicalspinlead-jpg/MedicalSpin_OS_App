@@ -269,7 +269,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
                 data: {
                   solicitacaoId: sol.id,
                   status: "finalizada",
-                  observacao: "Solicitacao finalizada automaticamente ao concluir a Ordem de Servico",
+                  observacao: "Solicitação finalizada automaticamente ao concluir a Ordem de Servico",
                   usuarioNome: data.finalizacao?.nomeEngenheiro || null,
                 },
               })

@@ -344,7 +344,7 @@ export default function SolicitacaoDetalhes() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Andamento</CardTitle>
-            <CardDescription className="text-xs">Historico de status da solicitacao</CardDescription>
+            <CardDescription className="text-xs">Histórico de status da solicitação</CardDescription>
           </CardHeader>
           <CardContent>
             {solicitacao.status === "cancelada" && solicitacao.motivoCancelamento && (
@@ -520,7 +520,7 @@ export default function SolicitacaoDetalhes() {
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <FileText className="h-4 w-4 text-primary" />
-              <CardTitle className="text-base">Descricao do Problema</CardTitle>
+              <CardTitle className="text-base">Descrição do Problema</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
@@ -652,7 +652,7 @@ export default function SolicitacaoDetalhes() {
                 </CardHeader>
                 <CardContent className="grid md:grid-cols-2 gap-3 text-sm">
                   <div>
-                    <p className="text-xs text-muted-foreground">Razao Social</p>
+                    <p className="text-xs text-muted-foreground">Razão Social</p>
                     <p className="font-medium">{osData.empresa.razaoSocial || "-"}</p>
                   </div>
                   <div>
@@ -698,7 +698,7 @@ export default function SolicitacaoDetalhes() {
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
                   <div>
-                    <p className="text-xs text-muted-foreground">Motivacao do Servico</p>
+                    <p className="text-xs text-muted-foreground">Motivação do Servico</p>
                     <p className="font-medium whitespace-pre-wrap">{osData.motivo.motivacaoServico || "-"}</p>
                   </div>
                   {osData.motivo.eventosRelevantes && (
@@ -713,15 +713,15 @@ export default function SolicitacaoDetalhes() {
               {/* Intervencao */}
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">4. Intervencao</CardTitle>
+                  <CardTitle className="text-sm">4. Intervenção</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
                   <div>
-                    <p className="text-xs text-muted-foreground">Tipo de Intervencao</p>
+                    <p className="text-xs text-muted-foreground">Tipo de Intervenção</p>
                     <Badge variant="secondary">{osData.intervencao.tipo || "-"}</Badge>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Descricao dos Servicos</p>
+                    <p className="text-xs text-muted-foreground">Descrição dos Serviços</p>
                     <p className="font-medium whitespace-pre-wrap">{osData.intervencao.descricaoServicos || "-"}</p>
                   </div>
                 </CardContent>
@@ -780,7 +780,7 @@ export default function SolicitacaoDetalhes() {
               {osData.maoDeObra.length > 0 && (
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">6. Mao de Obra ({osData.maoDeObra.length} servico(s))</CardTitle>
+                    <CardTitle className="text-sm">6. Mão de Obra ({osData.maoDeObra.length} serviço(s))</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
@@ -801,7 +801,7 @@ export default function SolicitacaoDetalhes() {
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    7. Pendencias
+                    7. Pendências
                     {osData.pendencias.medicalSpin || osData.pendencias.cliente ? (
                       <AlertCircle className="h-4 w-4 text-orange-600" />
                     ) : (
@@ -814,13 +814,13 @@ export default function SolicitacaoDetalhes() {
                     <div className="space-y-2">
                       {osData.pendencias.medicalSpin && (
                         <div>
-                          <p className="text-xs text-muted-foreground">Pendencias Medical Spin</p>
+                          <p className="text-xs text-muted-foreground">Pendências Medical Spin</p>
                           <p className="font-medium whitespace-pre-wrap">{osData.pendencias.medicalSpin}</p>
                         </div>
                       )}
                       {osData.pendencias.cliente && (
                         <div>
-                          <p className="text-xs text-muted-foreground">Pendencias do Cliente</p>
+                          <p className="text-xs text-muted-foreground">Pendências do Cliente</p>
                           <p className="font-medium whitespace-pre-wrap">{osData.pendencias.cliente}</p>
                         </div>
                       )}
@@ -875,7 +875,7 @@ export default function SolicitacaoDetalhes() {
               {/* Finalizacao */}
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">9. Finalizacao</CardTitle>
+                  <CardTitle className="text-sm">9. Finalização</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
                   <div className="grid md:grid-cols-2 gap-3">
@@ -898,7 +898,7 @@ export default function SolicitacaoDetalhes() {
                   </div>
                   {osData.finalizedAt && (
                     <div>
-                      <p className="text-xs text-muted-foreground">Data de Finalizacao</p>
+                      <p className="text-xs text-muted-foreground">Data de Finalização</p>
                       <p className="font-medium">
                         {new Date(osData.finalizedAt).toLocaleDateString("pt-BR")} as{" "}
                         {new Date(osData.finalizedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}

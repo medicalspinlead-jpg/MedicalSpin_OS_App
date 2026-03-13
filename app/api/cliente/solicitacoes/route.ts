@@ -122,7 +122,7 @@ export async function POST(request: Request) {
         data: {
           solicitacaoId: solicitacao.id,
           status: "recebida",
-          observacao: "Solicitacao criada pelo portal do cliente",
+          observacao: "Solicitação criada pelo portal do cliente",
         },
       })
     } catch (histError) {

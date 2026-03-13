@@ -148,7 +148,7 @@ export default function NovaSolicitacaoCliente() {
       { field: "tipoEquipamento", label: "Tipo de Equipamento" },
       { field: "fabricante", label: "Fabricante" },
       { field: "modelo", label: "Modelo" },
-      { field: "descricaoProblema", label: "Descricao do Problema" },
+      { field: "descricaoProblema", label: "Descrição do Problema" },
     ]
 
     for (const { field, label } of required) {
@@ -350,7 +350,7 @@ export default function NovaSolicitacaoCliente() {
           <CardHeader className="pb-4">
             <div className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5 text-primary" />
-              <CardTitle className="text-base">Descricao do Problema</CardTitle>
+              <CardTitle className="text-base">Descrição do Problema</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">

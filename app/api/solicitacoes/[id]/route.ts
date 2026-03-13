@@ -101,7 +101,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     if (data.status && data.status !== statusAnterior) {
       try {
         const observacaoMap: Record<string, string> = {
-          em_progresso: "Solicitacao em andamento",
+          em_progresso: "Solicitação em andamento",
           finalizada: "Solicitacao finalizada",
           cancelada: data.motivoCancelamento
             ? `Solicitacao cancelada: ${data.motivoCancelamento}`

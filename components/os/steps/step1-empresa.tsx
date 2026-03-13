@@ -222,11 +222,11 @@ export const Step1DadosEmpresa = forwardRef<
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="razaoSocial" className="text-muted-foreground">Razao Social</Label>
+              <Label htmlFor="razaoSocial" className="text-muted-foreground">Razão Social</Label>
               <Input
                 id="razaoSocial"
                 value={formData.razaoSocial}
-                placeholder="Razao Social"
+                placeholder="Razão Social"
                 disabled
                 className="bg-muted text-muted-foreground cursor-not-allowed"
               />

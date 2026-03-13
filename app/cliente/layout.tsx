@@ -87,8 +87,8 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
   if (!usuario) return null
 
   const navItems = [
-    { href: "/cliente", label: "Minhas Solicitacoes", icon: Inbox },
-    { href: "/cliente/nova-solicitacao", label: "Nova Solicitacao", icon: PlusCircle },
+    { href: "/cliente", label: "Minhas Solicitações", icon: Inbox },
+    { href: "/cliente/nova-solicitacao", label: "Nova OS", icon: PlusCircle },
     { href: "/cliente/perfil", label: "Meus Dados", icon: Settings },
   ]
 
@@ -155,7 +155,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel className="text-xs text-muted-foreground font-normal flex items-center gap-1.5">
                     <Bell className="h-3 w-3" />
-                    Notificacoes de status
+                    Notificações de status
                   </DropdownMenuLabel>
                   <div className="px-2 py-1.5">
                     <div className="flex items-center justify-between gap-3 py-1">
@@ -245,7 +245,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                     <div className="border-t pt-4">
                       <div className="flex items-center gap-1.5 mb-3 px-3">
                         <Bell className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground font-medium">Notificacoes de status</span>
+                        <span className="text-xs text-muted-foreground font-medium">Notificações de status</span>
                       </div>
                       <div className="flex items-center justify-between px-3 py-2">
                         <Label htmlFor="notif-whatsapp-mobile" className="flex items-center gap-2 text-sm font-normal cursor-pointer">
