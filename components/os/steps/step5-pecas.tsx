@@ -164,10 +164,13 @@ export const Step5Pecas = forwardRef(function Step5Pecas(
                     <Label htmlFor="quantidade-removida">Quantidade</Label>
                     <Input
                       id="quantidade-removida"
-                      type="number"
-                      min="1"
-                      value={novaPeca.quantidade}
-                      onChange={(e) => setNovaPeca({ ...novaPeca, quantidade: Number.parseInt(e.target.value) || 1 })}
+                      inputMode="numeric"
+                      value={novaPeca.quantidade === 1 && novaPeca.nome === "" ? "" : String(novaPeca.quantidade)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, "")
+                        setNovaPeca({ ...novaPeca, quantidade: raw === "" ? 1 : Number.parseInt(raw) })
+                      }}
+                      placeholder="1"
                     />
                   </div>
                   <div className="space-y-2">
@@ -282,10 +285,13 @@ export const Step5Pecas = forwardRef(function Step5Pecas(
                     <Label htmlFor="quantidade-inclusa">Quantidade</Label>
                     <Input
                       id="quantidade-inclusa"
-                      type="number"
-                      min="1"
-                      value={novaPeca.quantidade}
-                      onChange={(e) => setNovaPeca({ ...novaPeca, quantidade: Number.parseInt(e.target.value) || 1 })}
+                      inputMode="numeric"
+                      value={novaPeca.quantidade === 1 && novaPeca.nome === "" ? "" : String(novaPeca.quantidade)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, "")
+                        setNovaPeca({ ...novaPeca, quantidade: raw === "" ? 1 : Number.parseInt(raw) })
+                      }}
+                      placeholder="1"
                     />
                   </div>
                   <div className="space-y-2">

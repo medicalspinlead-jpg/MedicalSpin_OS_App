@@ -109,11 +109,13 @@ const servico: MaoDeObra = {
                 <Label htmlFor="horas">Horas</Label>
                 <Input
                   id="horas"
-                  type="number"
-                  step="0.5"
-                  min="0.5"
-                  value={novoServico.horas}
-                  onChange={(e) => setNovoServico({ ...novoServico, horas: Number.parseFloat(e.target.value) || 1 })}
+                  inputMode="decimal"
+                  value={String(novoServico.horas)}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/[^0-9.,]/g, "").replace(",", ".")
+                    setNovoServico({ ...novoServico, horas: Number.parseFloat(raw) || 0 })
+                  }}
+                  placeholder="Ex: 1.5"
                 />
               </div>
             </div>
