@@ -37,8 +37,19 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
         const res = await fetch("/api/cliente/notificacoes")
         if (res.ok) {
           const data = await res.json()
-          setNotifEmail(data.notifEmail)
-          setNotifWhatsapp(data.notifWhatsapp)
+          // Se ambas as opcoes estao desabilitadas, assume primeira vez e habilita as duas por padrao
+          if (!data.notifEmail && !data.notifWhatsapp) {
+            setNotifEmail(true)
+            setNotifWhatsapp(true)
+            await fetch("/api/cliente/notificacoes", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ notifEmail: true, notifWhatsapp: true }),
+            })
+          } else {
+            setNotifEmail(data.notifEmail)
+            setNotifWhatsapp(data.notifWhatsapp)
+          }
         }
       } catch {
         // silenciar erro - manter defaults

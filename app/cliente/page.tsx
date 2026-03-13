@@ -38,11 +38,54 @@ interface ClientePerfil {
   cnpj: string
 }
 
-const statusConfig: Record<string, { label: string; badgeClass: string; icon: typeof Clock }> = {
-  recebida: { label: "Recebida", badgeClass: "bg-blue-100 text-blue-800 border-blue-200", icon: Clock },
-  em_progresso: { label: "Em Progresso", badgeClass: "bg-amber-100 text-amber-800 border-amber-200", icon: Wrench },
-  finalizada: { label: "Finalizada", badgeClass: "bg-green-100 text-green-800 border-green-200", icon: CheckCircle },
-  cancelada: { label: "Cancelada", badgeClass: "bg-red-100 text-red-800 border-red-200", icon: XCircle },
+const statusConfig: Record<
+  string,
+  {
+    label: string
+    badgeClass: string
+    icon: typeof Clock
+    cardBorder: string
+    cardBg: string
+    iconColor: string
+    glowColor: string
+  }
+> = {
+  recebida: {
+    label: "Recebida",
+    badgeClass: "bg-cyan-950 text-cyan-300 border-cyan-500/50",
+    icon: Clock,
+    cardBorder: "border-l-cyan-400",
+    cardBg: "bg-cyan-500/5",
+    iconColor: "text-cyan-400",
+    glowColor: "shadow-cyan-500/20",
+  },
+  em_progresso: {
+    label: "Em Progresso",
+    badgeClass: "bg-amber-950 text-amber-300 border-amber-500/50",
+    icon: Wrench,
+    cardBorder: "border-l-amber-400",
+    cardBg: "bg-amber-500/5",
+    iconColor: "text-amber-400",
+    glowColor: "shadow-amber-500/20",
+  },
+  finalizada: {
+    label: "Finalizada",
+    badgeClass: "bg-emerald-950 text-emerald-300 border-emerald-500/50",
+    icon: CheckCircle,
+    cardBorder: "border-l-emerald-400",
+    cardBg: "bg-emerald-500/5",
+    iconColor: "text-emerald-400",
+    glowColor: "shadow-emerald-500/20",
+  },
+  cancelada: {
+    label: "Cancelada",
+    badgeClass: "bg-red-950 text-red-300 border-red-500/50",
+    icon: XCircle,
+    cardBorder: "border-l-red-400",
+    cardBg: "bg-red-500/5",
+    iconColor: "text-red-400",
+    glowColor: "shadow-red-500/20",
+  },
 }
 
 export default function ClienteDashboard() {
@@ -123,7 +166,7 @@ export default function ClienteDashboard() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
           <h2 className="text-xl md:text-2xl font-bold text-foreground text-balance">
-            Minhas Solicitacoes
+            Minhas Solicitações
           </h2>
           {perfil && (
             <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
@@ -135,17 +178,17 @@ export default function ClienteDashboard() {
         <Button asChild>
           <Link href="/cliente/nova-solicitacao">
             <PlusCircle className="h-4 w-4 mr-2" />
-            Nova Solicitacao
+            Nova OS
           </Link>
         </Button>
       </div>
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4 mb-6">
-        <Card>
+        <Card className="border-l-4 border-l-cyan-400 bg-cyan-500/5">
           <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg bg-muted p-2">
-              <Clock className="h-5 w-5 text-muted-foreground" />
+            <div className="rounded-lg bg-cyan-500/10 p-2">
+              <Clock className="h-5 w-5 text-cyan-400" />
             </div>
             <div>
               <p className="text-2xl font-bold">{counts.recebida}</p>
@@ -153,10 +196,10 @@ export default function ClienteDashboard() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-l-4 border-l-amber-400 bg-amber-500/5">
           <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg bg-muted p-2">
-              <Wrench className="h-5 w-5 text-muted-foreground" />
+            <div className="rounded-lg bg-amber-500/10 p-2">
+              <Wrench className="h-5 w-5 text-amber-400" />
             </div>
             <div>
               <p className="text-2xl font-bold">{counts.em_progresso}</p>
@@ -164,10 +207,10 @@ export default function ClienteDashboard() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-l-4 border-l-emerald-400 bg-emerald-500/5">
           <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg bg-muted p-2">
-              <CheckCircle className="h-5 w-5 text-muted-foreground" />
+            <div className="rounded-lg bg-emerald-500/10 p-2">
+              <CheckCircle className="h-5 w-5 text-emerald-400" />
             </div>
             <div>
               <p className="text-2xl font-bold">{counts.finalizada}</p>
@@ -175,10 +218,10 @@ export default function ClienteDashboard() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-l-4 border-l-red-400 bg-red-500/5">
           <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg bg-muted p-2">
-              <XCircle className="h-5 w-5 text-muted-foreground" />
+            <div className="rounded-lg bg-red-500/10 p-2">
+              <XCircle className="h-5 w-5 text-red-400" />
             </div>
             <div>
               <p className="text-2xl font-bold">{counts.cancelada}</p>
@@ -216,7 +259,7 @@ export default function ClienteDashboard() {
               <Button asChild>
                 <Link href="/cliente/nova-solicitacao">
                   <PlusCircle className="h-4 w-4 mr-2" />
-                  Nova Solicitacao
+                  Nova OS
                 </Link>
               </Button>
             )}
@@ -228,7 +271,10 @@ export default function ClienteDashboard() {
             const config = statusConfig[sol.status] || statusConfig.recebida
             const StatusIcon = config.icon
             return (
-              <Card key={sol.id} className="hover:shadow-md transition-shadow">
+              <Card
+                key={sol.id}
+                className={`border-l-4 ${config.cardBorder} ${config.cardBg} hover:shadow-lg ${config.glowColor} transition-all duration-200`}
+              >
                 <CardContent className="p-4">
                   <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div className="flex-1 min-w-0">
@@ -237,7 +283,7 @@ export default function ClienteDashboard() {
                           {sol.protocolo}
                         </span>
                         <Badge className={`${config.badgeClass} border`}>
-                          <StatusIcon className="h-3 w-3 mr-1" />
+                          <StatusIcon className={`h-3 w-3 mr-1 ${config.iconColor}`} />
                           {config.label}
                         </Badge>
                       </div>

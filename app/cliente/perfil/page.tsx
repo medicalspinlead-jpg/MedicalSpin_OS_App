@@ -286,7 +286,7 @@ export default function PerfilPage() {
             Dados da Empresa
           </CardTitle>
           <CardDescription>
-            Essas informacoes ficam visiveis para a equipe tecnica. O CNPJ nao pode ser alterado.
+            Essas informações ficam visiveis para a equipe técnica. O CNPJ não pode ser alterado.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -298,7 +298,7 @@ export default function PerfilPage() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="razaoSocial">Razao Social *</Label>
+              <Label htmlFor="razaoSocial">Razão Social *</Label>
               <Input
                 id="razaoSocial"
                 value={form.razaoSocial}
@@ -316,7 +316,7 @@ export default function PerfilPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="responsavel">Responsavel *</Label>
+            <Label htmlFor="responsavel">Responsável *</Label>
             <Input
               id="responsavel"
               value={form.responsavel}
@@ -400,19 +400,6 @@ export default function PerfilPage() {
                 Gerencie os equipamentos vinculados a sua empresa
               </CardDescription>
             </div>
-            {!addingEquip && (
-              <Button
-                size="sm"
-                onClick={() => {
-                  setAddingEquip(true)
-                  setEditingEquipId(null)
-                  setNewEquipForm({ tipo: "", fabricante: "", modelo: "", numeroSerie: "" })
-                }}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Adicionar
-              </Button>
-            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -425,61 +412,7 @@ export default function PerfilPage() {
           ) : (
             <div className="space-y-3">
               {/* Formulario de adicao */}
-              {addingEquip && (
-                <div className="rounded-lg border border-dashed border-primary/40 bg-muted/30 p-4 space-y-3">
-                  <p className="text-sm font-medium text-foreground">Novo Equipamento</p>
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <div className="space-y-1">
-                      <Label className="text-xs">Tipo *</Label>
-                      <Input
-                        placeholder="Ex: Compressor"
-                        value={newEquipForm.tipo}
-                        onChange={(e) => setNewEquipForm((p) => ({ ...p, tipo: e.target.value }))}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">Fabricante *</Label>
-                      <Input
-                        placeholder="Ex: Atlas Copco"
-                        value={newEquipForm.fabricante}
-                        onChange={(e) => setNewEquipForm((p) => ({ ...p, fabricante: e.target.value }))}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">Modelo *</Label>
-                      <Input
-                        placeholder="Ex: GA 45+"
-                        value={newEquipForm.modelo}
-                        onChange={(e) => setNewEquipForm((p) => ({ ...p, modelo: e.target.value }))}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">N. Serie</Label>
-                      <Input
-                        placeholder="Opcional"
-                        value={newEquipForm.numeroSerie}
-                        onChange={(e) => setNewEquipForm((p) => ({ ...p, numeroSerie: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 justify-end">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setAddingEquip(false)}
-                      disabled={equipSaving}
-                      className="bg-transparent"
-                    >
-                      <X className="h-4 w-4 mr-1" />
-                      Cancelar
-                    </Button>
-                    <Button size="sm" onClick={handleAddEquip} disabled={equipSaving}>
-                      {equipSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
-                      Salvar
-                    </Button>
-                  </div>
-                </div>
-              )}
+
 
               {/* Lista de equipamentos */}
               {equipamentos.length === 0 && !addingEquip ? (
@@ -551,25 +484,7 @@ export default function PerfilPage() {
                           </p>
                         )}
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 bg-transparent"
-                          onClick={() => startEditEquip(equip)}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                          <span className="sr-only">Editar</span>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive bg-transparent"
-                          onClick={() => setDeleteEquipId(equip.id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                          <span className="sr-only">Excluir</span>
-                        </Button>
+                      <div className="flex items-center gap-1 shrink-0">                       
                       </div>
                     </div>
                   )
@@ -579,29 +494,6 @@ export default function PerfilPage() {
           )}
         </CardContent>
       </Card>
-
-      {/* Dialog de confirmacao de exclusao */}
-      <AlertDialog open={!!deleteEquipId} onOpenChange={(open) => !open && setDeleteEquipId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir equipamento?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acao nao pode ser desfeita. O equipamento sera removido permanentemente.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={equipSaving}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteEquip}
-              disabled={equipSaving}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {equipSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }

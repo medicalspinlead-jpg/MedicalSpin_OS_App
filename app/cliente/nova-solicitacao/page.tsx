@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FABRICANTES, MODELOS } from "@/lib/constants"
-import { Send, CheckCircle, AlertTriangle, Wrench, MessageSquare, ArrowLeft, Loader2, ImageIcon, X, Video, Plus, ChevronDown, Check } from "lucide-react"
+import { Send, CheckCircle, AlertTriangle, Wrench, MessageSquare, ArrowLeft, Loader2, ImageIcon, X, Video, Check } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { converterParaJPG, isImageFile, isVideoFile, converterVideoParaBase64 } from "@/lib/webhook"
 
@@ -61,9 +61,7 @@ export default function NovaSolicitacaoCliente() {
   // Estado de equipamentos
   const [equipamentos, setEquipamentos] = useState<EquipamentoCliente[]>([])
   const [loadingEquipamentos, setLoadingEquipamentos] = useState(true)
-  const [modoEquipamento, setModoEquipamento] = useState<"existente" | "novo">("existente")
   const [equipamentoSelecionadoId, setEquipamentoSelecionadoId] = useState<string>("")
-  const [salvandoEquipamento, setSalvandoEquipamento] = useState(false)
 
   const [form, setForm] = useState({
     tipoEquipamento: "",
@@ -104,7 +102,6 @@ export default function NovaSolicitacaoCliente() {
           if (equipData.length > 0) {
             const primeiro = equipData[0]
             setEquipamentoSelecionadoId(primeiro.id)
-            setModoEquipamento("existente")
             setForm((prev) => ({
               ...prev,
               tipoEquipamento: primeiro.tipo,
@@ -112,9 +109,6 @@ export default function NovaSolicitacaoCliente() {
               modelo: primeiro.modelo,
               numeroSerie: primeiro.numeroSerie || "",
             }))
-          } else {
-            // Sem equipamentos, ir direto para novo
-            setModoEquipamento("novo")
           }
         }
       } catch (error) {
@@ -146,17 +140,6 @@ export default function NovaSolicitacaoCliente() {
     }
   }
 
-  function limparEquipamento() {
-    setEquipamentoSelecionadoId("")
-    setForm((prev) => ({
-      ...prev,
-      tipoEquipamento: "",
-      fabricante: "",
-      modelo: "",
-      numeroSerie: "",
-    }))
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError("")
@@ -177,33 +160,6 @@ export default function NovaSolicitacaoCliente() {
 
     setLoading(true)
     try {
-      // Se modo "novo", salvar o equipamento primeiro para vincula-lo ao cliente
-      if (modoEquipamento === "novo" && form.tipoEquipamento && form.fabricante && form.modelo) {
-        setSalvandoEquipamento(true)
-        try {
-          const equipRes = await fetch("/api/cliente/equipamentos", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({
-              tipo: form.tipoEquipamento,
-              fabricante: form.fabricante,
-              modelo: form.modelo,
-              numeroSerie: form.numeroSerie || "",
-            }),
-          })
-          if (equipRes.ok) {
-            const novoEquip = await equipRes.json()
-            setEquipamentos((prev) => [...prev, novoEquip])
-          }
-        } catch (err) {
-          // Nao bloqueia o envio da solicitacao se falhar o salvamento do equipamento
-          console.error("Erro ao salvar novo equipamento:", err)
-        } finally {
-          setSalvandoEquipamento(false)
-        }
-      }
-
       // Separar imagens e videos
       const imagens = midias.filter((m) => m.tipo === "imagem").map((m) => m.preview)
       const videos = midias.filter((m) => m.tipo === "video").map((m) => m.preview)
@@ -265,10 +221,8 @@ export default function NovaSolicitacaoCliente() {
                   setStep("form")
                   setProtocolo("")
                   setMidias([])
-                  // Re-selecionar o primeiro equipamento se existir
                   if (equipamentos.length > 0) {
                     const primeiro = equipamentos[0]
-                    setModoEquipamento("existente")
                     setEquipamentoSelecionadoId(primeiro.id)
                     setForm({
                       tipoEquipamento: primeiro.tipo,
@@ -281,7 +235,6 @@ export default function NovaSolicitacaoCliente() {
                       email: perfil?.email || "",
                     })
                   } else {
-                    setModoEquipamento("novo")
                     setEquipamentoSelecionadoId("")
                     setForm({
                       tipoEquipamento: "",
@@ -332,7 +285,7 @@ export default function NovaSolicitacaoCliente() {
             </div>
             {equipamentos.length > 0 && (
               <p className="text-xs text-muted-foreground">
-                Selecione um equipamento cadastrado ou adicione um novo.
+                Selecione um dos equipamentos cadastrados.
               </p>
             )}
           </CardHeader>
@@ -342,149 +295,52 @@ export default function NovaSolicitacaoCliente() {
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Carregando equipamentos...
               </div>
+            ) : equipamentos.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-2">
+                Nenhum equipamento cadastrado. Entre em contato com o suporte para cadastrar seus equipamentos.
+              </p>
             ) : (
-              <>
-                {/* Seletor de modo: existente ou novo */}
-                {equipamentos.length > 0 && (
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant={modoEquipamento === "existente" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        setModoEquipamento("existente")
-                        if (equipamentoSelecionadoId) {
-                          selecionarEquipamento(equipamentoSelecionadoId)
-                        } else if (equipamentos.length > 0) {
-                          selecionarEquipamento(equipamentos[0].id)
+              <div className="space-y-3">
+                <Label>Selecione o equipamento *</Label>
+                <div className="grid gap-2">
+                  {equipamentos.map((equip) => (
+                    <div
+                      key={equip.id}
+                      onClick={() => selecionarEquipamento(equip.id)}
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        equipamentoSelecionadoId === equip.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/50 hover:bg-muted/50"
+                      }`}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault()
+                          selecionarEquipamento(equip.id)
                         }
                       }}
-                      className={modoEquipamento === "existente" ? "" : "bg-transparent"}
                     >
-                      Equipamento cadastrado
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={modoEquipamento === "novo" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        setModoEquipamento("novo")
-                        limparEquipamento()
-                      }}
-                      className={modoEquipamento === "novo" ? "" : "bg-transparent"}
-                    >
-                      <Plus className="h-3.5 w-3.5 mr-1" />
-                      Novo equipamento
-                    </Button>
-                  </div>
-                )}
-
-                {/* Modo: Selecionar equipamento existente */}
-                {modoEquipamento === "existente" && equipamentos.length > 0 && (
-                  <div className="space-y-3">
-                    <Label>Equipamento *</Label>
-                    <div className="grid gap-2">
-                      {equipamentos.map((equip) => (
-                        <div
-                          key={equip.id}
-                          onClick={() => selecionarEquipamento(equip.id)}
-                          className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                            equipamentoSelecionadoId === equip.id
-                              ? "border-primary bg-primary/5"
-                              : "border-border hover:border-primary/50 hover:bg-muted/50"
-                          }`}
-                          role="button"
-                          tabIndex={0}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault()
-                              selecionarEquipamento(equip.id)
-                            }
-                          }}
-                        >
-                          <div className={`flex items-center justify-center h-5 w-5 rounded-full border-2 shrink-0 ${
-                            equipamentoSelecionadoId === equip.id
-                              ? "border-primary bg-primary"
-                              : "border-muted-foreground/30"
-                          }`}>
-                            {equipamentoSelecionadoId === equip.id && (
-                              <Check className="h-3 w-3 text-primary-foreground" />
-                            )}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-foreground truncate">{equip.tipo}</p>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {equip.fabricante} - {equip.modelo}
-                              {equip.numeroSerie ? ` | N/S: ${equip.numeroSerie}` : ""}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Modo: Novo equipamento (ou sem equipamentos cadastrados) */}
-                {(modoEquipamento === "novo" || equipamentos.length === 0) && (
-                  <div className="space-y-4">
-                    {equipamentos.length === 0 && (
-                      <p className="text-xs text-muted-foreground">
-                        Nenhum equipamento cadastrado. Preencha os dados abaixo. O equipamento sera salvo automaticamente.
-                      </p>
-                    )}
-                    <div className="space-y-2">
-                      <Label htmlFor="tipoEquipamento">Tipo de Equipamento *</Label>
-                      <Input
-                        id="tipoEquipamento"
-                        placeholder="Ex: Ressonancia Magnetica, Tomografo..."
-                        value={form.tipoEquipamento}
-                        onChange={(e) => updateField("tipoEquipamento", e.target.value)}
-                      />
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="fabricante">Fabricante *</Label>
-                        <Select value={form.fabricante} onValueChange={(v) => updateField("fabricante", v)}>
-                          <SelectTrigger id="fabricante">
-                            <SelectValue placeholder="Selecione o fabricante" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {FABRICANTES.map((f) => (
-                              <SelectItem key={f} value={f}>{f}</SelectItem>
-                            ))}
-                            <SelectItem value="Outro">Outro</SelectItem>
-                          </SelectContent>
-                        </Select>
+                      <div className={`flex items-center justify-center h-5 w-5 rounded-full border-2 shrink-0 ${
+                        equipamentoSelecionadoId === equip.id
+                          ? "border-primary bg-primary"
+                          : "border-muted-foreground/30"
+                      }`}>
+                        {equipamentoSelecionadoId === equip.id && (
+                          <Check className="h-3 w-3 text-primary-foreground" />
+                        )}
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="modelo">Modelo *</Label>
-                        <Select value={form.modelo} onValueChange={(v) => updateField("modelo", v)}>
-                          <SelectTrigger id="modelo">
-                            <SelectValue placeholder="Selecione o modelo" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {MODELOS.map((m) => (
-                              <SelectItem key={m} value={m}>{m}</SelectItem>
-                            ))}
-                            <SelectItem value="Outro">Outro</SelectItem>
-                          </SelectContent>
-                        </Select>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-foreground truncate">{equip.tipo}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {equip.fabricante} - {equip.modelo}
+                          {equip.numeroSerie ? ` | N/S: ${equip.numeroSerie}` : ""}
+                        </p>
                       </div>
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="numeroSerie">Numero de Serie</Label>
-                      <Input
-                        id="numeroSerie"
-                        placeholder="Numero de serie do equipamento (opcional)"
-                        value={form.numeroSerie}
-                        onChange={(e) => updateField("numeroSerie", e.target.value)}
-                      />
-                    </div>
-                  </div>
-                )}
-              </>
+                  ))}
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -659,43 +515,6 @@ export default function NovaSolicitacaoCliente() {
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        {/* Contato (pre-preenchido mas editavel) */}
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-base">Contato para esta solicitacao</CardTitle>
-            <p className="text-xs text-muted-foreground">Pre-preenchido com os dados da empresa. Ajuste se necessario.</p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="nomeContato">Nome do Contato</Label>
-                <Input
-                  id="nomeContato"
-                  value={form.nomeContato}
-                  onChange={(e) => updateField("nomeContato", e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="telefone">Telefone</Label>
-                <Input
-                  id="telefone"
-                  value={form.telefone}
-                  onChange={(e) => updateField("telefone", e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={form.email}
-                onChange={(e) => updateField("email", e.target.value)}
-              />
-            </div>
           </CardContent>
         </Card>
 
