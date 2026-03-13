@@ -474,15 +474,7 @@ export default function HistoricoPage() {
                             )}
                             {buscandoLink === os.id ? "..." : "Baixar"}
                           </Button>
-                        )}
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => setOsToDelete(os)}
-                          className="shrink-0"
-                        >
-                          <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        </Button>
+                        )}                       
                       </div>
                     </div>
                   </CardContent>
@@ -492,24 +484,6 @@ export default function HistoricoPage() {
           </div>
         )}
       </main>
-
-      <AlertDialog open={!!osToDelete} onOpenChange={(open) => !open && setOsToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir Ordem de Serviço?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir a OS <strong>{osToDelete?.numero}</strong>? Esta ação não pode ser desfeita
-              e todos os dados serão permanentemente removidos.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <Dialog open={showLinkDialog} onOpenChange={setShowLinkDialog}>
         <DialogContent className="w-[95vw] max-w-lg mx-auto">

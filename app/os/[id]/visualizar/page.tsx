@@ -324,44 +324,11 @@ export default function VisualizarOSPage() {
           {/* Dados do Cliente e Equipamento */}
           <Card>
             <CardHeader>
-              <CardTitle>2. Cliente e Equipamento</CardTitle>
+              <CardTitle>2.Equipamento</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div>
-                  <CardDescription className="mb-2">Cliente</CardDescription>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-sm text-muted-foreground">Razão Social</div>
-                      <div className="font-medium">{os.cliente?.razaoSocial || "-"}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Nome Fantasia</div>
-                      <div className="font-medium">{os.cliente?.nomeFantasia || "-"}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">CNPJ</div>
-                      <div className="font-medium">{os.cliente?.cnpj || "-"}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Responsável</div>
-                      <div className="font-medium">{os.cliente?.responsavel || "-"}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Telefone</div>
-                      <div className="font-medium">{os.cliente?.telefone || "-"}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Email</div>
-                      <div className="font-medium">{os.cliente?.email || "-"}</div>
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div>
-                  <CardDescription className="mb-2">Equipamento</CardDescription>
+                <div>                 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <div className="text-sm text-muted-foreground">Tipo</div>

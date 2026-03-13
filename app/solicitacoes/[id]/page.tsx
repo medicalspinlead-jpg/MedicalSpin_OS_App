@@ -646,23 +646,7 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
                   )}
                   Marcar como Finalizada
                 </Button>
-              )}
-
-              {solicitacao.status !== "cancelada" && solicitacao.status !== "finalizada" && (
-                <Button
-                  variant="outline"
-                  className="flex-1 text-red-600 border-red-200 hover:bg-red-50 bg-transparent"
-                  onClick={() => setCancelDialogOpen(true)}
-                  disabled={actionLoading !== ""}
-                >
-                  {actionLoading === "cancelada" ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <XCircle className="h-4 w-4 mr-2" />
-                  )}
-                  Cancelar Solicitacao
-                </Button>
-              )}
+              )}              
 
               {solicitacao.ordemServicoId && solicitacao.status !== "finalizada" && solicitacao.status !== "cancelada" && (
                 <Button asChild variant="outline" className="flex-1 bg-transparent">
@@ -672,95 +656,10 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
                   </Link>
                 </Button>
               )}
-
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10 bg-transparent">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Excluir
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Excluir solicitação?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Esta ação não pode ser desfeita. A solicitação {solicitacao.protocolo} será removida permanentemente.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDelete}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      {actionLoading === "delete" ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : null}
-                      Excluir
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
             </div>
           </CardContent>
         </Card>
       </main>
-
-      {/* Dialog de cancelamento com motivo obrigatorio */}
-      <Dialog open={cancelDialogOpen} onOpenChange={(open) => {
-        setCancelDialogOpen(open)
-        if (!open) setMotivoCancelamento("")
-      }}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-red-700">Cancelar Solicitacao</DialogTitle>
-            <DialogDescription>
-              A solicitacao <span className="font-mono font-medium">{solicitacao?.protocolo}</span> sera
-              marcada como cancelada. O motivo sera exibido para o cliente.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2 py-2">
-            <Label htmlFor="motivo-cancelamento" className="text-sm font-medium">
-              Motivo do cancelamento <span className="text-red-600">*</span>
-            </Label>
-            <Textarea
-              id="motivo-cancelamento"
-              placeholder="Descreva o motivo do cancelamento desta solicitacao..."
-              value={motivoCancelamento}
-              onChange={(e) => setMotivoCancelamento(e.target.value)}
-              rows={4}
-              className="resize-none"
-            />
-            {motivoCancelamento.trim() === "" && (
-              <p className="text-xs text-red-500">O motivo e obrigatorio para cancelar.</p>
-            )}
-          </div>
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setCancelDialogOpen(false)
-                setMotivoCancelamento("")
-              }}
-              className="bg-transparent"
-            >
-              Voltar
-            </Button>
-            <Button
-              onClick={handleCancelamento}
-              disabled={motivoCancelamento.trim() === "" || actionLoading === "cancelada"}
-              className="bg-red-600 text-white hover:bg-red-700"
-            >
-              {actionLoading === "cancelada" ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <XCircle className="h-4 w-4 mr-2" />
-              )}
-              Confirmar Cancelamento
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
