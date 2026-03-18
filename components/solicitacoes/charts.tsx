@@ -11,27 +11,23 @@ const STATUS_COLORS: Record<string, string> = {
   recebida: "hsl(217, 91%, 60%)",
   em_progresso: "hsl(45, 93%, 47%)",
   finalizada: "hsl(142, 71%, 45%)",
-  cancelada: "hsl(0, 84%, 60%)",
 }
 
 const STATUS_LABELS: Record<string, string> = {
-  recebida: "Recebida",
+  recebida: "OS Nova",
   em_progresso: "Em Progresso",
   finalizada: "Finalizada",
-  cancelada: "Cancelada",
 }
 
 const pieChartConfig: ChartConfig = {
-  recebida: { label: "Recebida", color: STATUS_COLORS.recebida },
+  recebida: { label: "OS Nova", color: STATUS_COLORS.recebida },
   em_progresso: { label: "Em Progresso", color: STATUS_COLORS.em_progresso },
   finalizada: { label: "Finalizada", color: STATUS_COLORS.finalizada },
-  cancelada: { label: "Cancelada", color: STATUS_COLORS.cancelada },
 }
 
 const barChartConfig: ChartConfig = {
   em_progresso: { label: "Em Progresso", color: STATUS_COLORS.em_progresso },
   finalizada: { label: "Finalizada", color: STATUS_COLORS.finalizada },
-  cancelada: { label: "Cancelada", color: STATUS_COLORS.cancelada },
 }
 
 function truncateName(name: string, maxLen: number = 14): string {
@@ -220,13 +216,6 @@ export function SolicitacoesCharts() {
                   name="Finalizada"
                   stackId="a"
                   fill={STATUS_COLORS.finalizada}
-                  radius={0}
-                />
-                <Bar
-                  dataKey="cancelada"
-                  name="Cancelada"
-                  stackId="a"
-                  fill={STATUS_COLORS.cancelada}
                   radius={[4, 4, 4, 4]}
                 />
               </BarChart>

@@ -21,7 +21,6 @@ import {
   Phone,
   MapPin,
   FileText,
-  XCircle,
   ImageIcon,
   Video,
   Download,
@@ -143,7 +142,7 @@ const statusConfig: Record<string, { label: string; badgeClass: string; icon: ty
   recebida: { label: "Recebida", badgeClass: "bg-blue-100 text-blue-800 border-blue-200", icon: Clock, color: "text-blue-600" },
   em_progresso: { label: "Em Progresso", badgeClass: "bg-amber-100 text-amber-800 border-amber-200", icon: Wrench, color: "text-amber-600" },
   finalizada: { label: "Finalizada", badgeClass: "bg-green-100 text-green-800 border-green-200", icon: CheckCircle, color: "text-green-600" },
-  cancelada: { label: "Cancelada", badgeClass: "bg-red-100 text-red-800 border-red-200", icon: XCircle, color: "text-red-600" },
+
 }
 
 export default function SolicitacaoDetalhes() {
@@ -347,14 +346,7 @@ export default function SolicitacaoDetalhes() {
             <CardDescription className="text-xs">Histórico de status da solicitação</CardDescription>
           </CardHeader>
           <CardContent>
-            {solicitacao.status === "cancelada" && solicitacao.motivoCancelamento && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-xs font-medium text-red-700 mb-1">Motivo do cancelamento:</p>
-                <p className="text-sm text-red-900 leading-relaxed whitespace-pre-wrap">
-                  {solicitacao.motivoCancelamento}
-                </p>
-              </div>
-            )}
+
 
             {/* Timeline vertical com datas */}
             {solicitacao.historicoStatus && solicitacao.historicoStatus.length > 0 ? (

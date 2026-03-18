@@ -31,7 +31,6 @@ export const Step2DadosEquipamento = forwardRef(function Step2DadosEquipamento(
 
   useEffect(() => {
     if (os.cliente && os.cliente.id) {
-      console.log("[v0] Step2: Cliente detectado automaticamente da etapa 1:", os.cliente)
       setSelectedCliente(os.cliente)
     }
   }, [os.cliente])
@@ -44,15 +43,12 @@ export const Step2DadosEquipamento = forwardRef(function Step2DadosEquipamento(
       }
 
       setLoadingEquipamentos(true)
-      console.log("[v0] Step2: Carregando equipamentos do cliente:", selectedCliente.id)
       try {
         const equips = await getEquipamentosByCliente(selectedCliente.id)
-        console.log("[v0] Step2: Equipamentos encontrados:", equips.length)
         setEquipamentos(equips)
         
         // Se o cliente tiver apenas 1 equipamento e nenhum estiver selecionado, seleciona automaticamente
         if (equips.length === 1 && !selectedEquipamento) {
-          console.log("[v0] Step2: Selecionando automaticamente o unico equipamento")
           setSelectedEquipamento(equips[0])
         }
       } catch (error) {

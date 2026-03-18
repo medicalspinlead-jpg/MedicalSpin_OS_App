@@ -19,16 +19,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import {
   getSolicitacao,
   updateSolicitacao,
   deleteSolicitacao,
@@ -60,7 +50,6 @@ import {
   Mail,
   MapPin,
   ExternalLink,
-  XCircle,
   ImageIcon,
   Video,
   CalendarCheck,
@@ -68,10 +57,9 @@ import {
 } from "lucide-react"
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; icon: React.ElementType }> = {
-  recebida: { label: "Recebida", badgeClass: "bg-blue-100 text-blue-800 border-blue-200", icon: Inbox },
+  recebida: { label: "OS Nova", badgeClass: "bg-blue-100 text-blue-800 border-blue-200", icon: Inbox },
   em_progresso: { label: "Em Progresso", badgeClass: "bg-amber-100 text-amber-800 border-amber-200", icon: Settings },
   finalizada: { label: "Finalizada", badgeClass: "bg-green-100 text-green-800 border-green-200", icon: CheckCircle },
-  cancelada: { label: "Cancelada", badgeClass: "bg-red-100 text-red-800 border-red-200", icon: XCircle },
 }
 
 export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -82,8 +70,7 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
   const [osVinculada, setOsVinculada] = useState<OrdemServico | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState("")
-  const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
-  const [motivoCancelamento, setMotivoCancelamento] = useState("")
+
 
   useEffect(() => {
     loadSolicitacao()
@@ -242,7 +229,7 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
     }
   }
 
-  async function handleStatusChange(newStatus: "em_progresso" | "finalizada" | "cancelada") {
+  async function handleStatusChange(newStatus: "em_progresso" | "finalizada") {
     if (!solicitacao) return
     setActionLoading(newStatus)
 
@@ -251,28 +238,6 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
       setSolicitacao((prev) => (prev ? { ...prev, status: newStatus } : prev))
     } catch (error) {
       console.error("Erro ao atualizar status:", error)
-    } finally {
-      setActionLoading("")
-    }
-  }
-
-  async function handleCancelamento() {
-    if (!solicitacao || !motivoCancelamento.trim()) return
-    setActionLoading("cancelada")
-
-    try {
-      await updateSolicitacao(id, {
-        status: "cancelada",
-        motivoCancelamento: motivoCancelamento.trim(),
-        usuarioNome: usuario?.nome || undefined,
-      } as any)
-      setSolicitacao((prev) =>
-        prev ? { ...prev, status: "cancelada", motivoCancelamento: motivoCancelamento.trim() } : prev
-      )
-      setCancelDialogOpen(false)
-      setMotivoCancelamento("")
-    } catch (error) {
-      console.error("Erro ao cancelar solicitacao:", error)
     } finally {
       setActionLoading("")
     }
@@ -527,7 +492,7 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
               </div>
               {solicitacao.numeroSerie && (
                 <div>
-                  <p className="text-xs text-muted-foreground">N. Série *</p>
+                  <p className="text-xs text-muted-foreground">N. Serie</p>
                   <p className="text-sm font-medium text-foreground">{solicitacao.numeroSerie}</p>
                 </div>
               )}
@@ -648,7 +613,7 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
                 </Button>
               )}              
 
-              {solicitacao.ordemServicoId && solicitacao.status !== "finalizada" && solicitacao.status !== "cancelada" && (
+              {solicitacao.ordemServicoId && solicitacao.status !== "finalizada" && (
                 <Button asChild variant="outline" className="flex-1 bg-transparent">
                   <Link href={`/os/${solicitacao.ordemServicoId}/etapa/1`}>
                     <FileText className="h-4 w-4 mr-2" />

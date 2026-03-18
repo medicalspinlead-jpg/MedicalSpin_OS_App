@@ -447,7 +447,7 @@ export default function PerfilPage() {
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">N. Série *</Label>
+                          <Label className="text-xs">N. Serie *</Label>
                           <Input
                             value={editingEquipForm.numeroSerie}
                             onChange={(e) => setEditingEquipForm((p) => ({ ...p, numeroSerie: e.target.value }))}
@@ -480,7 +480,7 @@ export default function PerfilPage() {
                         </p>
                         {equip.numeroSerie && (
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            {"N. Série *: "}{equip.numeroSerie}
+                            {"N. Serie: "}{equip.numeroSerie}
                           </p>
                         )}
                       </div>

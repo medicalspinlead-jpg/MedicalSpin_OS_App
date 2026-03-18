@@ -40,6 +40,7 @@ model Equipamento {
   fabricante  String
   modelo      String
   numeroSerie String   @map("numero_serie")
+  ativo       Boolean  @default(true)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
   cliente     Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)

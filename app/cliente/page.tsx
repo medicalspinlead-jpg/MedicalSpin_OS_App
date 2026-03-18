@@ -17,7 +17,6 @@ import {
   Building2,
   Wrench,
   Eye,
-  XCircle,
 } from "lucide-react"
 
 interface Solicitacao {
@@ -77,15 +76,6 @@ const statusConfig: Record<
     iconColor: "text-emerald-400",
     glowColor: "shadow-emerald-500/20",
   },
-  cancelada: {
-    label: "Cancelada",
-    badgeClass: "bg-red-950 text-red-300 border-red-500/50",
-    icon: XCircle,
-    cardBorder: "border-l-red-400",
-    cardBg: "bg-red-500/5",
-    iconColor: "text-red-400",
-    glowColor: "shadow-red-500/20",
-  },
 }
 
 export default function ClienteDashboard() {
@@ -138,7 +128,6 @@ export default function ClienteDashboard() {
     recebida: solicitacoes.filter((s) => s.status === "recebida").length,
     em_progresso: solicitacoes.filter((s) => s.status === "em_progresso").length,
     finalizada: solicitacoes.filter((s) => s.status === "finalizada").length,
-    cancelada: solicitacoes.filter((s) => s.status === "cancelada").length,
   }
 
   if (loading) {
@@ -184,7 +173,7 @@ export default function ClienteDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4 mb-6">
+      <div className="grid gap-4 md:grid-cols-3 mb-6">
         <Card className="border-l-4 border-l-cyan-400 bg-cyan-500/5">
           <CardContent className="flex items-center gap-3 p-4">
             <div className="rounded-lg bg-cyan-500/10 p-2">
@@ -215,17 +204,6 @@ export default function ClienteDashboard() {
             <div>
               <p className="text-2xl font-bold">{counts.finalizada}</p>
               <p className="text-xs text-muted-foreground">Finalizadas</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-red-400 bg-red-500/5">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg bg-red-500/10 p-2">
-              <XCircle className="h-5 w-5 text-red-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{counts.cancelada}</p>
-              <p className="text-xs text-muted-foreground">Canceladas</p>
             </div>
           </CardContent>
         </Card>

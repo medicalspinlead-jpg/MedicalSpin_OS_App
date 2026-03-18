@@ -12,13 +12,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import {
   getCliente,
   saveCliente,
-  getEquipamentosByCliente,
+  getEquipamentosByClienteComInativos,
   saveEquipamento,
   deleteEquipamento,
+  reativarEquipamento,
   type Cliente,
   type Equipamento,
 } from "@/lib/storage"
-import { ArrowLeft, Plus, Trash2, Edit2, Save, X } from "lucide-react"
+import { ArrowLeft, Plus, Trash2, Edit2, Save, X, PowerOff, Power } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { UFS, FABRICANTES, MODELOS, TIPOS } from "@/lib/constants"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -127,7 +129,7 @@ function ClienteDetalhePageClient({ id }: { id: string }) {
   }, [id])
 
   const loadEquipamentos = async () => {
-    const equips = await getEquipamentosByCliente(id)
+    const equips = await getEquipamentosByClienteComInativos(id)
     setEquipamentos(equips)
   }
 
@@ -149,13 +151,45 @@ function ClienteDetalhePageClient({ id }: { id: string }) {
   }
 
   const handleDeleteEquipamento = async (equipamentoId: string) => {
-    await deleteEquipamento(equipamentoId)
-    await loadEquipamentos()
-    setDeleteEquipamentoId(null)
-    toast({
-      title: "Sucesso",
-      description: "Equipamento excluído com sucesso!",
-    })
+    try {
+      const resultado = await deleteEquipamento(equipamentoId)
+      await loadEquipamentos()
+      setDeleteEquipamentoId(null)
+      if (resultado.inativado) {
+        toast({
+          title: "Equipamento inativado",
+          description: resultado.motivo || "O equipamento foi inativado pois está vinculado a registros existentes.",
+        })
+      } else {
+        toast({
+          title: "Sucesso",
+          description: "Equipamento excluído com sucesso!",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir equipamento.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleReativarEquipamento = async (equipamentoId: string) => {
+    try {
+      await reativarEquipamento(equipamentoId)
+      await loadEquipamentos()
+      toast({
+        title: "Sucesso",
+        description: "Equipamento reativado com sucesso!",
+      })
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao reativar equipamento.",
+        variant: "destructive",
+      })
+    }
   }
 
   if (loading) {
@@ -394,35 +428,58 @@ function ClienteDetalhePageClient({ id }: { id: string }) {
             ) : (
               <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2">
                 {equipamentos.map((equip) => (
-                  <Card key={equip.id} className="border">
+                  <Card key={equip.id} className={`border ${!equip.ativo ? "opacity-60 bg-muted/40" : ""}`}>
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-base">{equip.tipo}</CardTitle>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <CardTitle className="text-base">{equip.tipo}</CardTitle>
+                            {!equip.ativo && (
+                              <Badge variant="secondary" className="text-xs">
+                                Inativo
+                              </Badge>
+                            )}
+                          </div>
                           <CardDescription>
                             {equip.fabricante} {equip.modelo}
                           </CardDescription>
                         </div>
-                        <div className="flex gap-1">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              setEditingEquipamento(equip)
-                              setShowEquipamentoForm(true)
-                            }}
-                            className="text-muted-foreground hover:text-foreground"
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setDeleteEquipamentoId(equip.id)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                        <div className="flex gap-1 shrink-0">
+                          {equip.ativo ? (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  setEditingEquipamento(equip)
+                                  setShowEquipamentoForm(true)
+                                }}
+                                className="text-muted-foreground hover:text-foreground"
+                                title="Editar equipamento"
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setDeleteEquipamentoId(equip.id)}
+                                className="text-destructive hover:text-destructive"
+                                title="Excluir ou inativar equipamento"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleReativarEquipamento(equip.id)}
+                              className="text-muted-foreground hover:text-foreground"
+                              title="Reativar equipamento"
+                            >
+                              <Power className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </CardHeader>
@@ -447,7 +504,8 @@ function ClienteDetalhePageClient({ id }: { id: string }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir Equipamento</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir este equipamento? Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir este equipamento? Se ele estiver vinculado a uma ordem de serviço ou
+              solicitação, será apenas inativado (não excluído).
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -456,7 +514,7 @@ function ClienteDetalhePageClient({ id }: { id: string }) {
               onClick={() => deleteEquipamentoId && handleDeleteEquipamento(deleteEquipamentoId)}
               className="bg-destructive text-destructive-foreground"
             >
-              Excluir
+              Confirmar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -544,7 +602,7 @@ function EquipamentoForm({
                 value={formData.tipo}
                 onValueChange={(value) => setFormData({ ...formData, tipo: value })}
               >
-                <SelectTrigger id="tipo">
+                <SelectTrigger id="tipo ">
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
                 <SelectContent>

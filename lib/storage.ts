@@ -46,6 +46,7 @@ export interface Equipamento {
   fabricante: string
   modelo: string
   numeroSerie: string
+  ativo: boolean
   createdAt: string
 }
 
@@ -210,8 +211,45 @@ export async function saveEquipamento(
   }
 }
 
-export async function deleteEquipamento(id: string): Promise<void> {
-  await fetchNoCache(`/api/equipamentos/${id}`, { method: "DELETE" })
+export interface DeleteEquipamentoResult {
+  excluido?: boolean
+  inativado?: boolean
+  motivo?: string
+  id?: string
+  ativo?: boolean
+}
+
+export async function deleteEquipamento(id: string): Promise<DeleteEquipamentoResult> {
+  const res = await fetchNoCache(`/api/equipamentos/${id}`, { method: "DELETE" })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error || "Erro ao excluir equipamento")
+  }
+  return res.json()
+}
+
+export async function inativarEquipamento(id: string): Promise<Equipamento> {
+  const res = await fetchNoCache(`/api/equipamentos/${id}`, {
+    method: "PUT",
+    body: JSON.stringify({ ativo: false }),
+  })
+  if (!res.ok) throw new Error("Erro ao inativar equipamento")
+  return res.json()
+}
+
+export async function reativarEquipamento(id: string): Promise<Equipamento> {
+  const res = await fetchNoCache(`/api/equipamentos/${id}`, {
+    method: "PUT",
+    body: JSON.stringify({ ativo: true }),
+  })
+  if (!res.ok) throw new Error("Erro ao reativar equipamento")
+  return res.json()
+}
+
+export async function getEquipamentosByClienteComInativos(clienteId: string): Promise<Equipamento[]> {
+  const res = await fetchNoCache(`/api/equipamentos?clienteId=${clienteId}&incluirInativos=true`)
+  if (!res.ok) return []
+  return res.json()
 }
 
 // Ordens de Serviço

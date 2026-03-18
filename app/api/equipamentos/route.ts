@@ -8,16 +8,35 @@ const noCacheHeaders = {
   Expires: "0",
 }
 
+// Garante que a coluna `ativo` existe na tabela, aplicando a migration automaticamente se necessário
+async function ensureAtivoColumn() {
+  try {
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE equipamentos ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT true`,
+    )
+  } catch {
+    // coluna já existe ou banco não suporta IF NOT EXISTS — ignorar silenciosamente
+  }
+}
+
 export async function GET(request: Request) {
   const auth = validateApiKey(request)
   if (!auth.valid) return auth.response
 
   try {
+    await ensureAtivoColumn()
+
     const { searchParams } = new URL(request.url)
     const clienteId = searchParams.get("clienteId")
 
+    const incluirInativos = searchParams.get("incluirInativos") === "true"
+
+    const where: Record<string, unknown> = {}
+    if (clienteId) where.clienteId = clienteId
+    if (!incluirInativos) where.ativo = true
+
     const equipamentos = await prisma.equipamento.findMany({
-      where: clienteId ? { clienteId } : undefined,
+      where,
       orderBy: { tipo: "asc" },
     })
     return NextResponse.json(
@@ -28,6 +47,7 @@ export async function GET(request: Request) {
         fabricante: e.fabricante,
         modelo: e.modelo,
         numeroSerie: e.numeroSerie,
+        ativo: e.ativo,
         createdAt: e.createdAt.toISOString(),
       })),
       { headers: noCacheHeaders },
@@ -43,6 +63,7 @@ export async function POST(request: Request) {
   if (!auth.valid) return auth.response
 
   try {
+    await ensureAtivoColumn()
     const data = await request.json()
 
     // Verifica se é um array (criação em lote) ou um único objeto
@@ -61,6 +82,7 @@ export async function POST(request: Request) {
             fabricante: equipData.fabricante,
             modelo: equipData.modelo,
             numeroSerie: equipData.numeroSerie,
+            ativo: equipData.ativo !== undefined ? equipData.ativo : true,
           },
         })
 
@@ -71,6 +93,7 @@ export async function POST(request: Request) {
           fabricante: equipamento.fabricante,
           modelo: equipamento.modelo,
           numeroSerie: equipamento.numeroSerie,
+          ativo: equipamento.ativo,
           createdAt: equipamento.createdAt.toISOString(),
         })
       } catch (error) {
