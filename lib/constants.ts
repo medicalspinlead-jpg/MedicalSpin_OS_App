@@ -28,6 +28,8 @@ export const UFS = [
   "TO",
 ]
 
+export const TIPOS = ["Ressonância Magnética", "Ultrassom", "Tomografia"]
+
 export const FABRICANTES = ["Philips", "GE HealthCare", "Siemens Healthineers AG", "Canon Medical Systems", "Hitachi"]
 
 export const MODELOS = [

@@ -527,7 +527,7 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
               </div>
               {solicitacao.numeroSerie && (
                 <div>
-                  <p className="text-xs text-muted-foreground">N. Serie</p>
+                  <p className="text-xs text-muted-foreground">N. Série *</p>
                   <p className="text-sm font-medium text-foreground">{solicitacao.numeroSerie}</p>
                 </div>
               )}

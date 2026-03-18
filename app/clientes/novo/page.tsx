@@ -11,7 +11,7 @@ import { saveCliente } from "@/lib/storage"
 import { ArrowLeft, Plus, Trash2, AlertTriangle, X } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
-import { UFS, FABRICANTES, MODELOS } from "@/lib/constants"
+import { UFS, FABRICANTES, MODELOS, TIPOS } from "@/lib/constants"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface EquipamentoForm {
@@ -310,17 +310,26 @@ const addEquipamento = () => {
 
                         <div className="grid gap-4 md:grid-cols-2">
                           <div className="space-y-2">
-                            <Label htmlFor={`tipo-${eq.tempId}`}>Tipo</Label>
-                            <Input
-                              id={`tipo-${eq.tempId}`}
+                            <Label htmlFor={`tipo-${eq.tempId}`}>Tipo *</Label>
+                            <Select
                               value={eq.tipo}
-                              onChange={(e) => updateEquipamento(eq.tempId, "tipo", e.target.value)}
-                              placeholder="Ex: Compressor, Gerador"
-                            />
+                              onValueChange={(value) => updateEquipamento(eq.tempId, "tipo", value)}
+                            >
+                              <SelectTrigger id={`tipo-${eq.tempId}`}>
+                                <SelectValue placeholder="Selecione o tipo" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {TIPOS.map((tipo) => (
+                                  <SelectItem key={tipo} value={tipo}>
+                                    {tipo}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
 
                           <div className="space-y-2">
-                            <Label htmlFor={`fabricante-${eq.tempId}`}>Fabricante</Label>
+                            <Label htmlFor={`fabricante-${eq.tempId}`}>Fabricante *</Label>
                             <Select
                               value={eq.fabricante}
                               onValueChange={(value) => updateEquipamento(eq.tempId, "fabricante", value)}
@@ -339,7 +348,7 @@ const addEquipamento = () => {
                           </div>
 
                           <div className="space-y-2">
-                            <Label htmlFor={`modelo-${eq.tempId}`}>Modelo</Label>
+                            <Label htmlFor={`modelo-${eq.tempId}`}>Modelo *</Label>
                             <Select
                               value={eq.modelo}
                               onValueChange={(value) => updateEquipamento(eq.tempId, "modelo", value)}
@@ -358,12 +367,13 @@ const addEquipamento = () => {
                           </div>
 
                           <div className="space-y-2">
-                            <Label htmlFor={`numeroSerie-${eq.tempId}`}>Nº Série</Label>
+                            <Label htmlFor={`numeroSerie-${eq.tempId}`}>Nº Série *</Label>
                             <Input
                               id={`numeroSerie-${eq.tempId}`}
                               value={eq.numeroSerie}
                               onChange={(e) => updateEquipamento(eq.tempId, "numeroSerie", e.target.value)}
                               placeholder="Número de série"
+                              required
                             />
                           </div>
                         </div>

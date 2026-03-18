@@ -20,7 +20,7 @@ import {
 } from "@/lib/storage"
 import { ArrowLeft, Plus, Trash2, Edit2, Save, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { UFS, FABRICANTES, MODELOS } from "@/lib/constants"
+import { UFS, FABRICANTES, MODELOS, TIPOS } from "@/lib/constants"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   AlertDialog,
@@ -539,16 +539,25 @@ function EquipamentoForm({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="tipo">Tipo</Label>
-              <Input
-                id="tipo"
+              <Label htmlFor="tipo">Tipo *</Label>
+              <Select
                 value={formData.tipo}
-                onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
-                placeholder="Ex: Compressor, Gerador"
-              />
+                onValueChange={(value) => setFormData({ ...formData, tipo: value })}
+              >
+                <SelectTrigger id="tipo">
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIPOS.map((tipo) => (
+                    <SelectItem key={tipo} value={tipo}>
+                      {tipo}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fabricante">Fabricante</Label>
+              <Label htmlFor="fabricante">Fabricante *</Label>
               <Select
                 value={formData.fabricante}
                 onValueChange={(value) => setFormData({ ...formData, fabricante: value })}
@@ -569,7 +578,7 @@ function EquipamentoForm({
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="modelo">Modelo</Label>
+              <Label htmlFor="modelo">Modelo *</Label>
               <Select value={formData.modelo} onValueChange={(value) => setFormData({ ...formData, modelo: value })}>
                 <SelectTrigger id="modelo">
                   <SelectValue placeholder="Selecione o modelo" />
@@ -585,12 +594,13 @@ function EquipamentoForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="numeroSerie">Nº Série</Label>
+              <Label htmlFor="numeroSerie">Nº Série *</Label>
               <Input
                 id="numeroSerie"
                 value={formData.numeroSerie}
                 onChange={(e) => setFormData({ ...formData, numeroSerie: e.target.value })}
                 placeholder="Número de série"
+                required
               />
             </div>
           </div>
