@@ -79,6 +79,8 @@ export interface OrdemServico {
   createdAt: string
   updatedAt: string
   finalizedAt?: string
+  solicitacaoProtocolo?: string | null
+  solicitacaoId?: string | null
 
   empresa: {
     razaoSocial: string

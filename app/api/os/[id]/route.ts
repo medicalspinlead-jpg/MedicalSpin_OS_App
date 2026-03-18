@@ -159,7 +159,22 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     if (!os) {
       return NextResponse.json({ error: "Ordem de serviço não encontrada" }, { status: 404, headers: noCacheHeaders })
     }
-    return NextResponse.json(mapOS(os), { headers: noCacheHeaders })
+
+    // Buscar solicitação vinculada para obter o protocolo e id
+    let solicitacaoProtocolo: string | null = null
+    let solicitacaoId: string | null = null
+    try {
+      const solicitacao = await prisma.solicitacao.findFirst({
+        where: { ordemServicoId: id },
+        select: { id: true, protocolo: true },
+      })
+      solicitacaoProtocolo = solicitacao?.protocolo || null
+      solicitacaoId = solicitacao?.id || null
+    } catch {
+      // tabela pode não existir ainda
+    }
+
+    return NextResponse.json({ ...mapOS(os), solicitacaoProtocolo, solicitacaoId }, { headers: noCacheHeaders })
   } catch (error) {
     console.error("Erro ao buscar ordem de serviço:", error)
     return NextResponse.json({ error: "Erro ao buscar ordem de serviço" }, { status: 500, headers: noCacheHeaders })

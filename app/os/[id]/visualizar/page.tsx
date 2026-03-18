@@ -7,11 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { getOrdemServico, type OrdemServico } from "@/lib/storage"
-import { ArrowLeft, Download, CheckCircle, AlertCircle, Loader2, Copy, ExternalLink, Pencil } from "lucide-react"
+import { getOrdemServico, saveOrdemServico, type OrdemServico } from "@/lib/storage"
+import { ArrowLeft, Download, CheckCircle, AlertCircle, Loader2, Copy, ExternalLink, Pencil, Link2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { enviarParaWebhook, gerarIdUnico, type ImagemWebhook } from "@/lib/webhook"
 
 export default function VisualizarOSPage() {
   const params = useParams()
@@ -24,6 +25,7 @@ export default function VisualizarOSPage() {
   const [linkDownload, setLinkDownload] = useState<string | null>(null)
   const [showLinkDialog, setShowLinkDialog] = useState(false)
   const [erroLink, setErroLink] = useState<string | null>(null)
+  const [isFinalizando, setIsFinalizando] = useState(false)
 
   useEffect(() => {
     async function loadOS() {
@@ -177,6 +179,53 @@ export default function VisualizarOSPage() {
     }
   }
 
+  const handleFinalizar = async () => {
+    if (!os) return
+    setIsFinalizando(true)
+    try {
+      const imagensWebhook: ImagemWebhook[] = (os.midias?.arquivos || [])
+        .filter((arq) => arq && arq.startsWith("data:image/"))
+        .map((arq, index) => {
+          const base64 = arq.split(",")[1] || ""
+          return {
+            nome: `foto-${index + 1}.jpg`,
+            tipo: "image/jpeg",
+            tamanho: Math.round((base64.length * 3) / 4),
+            base64,
+          }
+        })
+
+      const idUnico = os.idUnico || gerarIdUnico()
+      const osAtualizada: OrdemServico = {
+        ...os,
+        idUnico,
+        status: "finalizada",
+        finalizedAt: new Date().toISOString(),
+      }
+
+      const sucesso = await enviarParaWebhook(osAtualizada, imagensWebhook)
+      await saveOrdemServico({ ...osAtualizada })
+      setOs(osAtualizada)
+
+      toast({
+        title: sucesso ? "OS Finalizada" : "Aviso",
+        description: sucesso
+          ? "Ordem de serviço finalizada e enviada com sucesso!"
+          : "OS finalizada localmente, mas houve um erro ao enviar para o servidor.",
+        variant: sucesso ? "default" : "destructive",
+      })
+    } catch (error) {
+      console.error("Erro ao finalizar OS:", error)
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao finalizar a OS. Tente novamente.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsFinalizando(false)
+    }
+  }
+
   const handleCopiarLink = () => {
     if (linkDownload) {
       navigator.clipboard.writeText(linkDownload)
@@ -234,15 +283,50 @@ export default function VisualizarOSPage() {
                   {new Date(os.finalizedAt).toLocaleDateString("pt-BR")}
                 </p>
               )}
+              {os.solicitacaoProtocolo && (
+                <div className="flex items-center gap-1.5 mt-1">
+                  <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Solicitação:</span>
+                  {os.solicitacaoId ? (
+                    <Link
+                      href={`/solicitacoes/${os.solicitacaoId}`}
+                      className="text-sm font-mono font-medium text-primary hover:underline"
+                    >
+                      {os.solicitacaoProtocolo}
+                    </Link>
+                  ) : (
+                    <span className="text-sm font-mono font-medium">{os.solicitacaoProtocolo}</span>
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               {os.status === "fechada" && (
-                <Button asChild variant="outline" className="w-full sm:w-auto bg-transparent">
-                  <Link href={`/os/${os.id}/etapa/1`}>
-                    <Pencil className="h-4 w-4 mr-2" />
-                    Reabrir OS
-                  </Link>
-                </Button>
+                <>
+                  <Button asChild variant="outline" className="w-full sm:w-auto bg-transparent">
+                    <Link href={`/os/${os.id}/etapa/1`}>
+                      <Pencil className="h-4 w-4 mr-2" />
+                      Reabrir OS
+                    </Link>
+                  </Button>
+                  <Button
+                    onClick={handleFinalizar}
+                    disabled={isFinalizando}
+                    className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
+                  >
+                    {isFinalizando ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Finalizando...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Finalizar OS
+                      </>
+                    )}
+                  </Button>
+                </>
               )}
             </div>
           </div>
