@@ -89,7 +89,7 @@ export function SolicitacoesCharts() {
   }
 
   const pieData = Object.entries(stats.porStatus).map(([status, count]) => ({
-    name: STATUS_LABELS[status] || status,
+    name: status,
     value: count,
     fill: STATUS_COLORS[status] || "hsl(var(--muted))",
   }))
@@ -102,9 +102,9 @@ export function SolicitacoesCharts() {
       {/* Grafico por Status */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Solicitacoes por Status</CardTitle>
+          <CardTitle className="text-base">Solicitações por Status</CardTitle>
           <CardDescription className="text-xs">
-            Distribuicao geral das {stats.total} solicitacoes
+            Distribuição geral das {stats.total} solicitações
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -113,9 +113,10 @@ export function SolicitacoesCharts() {
               <ChartTooltip
                 content={
                   <ChartTooltipContent
+                    nameKey="name"
                     formatter={(value, name) => (
                       <span className="flex items-center gap-2">
-                        <span>{name}</span>
+                        <span>{STATUS_LABELS[name as string] ?? name}</span>
                         <span className="font-mono font-bold">{String(value)}</span>
                       </span>
                     )}
@@ -137,7 +138,19 @@ export function SolicitacoesCharts() {
                   <Cell key={`cell-${index}`} fill={entry.fill} />
                 ))}
               </Pie>
-              <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+              <ChartLegend
+                content={
+                  <ChartLegendContent
+                    nameKey="name"
+                    payload={pieData.map((entry) => ({
+                      value: entry.name,
+                      type: "square" as const,
+                      color: entry.fill,
+                      payload: entry,
+                    }))}
+                  />
+                }
+              />
             </PieChart>
           </ChartContainer>
         </CardContent>
@@ -146,11 +159,11 @@ export function SolicitacoesCharts() {
       {/* Grafico por Tecnico */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Acoes por Tecnico</CardTitle>
+          <CardTitle className="text-base">Ações por Técnico</CardTitle>
           <CardDescription className="text-xs">
             {hasTecnicoData
-              ? "Quantidade de acoes realizadas por cada tecnico"
-              : "Nenhuma acao registrada com tecnico identificado"}
+              ? "Quantidade de ações realizadas por cada técnico"
+              : "Nenhuma ação registrada com técnico identificado"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -220,7 +233,7 @@ export function SolicitacoesCharts() {
             </ChartContainer>
           ) : (
             <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-              Dados serao exibidos conforme os tecnicos atuarem nas solicitacoes.
+              Dados serão exibidos conforme os técnicos atuarem nas solicitações.
             </div>
           )}
         </CardContent>

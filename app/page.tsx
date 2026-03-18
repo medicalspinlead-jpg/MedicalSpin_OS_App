@@ -125,7 +125,9 @@ export default function HomePage() {
                 </Link>
               </Button>
               <Button asChild className="w-full bg-transparent" variant="outline" size="sm">
-                <Link href="/os/rascunhos">Ver Rascunhos</Link>
+                <Link href="/os/rascunhos">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Ver Rascunhos</Link> 
               </Button>
             </CardContent>
           </Card>
@@ -178,7 +180,10 @@ export default function HomePage() {
                 </Link>
               </Button>
               <Button asChild className="w-full bg-transparent" variant="outline" size="sm">
-                <Link href="/clientes/novo">Cadastrar Novo Cliente</Link>
+                <Link href="/clientes/novo">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Cadastrar Novo Cliente
+                </Link>
               </Button>
             </CardContent>
           </Card>

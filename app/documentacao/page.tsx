@@ -87,9 +87,9 @@ console.log(data);`
         {
           method: "POST",
           path: "/api/usuarios",
-          description: "Criar novo usuario",
-          body: { nome: "Novo Usuario", email: "novo@email.com", senha: "senha123" },
-          response: { id: "uuid", nome: "Novo Usuario", email: "novo@email.com" },
+          description: "Criar Novo Usuário",
+          body: { nome: "Novo Usuário", email: "novo@email.com", senha: "senha123" },
+          response: { id: "uuid", nome: "Novo Usuário", email: "novo@email.com" },
           protected: true,
         },
       ],

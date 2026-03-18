@@ -174,7 +174,7 @@ export default function LoginPage() {
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
-              E cliente?{" "}
+              É Cliente?{" "}
               <Link href="/registro" className="text-primary hover:underline font-medium">
                 Crie sua conta aqui
               </Link>

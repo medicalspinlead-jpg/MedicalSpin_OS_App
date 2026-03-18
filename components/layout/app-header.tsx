@@ -244,7 +244,7 @@ export function AppHeader() {
                       >
                         <Link href="/admin">
                           <Shield className="h-4 w-4 mr-2" />
-                          Administracao
+                          Administração
                         </Link>
                       </Button>
                     )}

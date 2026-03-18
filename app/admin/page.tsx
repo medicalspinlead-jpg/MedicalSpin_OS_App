@@ -232,12 +232,12 @@ export default function AdminPage() {
                 Voltar
               </Link>
             </Button>
-            <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Administracao</h1>
-            <p className="text-sm md:text-base text-muted-foreground mt-1">Gerencie usuarios do sistema</p>
+            <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Administração</h1>
+            <p className="text-sm md:text-base text-muted-foreground mt-1">Gerencie usuários do sistema</p>
           </div>
           <Button size="sm" className="w-full sm:w-auto" onClick={openCreateDialog}>
             <Plus className="h-4 w-4 mr-2" />
-            Novo Usuario
+            Novo Usuário
           </Button>
         </div>
 
@@ -279,7 +279,7 @@ export default function AdminPage() {
               </div>
               <h3 className="text-lg font-semibold mb-2">Nenhum usuario encontrado</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                {search ? "Tente buscar por outro termo" : "Comece cadastrando um novo usuario"}
+                {search ? "Tente buscar por outro termo" : "Comece cadastrando um Novo Usuário"}
               </p>
               {!search && (
                 <Button onClick={openCreateDialog}>
@@ -361,9 +361,9 @@ export default function AdminPage() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Novo Usuario</DialogTitle>
+            <DialogTitle>Novo Usuário</DialogTitle>
             <DialogDescription>
-              Preencha os dados para criar um novo usuario.
+              Preencha os dados para criar um Novo Usuário.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -446,7 +446,7 @@ export default function AdminPage() {
           <DialogHeader>
             <DialogTitle>Editar Usuario</DialogTitle>
             <DialogDescription>
-              Atualize os dados do usuario. Deixe a senha em branco para manter a atual.
+              Atualize os dados do usuário. Deixe a senha em branco para manter a atual.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">

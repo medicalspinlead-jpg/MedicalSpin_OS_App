@@ -438,7 +438,7 @@ export default function HistoricoPage() {
                           <Button asChild variant="outline" size="sm" className="flex-1 min-w-[80px] sm:flex-none bg-transparent text-xs sm:text-sm">
                             <Link href={`/os/${os.id}/etapa/1`}>
                               <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                              Editar
+                              Reabrir OS
                             </Link>
                           </Button>
                         )}

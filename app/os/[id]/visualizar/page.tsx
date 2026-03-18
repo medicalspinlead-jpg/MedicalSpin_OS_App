@@ -240,7 +240,7 @@ export default function VisualizarOSPage() {
                 <Button asChild variant="outline" className="w-full sm:w-auto bg-transparent">
                   <Link href={`/os/${os.id}/etapa/1`}>
                     <Pencil className="h-4 w-4 mr-2" />
-                    Editar OS
+                    Reabrir OS
                   </Link>
                 </Button>
               )}
