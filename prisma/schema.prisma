@@ -26,6 +26,7 @@ model Cliente {
   ordens       OrdemServico[]
   usuarios     Usuario[]
   solicitacoes Solicitacao[]
+  departamentos ClienteDepartamento[]
 
   notifEmail    Boolean  @default(false) @map("notif_email")
   notifWhatsapp Boolean  @default(false) @map("notif_whatsapp")
@@ -121,6 +122,9 @@ model Usuario {
   cliente   Cliente? @relation(fields: [clienteId], references: [id])
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  
+  departamentos        UsuarioDepartamento[]
+  clientesResponsavel  ClienteDepartamento[]
 
   @@map("usuarios")
 }
@@ -199,4 +203,48 @@ model HistoricoStatusSolicitacao {
   solicitacao    Solicitacao @relation(fields: [solicitacaoId], references: [id], onDelete: Cascade)
 
   @@map("historico_status_solicitacao")
+}
+
+model Departamento {
+  id          String   @id @default(uuid())
+  nome        String
+  descricao   String?
+  cor         String   @default("#3b82f6")
+  icone       String   @default("Building2")
+  ativo       Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  usuarios    UsuarioDepartamento[]
+  clientes    ClienteDepartamento[]
+
+  @@map("departamentos")
+}
+
+model UsuarioDepartamento {
+  id              String       @id @default(uuid())
+  usuarioId       String       @map("usuario_id")
+  departamentoId  String       @map("departamento_id")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  
+  usuario         Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  departamento    Departamento @relation(fields: [departamentoId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, departamentoId])
+  @@map("usuarios_departamentos")
+}
+
+model ClienteDepartamento {
+  id                   String       @id @default(uuid())
+  clienteId            String       @map("cliente_id")
+  departamentoId       String       @map("departamento_id")
+  usuarioResponsavelId String?      @map("usuario_responsavel_id")
+  createdAt            DateTime     @default(now()) @map("created_at")
+  
+  cliente              Cliente      @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  departamento         Departamento @relation(fields: [departamentoId], references: [id], onDelete: Cascade)
+  usuarioResponsavel   Usuario?     @relation(fields: [usuarioResponsavelId], references: [id])
+
+  @@unique([clienteId, departamentoId])
+  @@map("clientes_departamentos")
 }

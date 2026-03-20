@@ -409,6 +409,177 @@ export async function getSolicitacoesStats(): Promise<SolicitacaoStats | null> {
 }
 
 // Helper para criar OS inicial
+// Departamentos
+export interface Departamento {
+  id: string
+  nome: string
+  descricao: string | null
+  cor: string
+  icone: string
+  ativo: boolean
+  createdAt: string
+}
+
+export interface UsuarioDepartamento {
+  id: string
+  usuarioId: string
+  departamentoId: string
+  usuario?: {
+    id: string
+    nome: string
+    email: string
+    cargo: string
+  }
+  departamento?: Departamento
+}
+
+export interface ClienteDepartamento {
+  id: string
+  clienteId: string
+  departamentoId: string
+  usuarioResponsavelId: string | null
+  cliente?: Cliente
+  departamento?: Departamento
+  usuarioResponsavel?: {
+    id: string
+    nome: string
+    email: string
+  }
+}
+
+export async function getDepartamentos(): Promise<Departamento[]> {
+  const res = await fetchNoCache("/api/departamentos")
+  if (!res.ok) return []
+  return res.json()
+}
+
+export async function getDepartamento(id: string): Promise<Departamento | undefined> {
+  const res = await fetchNoCache(`/api/departamentos/${id}`)
+  if (!res.ok) return undefined
+  return res.json()
+}
+
+export async function saveDepartamento(
+  departamento: Omit<Departamento, "id" | "createdAt"> & { id?: string }
+): Promise<Departamento> {
+  if (departamento.id) {
+    const res = await fetchNoCache(`/api/departamentos/${departamento.id}`, {
+      method: "PUT",
+      body: JSON.stringify(departamento),
+    })
+    if (!res.ok) {
+      const errorData = await res.json()
+      throw new Error(errorData.message || errorData.error || "Erro ao atualizar departamento")
+    }
+    return res.json()
+  } else {
+    const res = await fetchNoCache("/api/departamentos", {
+      method: "POST",
+      body: JSON.stringify(departamento),
+    })
+    if (!res.ok) {
+      const errorData = await res.json()
+      throw new Error(errorData.message || errorData.error || "Erro ao criar departamento")
+    }
+    return res.json()
+  }
+}
+
+export async function deleteDepartamento(id: string): Promise<void> {
+  await fetchNoCache(`/api/departamentos/${id}`, { method: "DELETE" })
+}
+
+// Usuario-Departamento
+export async function getUsuariosDepartamento(departamentoId: string): Promise<UsuarioDepartamento[]> {
+  const res = await fetchNoCache(`/api/departamentos/${departamentoId}/usuarios`)
+  if (!res.ok) return []
+  return res.json()
+}
+
+export async function addUsuarioToDepartamento(
+  departamentoId: string,
+  usuarioId: string
+): Promise<UsuarioDepartamento> {
+  const res = await fetchNoCache(`/api/departamentos/${departamentoId}/usuarios`, {
+    method: "POST",
+    body: JSON.stringify({ usuarioId }),
+  })
+  if (!res.ok) {
+    const errorData = await res.json()
+    throw new Error(errorData.message || errorData.error || "Erro ao adicionar usuario")
+  }
+  return res.json()
+}
+
+export async function removeUsuarioFromDepartamento(
+  departamentoId: string,
+  usuarioId: string
+): Promise<void> {
+  await fetchNoCache(`/api/departamentos/${departamentoId}/usuarios/${usuarioId}`, {
+    method: "DELETE",
+  })
+}
+
+// Cliente-Departamento
+export async function getClientesDepartamento(departamentoId: string): Promise<ClienteDepartamento[]> {
+  const res = await fetchNoCache(`/api/departamentos/${departamentoId}/clientes`)
+  if (!res.ok) return []
+  return res.json()
+}
+
+export async function addClienteToDepartamento(
+  departamentoId: string,
+  clienteId: string,
+  usuarioResponsavelId?: string
+): Promise<ClienteDepartamento> {
+  const res = await fetchNoCache(`/api/departamentos/${departamentoId}/clientes`, {
+    method: "POST",
+    body: JSON.stringify({ clienteId, usuarioResponsavelId }),
+  })
+  if (!res.ok) {
+    const errorData = await res.json()
+    throw new Error(errorData.message || errorData.error || "Erro ao adicionar cliente")
+  }
+  return res.json()
+}
+
+export async function removeClienteFromDepartamento(
+  departamentoId: string,
+  clienteId: string
+): Promise<void> {
+  await fetchNoCache(`/api/departamentos/${departamentoId}/clientes/${clienteId}`, {
+    method: "DELETE",
+  })
+}
+
+export async function updateClienteResponsavel(
+  departamentoId: string,
+  clienteId: string,
+  usuarioResponsavelId: string | null
+): Promise<ClienteDepartamento> {
+  const res = await fetchNoCache(`/api/departamentos/${departamentoId}/clientes/${clienteId}`, {
+    method: "PUT",
+    body: JSON.stringify({ usuarioResponsavelId }),
+  })
+  if (!res.ok) {
+    const errorData = await res.json()
+    throw new Error(errorData.message || errorData.error || "Erro ao atualizar responsavel")
+  }
+  return res.json()
+}
+
+export async function getDepartamentosComDetalhes(): Promise<{
+  departamentos: Departamento[]
+  usuariosPorDepartamento: Record<string, UsuarioDepartamento[]>
+  clientesPorDepartamento: Record<string, ClienteDepartamento[]>
+}> {
+  const res = await fetchNoCache("/api/departamentos/detalhes")
+  if (!res.ok) {
+    return { departamentos: [], usuariosPorDepartamento: {}, clientesPorDepartamento: {} }
+  }
+  return res.json()
+}
+
 export function createNovaOS(): Omit<OrdemServico, "id"> & { id?: string } {
   return {
     numero: "",
