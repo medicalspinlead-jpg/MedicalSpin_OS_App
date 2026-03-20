@@ -63,19 +63,22 @@ export async function POST(request: Request) {
 
     for (const clienteData of clientesData) {
       try {
+        // Extrair departamentoId e tecnicoResponsavelId antes de criar o cliente
+        const { departamentoId, tecnicoResponsavelId, ...clienteFields } = clienteData
+        
         const cliente = await prisma.cliente.create({
           data: {
-            razaoSocial: clienteData.razaoSocial,
-            nomeFantasia: clienteData.nomeFantasia,
-            cnpj: clienteData.cnpj,
-            cidade: clienteData.cidade,
-            uf: clienteData.uf,
-            telefone: clienteData.telefone,
-            email: clienteData.email,
-            responsavel: clienteData.responsavel,
-            equipamentos: clienteData.equipamentos
+            razaoSocial: clienteFields.razaoSocial,
+            nomeFantasia: clienteFields.nomeFantasia,
+            cnpj: clienteFields.cnpj,
+            cidade: clienteFields.cidade,
+            uf: clienteFields.uf,
+            telefone: clienteFields.telefone,
+            email: clienteFields.email,
+            responsavel: clienteFields.responsavel,
+            equipamentos: clienteFields.equipamentos
               ? {
-                  create: clienteData.equipamentos.map(
+                  create: clienteFields.equipamentos.map(
                     (e: { tipo: string; fabricante: string; modelo: string; numeroSerie: string }) => ({
                       tipo: e.tipo,
                       fabricante: e.fabricante,
@@ -88,6 +91,19 @@ export async function POST(request: Request) {
           },
           include: { equipamentos: true },
         })
+        
+        // Se foi informado um departamento, criar a relação ClienteDepartamento
+        if (departamentoId && departamentoId !== "none") {
+          await prisma.clienteDepartamento.create({
+            data: {
+              clienteId: cliente.id,
+              departamentoId: departamentoId,
+              usuarioResponsavelId: tecnicoResponsavelId && tecnicoResponsavelId !== "none" 
+                ? tecnicoResponsavelId 
+                : null,
+            },
+          })
+        }
 
         resultados.push({
           id: cliente.id,

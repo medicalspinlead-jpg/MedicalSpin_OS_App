@@ -147,6 +147,8 @@ export async function saveCliente(
   cliente: Omit<Cliente, "id" | "createdAt"> & {
     id?: string
     equipamentos?: { tipo: string; fabricante: string; modelo: string; numeroSerie: string }[]
+    departamentoId?: string
+    tecnicoResponsavelId?: string
   },
 ): Promise<Cliente> {
   if (cliente.id) {

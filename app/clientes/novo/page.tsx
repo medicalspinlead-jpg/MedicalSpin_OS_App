@@ -1,14 +1,14 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { saveCliente } from "@/lib/storage"
-import { ArrowLeft, Plus, Trash2, AlertTriangle, X } from "lucide-react"
+import { ArrowLeft, Plus, Trash2, AlertTriangle, X, Building2, User } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { UFS, FABRICANTES, MODELOS, TIPOS } from "@/lib/constants"
@@ -20,6 +20,19 @@ interface EquipamentoForm {
   fabricante: string
   modelo: string
   numeroSerie: string
+}
+
+interface Departamento {
+  id: string
+  nome: string
+  cor: string
+}
+
+interface Tecnico {
+  id: string
+  nome: string
+  email: string
+  cargo: string
 }
 
 // Funcao para formatar CNPJ automaticamente
@@ -64,6 +77,52 @@ export default function NovoClientePage() {
   })
 
   const [equipamentos, setEquipamentos] = useState<EquipamentoForm[]>([])
+  
+  // Estados para departamento e técnico responsável
+  const [departamentos, setDepartamentos] = useState<Departamento[]>([])
+  const [tecnicos, setTecnicos] = useState<Tecnico[]>([])
+  const [selectedDepartamento, setSelectedDepartamento] = useState<string>("")
+  const [selectedTecnico, setSelectedTecnico] = useState<string>("")
+  const [loadingDepartamentos, setLoadingDepartamentos] = useState(true)
+  const [loadingTecnicos, setLoadingTecnicos] = useState(true)
+
+  // Buscar departamentos e técnicos ao montar o componente
+  useEffect(() => {
+    const fetchDepartamentos = async () => {
+      try {
+        const res = await fetch("/api/departamentos")
+        if (res.ok) {
+          const data = await res.json()
+          setDepartamentos(data)
+        }
+      } catch (error) {
+        console.error("Erro ao buscar departamentos:", error)
+      } finally {
+        setLoadingDepartamentos(false)
+      }
+    }
+
+    const fetchTecnicos = async () => {
+      try {
+        const res = await fetch("/api/usuarios")
+        if (res.ok) {
+          const data = await res.json()
+          // Filtrar apenas técnicos e admins ativos
+          const tecnicosAtivos = data.filter(
+            (u: Tecnico) => u.cargo !== "cliente" && u.cargo !== undefined
+          )
+          setTecnicos(tecnicosAtivos)
+        }
+      } catch (error) {
+        console.error("Erro ao buscar técnicos:", error)
+      } finally {
+        setLoadingTecnicos(false)
+      }
+    }
+
+    fetchDepartamentos()
+    fetchTecnicos()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -91,6 +150,8 @@ export default function NovoClientePage() {
           modelo: eq.modelo,
           numeroSerie: eq.numeroSerie,
         })),
+        departamentoId: selectedDepartamento || undefined,
+        tecnicoResponsavelId: selectedTecnico || undefined,
       }
 
       const cliente = await saveCliente(clienteData)
@@ -268,6 +329,87 @@ const addEquipamento = () => {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="email@exemplo.com"
                   />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card de Atribuição - Departamento e Técnico Responsável */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                Atribuicao (Opcional)
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Opcionalmente, atribua este cliente a um departamento e/ou tecnico responsavel
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="departamento" className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-muted-foreground" />
+                    Departamento
+                  </Label>
+                  <Select 
+                    value={selectedDepartamento} 
+                    onValueChange={setSelectedDepartamento}
+                    disabled={loadingDepartamentos}
+                  >
+                    <SelectTrigger id="departamento">
+                      <SelectValue placeholder={loadingDepartamentos ? "Carregando..." : "Nenhum (opcional)"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhum</SelectItem>
+                      {departamentos.map((dept) => (
+                        <SelectItem key={dept.id} value={dept.id}>
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="h-3 w-3 rounded-full" 
+                              style={{ backgroundColor: dept.cor }}
+                            />
+                            {dept.nome}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {departamentos.length === 0 && !loadingDepartamentos && (
+                    <p className="text-xs text-muted-foreground">Nenhum departamento cadastrado</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="tecnico" className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    Tecnico Responsavel
+                  </Label>
+                  <Select 
+                    value={selectedTecnico} 
+                    onValueChange={setSelectedTecnico}
+                    disabled={loadingTecnicos}
+                  >
+                    <SelectTrigger id="tecnico">
+                      <SelectValue placeholder={loadingTecnicos ? "Carregando..." : "Nenhum (opcional)"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhum</SelectItem>
+                      {tecnicos.map((tecnico) => (
+                        <SelectItem key={tecnico.id} value={tecnico.id}>
+                          <div className="flex items-center gap-2">
+                            <span>{tecnico.nome}</span>
+                            <span className="text-xs text-muted-foreground">
+                              ({tecnico.cargo === "admin" ? "Admin" : "Tecnico"})
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {tecnicos.length === 0 && !loadingTecnicos && (
+                    <p className="text-xs text-muted-foreground">Nenhum tecnico cadastrado</p>
+                  )}
                 </div>
               </div>
             </CardContent>
