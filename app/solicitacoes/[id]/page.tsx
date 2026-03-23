@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,12 +56,88 @@ import {
   Video,
   CalendarCheck,
   CalendarPlus,
+  Lock,
+  ShieldAlert,
+  Radio,
+  Activity,
+  Scan,
 } from "lucide-react"
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; icon: React.ElementType }> = {
   recebida: { label: "OS Nova", badgeClass: "bg-blue-100 text-blue-800 border-blue-200", icon: Inbox },
   em_progresso: { label: "Em Progresso", badgeClass: "bg-amber-100 text-amber-800 border-amber-200", icon: Settings },
   finalizada: { label: "Finalizada", badgeClass: "bg-green-100 text-green-800 border-green-200", icon: CheckCircle },
+}
+
+// Função para determinar o departamento baseado no tipo de equipamento
+function getDepartamentoInfo(tipoEquipamento: string): { nome: string; icon: React.ElementType; badgeClass: string } {
+  const tipoLower = tipoEquipamento.toLowerCase().trim()
+  
+  if (tipoLower.includes("ressonância") || tipoLower.includes("ressonancia") || tipoLower === "rm") {
+    return { nome: "Ressonância", icon: Radio, badgeClass: "bg-purple-100 text-purple-800 border-purple-200" }
+  }
+  if (tipoLower.includes("ultrassom") || tipoLower.includes("ultra-som") || tipoLower === "us") {
+    return { nome: "Ultrassom", icon: Activity, badgeClass: "bg-cyan-100 text-cyan-800 border-cyan-200" }
+  }
+  if (tipoLower.includes("tomografia") || tipoLower.includes("tomografo") || tipoLower === "ct" || tipoLower === "tc") {
+    return { nome: "Tomografia", icon: Scan, badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-200" }
+  }
+  
+  return { nome: tipoEquipamento, icon: Wrench, badgeClass: "bg-gray-100 text-gray-800 border-gray-200" }
+}
+
+// Mapeamento de tipos de equipamento para departamentos
+// Normaliza o tipo de equipamento para comparar com o nome do departamento
+function normalizarTipoEquipamento(tipo: string): string {
+  const tipoLower = tipo.toLowerCase().trim()
+  
+  // Mapeamentos conhecidos
+  if (tipoLower.includes("ressonância") || tipoLower.includes("ressonancia") || tipoLower === "rm") {
+    return "ressonância magnética"
+  }
+  if (tipoLower.includes("ultrassom") || tipoLower.includes("ultra-som") || tipoLower === "us") {
+    return "ultrassom"
+  }
+  if (tipoLower.includes("tomografia") || tipoLower.includes("tomografo") || tipoLower === "ct" || tipoLower === "tc") {
+    return "tomografia"
+  }
+  
+  return tipoLower
+}
+
+// Verifica se o usuário pode aceitar uma solicitação baseado no tipo de equipamento
+function podeAceitarSolicitacao(
+  usuario: { cargo: string; departamentos?: { id: string; nome: string }[] } | null,
+  tipoEquipamento: string
+): { pode: boolean; motivo?: string } {
+  if (!usuario) return { pode: false, motivo: "Usuário não autenticado" }
+  
+  // Admin pode aceitar qualquer solicitação
+  if (usuario.cargo === "admin") return { pode: true }
+  
+  // Se não tem departamentos associados
+  if (!usuario.departamentos || usuario.departamentos.length === 0) {
+    return { pode: false, motivo: "Você não está associado a nenhum departamento" }
+  }
+  
+  const tipoNormalizado = normalizarTipoEquipamento(tipoEquipamento)
+  
+  // Verifica se algum departamento do usuário corresponde ao tipo de equipamento
+  const departamentoCorrespondente = usuario.departamentos.find(
+    dep => normalizarTipoEquipamento(dep.nome) === tipoNormalizado
+  )
+  
+  if (departamentoCorrespondente) {
+    return { pode: true }
+  }
+  
+  // Busca o nome do departamento que seria necessário
+  const departamentoNecessario = tipoEquipamento
+  
+  return { 
+    pode: false, 
+    motivo: `Esta solicitação é do departamento de ${tipoEquipamento}. Você só pode aceitar solicitações do(s) departamento(s): ${usuario.departamentos.map(d => d.nome).join(", ")}` 
+  }
 }
 
 export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -289,6 +367,8 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
 
   const statusConfig = STATUS_CONFIG[solicitacao.status] || STATUS_CONFIG.recebida
   const StatusIcon = statusConfig.icon
+  const departamento = getDepartamentoInfo(solicitacao.tipoEquipamento)
+  const DeptIcon = departamento.icon
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -308,10 +388,14 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
               <div>
                 <CardDescription className="font-mono text-xs">{solicitacao.protocolo}</CardDescription>
                 <CardTitle className="text-xl mt-1">{solicitacao.nomeEmpresa}</CardTitle>
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
                   <Badge className={`${statusConfig.badgeClass} border`}>
                     <StatusIcon className="h-3 w-3 mr-1" />
                     {statusConfig.label}
+                  </Badge>
+                  <Badge className={`${departamento.badgeClass} border`}>
+                    <DeptIcon className="h-3 w-3 mr-1" />
+                    {departamento.nome}
                   </Badge>
                   {solicitacao.urgencia === "urgente" && (
                     <Badge variant="destructive">
@@ -576,54 +660,85 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
         })()}
 
         {/* Actions */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Ações</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-2 md:flex-row">
-              {solicitacao.status === "recebida" && (
-                <Button
-                  onClick={handleAccept}
-                  disabled={actionLoading !== ""}
-                  className="flex-1"
-                >
-                  {actionLoading === "accept" ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Play className="h-4 w-4 mr-2" />
+        {(() => {
+          const permissao = podeAceitarSolicitacao(usuario, solicitacao.tipoEquipamento)
+          
+          return (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">Ações</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {/* Aviso de permissão quando não pode aceitar */}
+                {solicitacao.status === "recebida" && !permissao.pode && (
+                  <Alert variant="default" className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+                    <ShieldAlert className="h-4 w-4 text-amber-600" />
+                    <AlertDescription className="text-amber-800 dark:text-amber-200">
+                      {permissao.motivo}
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
+                <div className="flex flex-col gap-2 md:flex-row">
+                  {solicitacao.status === "recebida" && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="flex-1">
+                            <Button
+                              onClick={handleAccept}
+                              disabled={actionLoading !== "" || !permissao.pode}
+                              className="w-full"
+                            >
+                              {actionLoading === "accept" ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : !permissao.pode ? (
+                                <Lock className="h-4 w-4 mr-2" />
+                              ) : (
+                                <Play className="h-4 w-4 mr-2" />
+                              )}
+                              Aceitar e Criar OS
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        {!permissao.pode && (
+                          <TooltipContent side="top" className="max-w-xs">
+                            <p>{permissao.motivo}</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
-                  Aceitar e Criar OS
-                </Button>
-              )}
 
-              {solicitacao.status === "em_progresso" && (
-                <Button
-                  onClick={() => handleStatusChange("finalizada")}
-                  disabled={actionLoading !== ""}
-                  variant="default"
-                  className="flex-1"
-                >
-                  {actionLoading === "finalizada" ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <CheckCircle className="h-4 w-4 mr-2" />
+                  {solicitacao.status === "em_progresso" && (
+                    <Button
+                      onClick={() => handleStatusChange("finalizada")}
+                      disabled={actionLoading !== ""}
+                      variant="default"
+                      className="flex-1"
+                    >
+                      {actionLoading === "finalizada" ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                      )}
+                      Marcar como Finalizada
+                    </Button>
+                  )}              
+
+                  {solicitacao.ordemServicoId && solicitacao.status !== "finalizada" && (
+                    <Button asChild variant="outline" className="flex-1 bg-transparent">
+                      <Link href={`/os/${solicitacao.ordemServicoId}/etapa/1`}>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Ir para OS
+                      </Link>
+                    </Button>
                   )}
-                  Marcar como Finalizada
-                </Button>
-              )}              
-
-              {solicitacao.ordemServicoId && solicitacao.status !== "finalizada" && (
-                <Button asChild variant="outline" className="flex-1 bg-transparent">
-                  <Link href={`/os/${solicitacao.ordemServicoId}/etapa/1`}>
-                    <FileText className="h-4 w-4 mr-2" />
-                    Ir para OS
-                  </Link>
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })()}
       </main>
     </div>
   )

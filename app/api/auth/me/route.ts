@@ -19,6 +19,12 @@ export async function GET() {
       return NextResponse.json({ error: "Nao autenticado" }, { status: 401 })
     }
 
+    // Extrair os departamentos do usuário
+    const departamentos = (usuario as any).departamentos?.map((ud: any) => ({
+      id: ud.departamento.id,
+      nome: ud.departamento.nome,
+    })) || []
+
     return NextResponse.json({
       usuario: {
         id: usuario.id,
@@ -26,6 +32,7 @@ export async function GET() {
         email: usuario.email,
         cargo: usuario.cargo,
         clienteId: usuario.clienteId || null,
+        departamentos,
       },
     })
   } catch (error) {

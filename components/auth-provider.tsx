@@ -5,12 +5,18 @@ import type React from "react"
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react"
 import { usePathname } from "next/navigation"
 
+interface UsuarioDepartamento {
+  id: string
+  nome: string
+}
+
 interface Usuario {
   id: string
   nome: string
   email: string
   cargo: "admin" | "tecnico" | "cliente" | string
   clienteId?: string | null
+  departamentos?: UsuarioDepartamento[]
 }
 
 interface Configuracao {

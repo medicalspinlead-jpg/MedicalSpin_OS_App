@@ -20,12 +20,32 @@ import {
   Building2,
   Wrench,
   Loader2,
+  Scan,
+  Radio,
+  Activity,
 } from "lucide-react"
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; icon: React.ElementType }> = {
   recebida: { label: "OS Nova", badgeClass: "bg-blue-100 text-blue-800 border-blue-200", icon: Inbox },
   em_progresso: { label: "Em Progresso", badgeClass: "bg-amber-100 text-amber-800 border-amber-200", icon: Settings },
   finalizada: { label: "Finalizada", badgeClass: "bg-green-100 text-green-800 border-green-200", icon: CheckCircle },
+}
+
+// Função para determinar o departamento baseado no tipo de equipamento
+function getDepartamentoInfo(tipoEquipamento: string): { nome: string; icon: React.ElementType; badgeClass: string } {
+  const tipoLower = tipoEquipamento.toLowerCase().trim()
+  
+  if (tipoLower.includes("ressonância") || tipoLower.includes("ressonancia") || tipoLower === "rm") {
+    return { nome: "Ressonância", icon: Radio, badgeClass: "bg-purple-100 text-purple-800 border-purple-200" }
+  }
+  if (tipoLower.includes("ultrassom") || tipoLower.includes("ultra-som") || tipoLower === "us") {
+    return { nome: "Ultrassom", icon: Activity, badgeClass: "bg-cyan-100 text-cyan-800 border-cyan-200" }
+  }
+  if (tipoLower.includes("tomografia") || tipoLower.includes("tomografo") || tipoLower === "ct" || tipoLower === "tc") {
+    return { nome: "Tomografia", icon: Scan, badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-200" }
+  }
+  
+  return { nome: tipoEquipamento, icon: Wrench, badgeClass: "bg-gray-100 text-gray-800 border-gray-200" }
 }
 
 export default function SolicitacoesPage() {
@@ -142,6 +162,8 @@ export default function SolicitacoesPage() {
             {filtered.map((sol) => {
               const config = STATUS_CONFIG[sol.status] || STATUS_CONFIG.recebida
               const StatusIcon = config.icon
+              const departamento = getDepartamentoInfo(sol.tipoEquipamento)
+              const DeptIcon = departamento.icon
 
               return (
                 <Card key={sol.id} className="hover:shadow-md transition-shadow">
@@ -153,6 +175,10 @@ export default function SolicitacoesPage() {
                           <Badge className={`${config.badgeClass} border text-xs`}>
                             <StatusIcon className="h-3 w-3 mr-1" />
                             {config.label}
+                          </Badge>
+                          <Badge className={`${departamento.badgeClass} border text-xs`}>
+                            <DeptIcon className="h-3 w-3 mr-1" />
+                            {departamento.nome}
                           </Badge>
                           {sol.urgencia === "urgente" && (
                             <Badge variant="destructive" className="text-xs">

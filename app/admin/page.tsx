@@ -88,6 +88,12 @@ const fetcher = async (url: string) => {
   return res.json()
 }
 
+const departamentoTipos = [
+  { value: "Ressonância Magnética", label: "Ressonância Magnética", Icon: Zap },
+  { value: "Ultrassom", label: "Ultrassom", Icon: Radio },
+  { value: "Tomografia", label: "Tomografia", Icon: Scan },
+];
+
 const departamentoIcons = [
   { value: "Zap", label: "Ressonancia", Icon: Zap },
   { value: "Radio", label: "Ultrassom", Icon: Radio },
@@ -1156,13 +1162,28 @@ export default function AdminPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="dept-nome">Nome *</Label>
-              <Input
-                id="dept-nome"
+              <Label>Tipo *</Label>
+              <Select
                 value={deptFormData.nome}
-                onChange={(e) => setDeptFormData({ ...deptFormData, nome: e.target.value })}
-                placeholder="Ex: Ressonancia Magnetica"
-              />
+                onValueChange={(value) =>
+                  setDeptFormData({ ...deptFormData, nome: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  {departamentoTipos.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      <div className="flex items-center gap-2">
+                        <item.Icon className="h-4 w-4" />
+                        {item.label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="dept-descricao">Descricao</Label>
@@ -1237,12 +1258,28 @@ export default function AdminPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="dept-edit-nome">Nome *</Label>
-              <Input
-                id="dept-edit-nome"
+              <Label>Tipo *</Label>
+              <Select
                 value={deptFormData.nome}
-                onChange={(e) => setDeptFormData({ ...deptFormData, nome: e.target.value })}
-              />
+                onValueChange={(value) =>
+                  setDeptFormData({ ...deptFormData, nome: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  {departamentoTipos.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      <div className="flex items-center gap-2">
+                        <item.Icon className="h-4 w-4" />
+                        {item.label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="dept-edit-descricao">Descricao</Label>
