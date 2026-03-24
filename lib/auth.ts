@@ -61,9 +61,12 @@ export async function validateSession(token: string) {
       id: true, 
       nome: true, 
       email: true, 
+      telefone: true,
       cargo: true, 
       ativo: true, 
       clienteId: true,
+      notifEmail: true,
+      notifWhatsapp: true,
       departamentos: {
         include: {
           departamento: true

@@ -115,6 +115,7 @@ model Usuario {
   id        String   @id @default(uuid())
   nome      String
   email     String   @unique
+  telefone  String?
   senha     String
   cargo     String   @default("tecnico") // "admin", "tecnico", "cliente"
   ativo     Boolean  @default(true)
@@ -122,6 +123,10 @@ model Usuario {
   cliente   Cliente? @relation(fields: [clienteId], references: [id])
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  
+  // Preferencias de notificacao
+  notifEmail    Boolean  @default(false) @map("notif_email")
+  notifWhatsapp Boolean  @default(false) @map("notif_whatsapp")
   
   departamentos        UsuarioDepartamento[]
   clientesResponsavel  ClienteDepartamento[]

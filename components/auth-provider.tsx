@@ -14,9 +14,12 @@ interface Usuario {
   id: string
   nome: string
   email: string
+  telefone?: string | null
   cargo: "admin" | "tecnico" | "cliente" | string
   clienteId?: string | null
   departamentos?: UsuarioDepartamento[]
+  notifEmail?: boolean
+  notifWhatsapp?: boolean
 }
 
 interface Configuracao {
@@ -30,6 +33,9 @@ interface AuthContextType {
   logout: () => Promise<void>
   config: Configuracao | null
   setEmailHabilitado: (habilitado: boolean) => Promise<void>
+  updateNotificacoes: (notifEmail: boolean, notifWhatsapp: boolean) => Promise<void>
+  updatePerfil: (email: string, telefone: string) => Promise<boolean>
+  refreshUsuario: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -38,6 +44,9 @@ const AuthContext = createContext<AuthContextType>({
   logout: async () => {},
   config: null,
   setEmailHabilitado: async () => {},
+  updateNotificacoes: async () => {},
+  updatePerfil: async () => false,
+  refreshUsuario: async () => {},
 })
 
 export function useAuth() {
@@ -157,6 +166,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  const updateNotificacoes = useCallback(async (notifEmail: boolean, notifWhatsapp: boolean) => {
+    if (!usuario) return
+    try {
+      const response = await fetch(`/api/usuarios/${usuario.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ notifEmail, notifWhatsapp }),
+      })
+
+      if (response.ok) {
+        setUsuario((prev) => prev ? { ...prev, notifEmail, notifWhatsapp } : null)
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar notificações:", error)
+    }
+  }, [usuario])
+
+  const updatePerfil = useCallback(async (email: string, telefone: string): Promise<boolean> => {
+    if (!usuario) return false
+    try {
+      const response = await fetch(`/api/usuarios/${usuario.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, telefone }),
+      })
+
+      if (response.ok) {
+        setUsuario((prev) => prev ? { ...prev, email, telefone } : null)
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error("Erro ao atualizar perfil:", error)
+      return false
+    }
+  }, [usuario])
+
+  const refreshUsuario = useCallback(async () => {
+    try {
+      const response = await fetch("/api/auth/me", {
+        credentials: "include",
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setUsuario(data.usuario)
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar usuario:", error)
+    }
+  }, [])
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -170,7 +232,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ usuario, loading, logout, config, setEmailHabilitado }}>
+    <AuthContext.Provider value={{ usuario, loading, logout, config, setEmailHabilitado, updateNotificacoes, updatePerfil, refreshUsuario }}>
       {children}
     </AuthContext.Provider>
   )

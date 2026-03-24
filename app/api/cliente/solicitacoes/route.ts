@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/auth"
+import { enviarWebhookNovaSolicitacao } from "@/lib/webhook-solicitacao"
 
 const noCacheHeaders = {
   "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
@@ -128,6 +129,30 @@ export async function POST(request: Request) {
     } catch (histError) {
       console.error("Erro ao registrar historico de status:", histError)
     }
+
+    // Enviar webhook com todas as informações da solicitação
+    enviarWebhookNovaSolicitacao({
+      id: solicitacao.id,
+      protocolo: solicitacao.protocolo,
+      status: solicitacao.status,
+      nomeEmpresa: solicitacao.nomeEmpresa,
+      cnpj: solicitacao.cnpj,
+      nomeContato: solicitacao.nomeContato,
+      telefone: solicitacao.telefone,
+      email: solicitacao.email,
+      cidade: solicitacao.cidade,
+      uf: solicitacao.uf,
+      tipoEquipamento: solicitacao.tipoEquipamento,
+      fabricante: solicitacao.fabricante,
+      modelo: solicitacao.modelo,
+      numeroSerie: solicitacao.numeroSerie,
+      descricaoProblema: solicitacao.descricaoProblema,
+      urgencia: solicitacao.urgencia,
+      clienteId: solicitacao.clienteId,
+      midias: (solicitacao.midias as Record<string, unknown>) || {},
+      createdAt: solicitacao.createdAt.toISOString(),
+      updatedAt: solicitacao.updatedAt.toISOString(),
+    })
 
     return NextResponse.json(
       {

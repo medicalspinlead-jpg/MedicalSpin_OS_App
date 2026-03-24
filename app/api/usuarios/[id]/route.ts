@@ -30,8 +30,11 @@ export async function GET(
         id: true,
         nome: true,
         email: true,
+        telefone: true,
         cargo: true,
         ativo: true,
+        notifEmail: true,
+        notifWhatsapp: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -87,9 +90,12 @@ export async function PUT(
     const updateData: {
       nome?: string
       email?: string
+      telefone?: string
       senha?: string
       cargo?: string
       ativo?: boolean
+      notifEmail?: boolean
+      notifWhatsapp?: boolean
     } = {}
 
     // Campos que qualquer usuário pode editar em si mesmo
@@ -110,6 +116,13 @@ export async function PUT(
     if (data.senha) {
       updateData.senha = hashPassword(data.senha)
     }
+    if (data.telefone !== undefined) {
+      updateData.telefone = data.telefone
+    }
+
+    // Campos de notificação - qualquer usuario pode editar os proprios
+    if (data.notifEmail !== undefined) updateData.notifEmail = data.notifEmail
+    if (data.notifWhatsapp !== undefined) updateData.notifWhatsapp = data.notifWhatsapp
 
     // Campos que apenas admin ou API key pode editar
     if (isAdmin || isApiKey) {
@@ -124,8 +137,11 @@ export async function PUT(
         id: true,
         nome: true,
         email: true,
+        telefone: true,
         cargo: true,
         ativo: true,
+        notifEmail: true,
+        notifWhatsapp: true,
         updatedAt: true,
       },
     })

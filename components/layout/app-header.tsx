@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Home, FileText, Users, History, Moon, Sun, LogOut, User, Menu, BookOpen, Mail, Shield, Inbox } from "lucide-react"
+import { Home, FileText, Users, History, Moon, Sun, LogOut, User, Menu, BookOpen, Mail, Shield, Inbox, MessageCircle, Bell, Phone, Pencil, Check, X } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/components/auth-provider"
 import { useState } from "react"
@@ -19,13 +19,39 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
 
 
 export function AppHeader() {
   const { theme, setTheme } = useTheme()
-  const { usuario, logout, config, setEmailHabilitado } = useAuth()
+  const { usuario, logout, config, setEmailHabilitado, updateNotificacoes, updatePerfil } = useAuth()
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isEditingPerfil, setIsEditingPerfil] = useState(false)
+  const [editEmail, setEditEmail] = useState("")
+  const [editTelefone, setEditTelefone] = useState("")
+  const [savingPerfil, setSavingPerfil] = useState(false)
+
+  const startEditingPerfil = () => {
+    setEditEmail(usuario?.email || "")
+    setEditTelefone(usuario?.telefone || "")
+    setIsEditingPerfil(true)
+  }
+
+  const cancelEditingPerfil = () => {
+    setIsEditingPerfil(false)
+    setEditEmail("")
+    setEditTelefone("")
+  }
+
+  const savePerfil = async () => {
+    setSavingPerfil(true)
+    const success = await updatePerfil(editEmail, editTelefone)
+    setSavingPerfil(false)
+    if (success) {
+      setIsEditingPerfil(false)
+    }
+  }
 
   if (pathname === "/login" || pathname === "/setup" || pathname.startsWith("/cliente") || pathname === "/registro") {
     return null
@@ -101,21 +127,100 @@ export function AppHeader() {
                   {usuario.nome.split(" ")[0]}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64">
+              <DropdownMenuContent align="end" className="w-72">
                 <DropdownMenuLabel>
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center justify-between">
                       <span>{usuario.nome}</span>
-                      <Badge
-                        variant={usuario.cargo === "admin" ? "default" : "secondary"}
-                        className={usuario.cargo === "admin" ? "bg-blue-600" : ""}
-                      >
-                        {usuario.cargo === "admin" ? "Admin" : "Técnico"}
-                      </Badge>
+                      <div className="flex items-center gap-1">
+                        <Badge
+                          variant={usuario.cargo === "admin" ? "default" : "secondary"}
+                          className={usuario.cargo === "admin" ? "bg-blue-600" : ""}
+                        >
+                          {usuario.cargo === "admin" ? "Admin" : "Técnico"}
+                        </Badge>
+                        {!isEditingPerfil && (
+                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={startEditingPerfil}>
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                    <span className="text-xs text-muted-foreground">{usuario.email}</span>
+                    {isEditingPerfil ? (
+                      <div className="space-y-2 mt-2">
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                          <Input 
+                            value={editEmail}
+                            onChange={(e) => setEditEmail(e.target.value)}
+                            placeholder="Email"
+                            className="h-7 text-xs"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                          <Input 
+                            value={editTelefone}
+                            onChange={(e) => setEditTelefone(e.target.value)}
+                            placeholder="Telefone"
+                            className="h-7 text-xs"
+                          />
+                        </div>
+                        <div className="flex justify-end gap-1 mt-2">
+                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={cancelEditingPerfil} disabled={savingPerfil}>
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 text-green-600" onClick={savePerfil} disabled={savingPerfil}>
+                            <Check className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Mail className="h-3 w-3" />
+                          <span>{usuario.email}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Phone className="h-3 w-3" />
+                          <span>{usuario.telefone || "Nao informado"}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {/* Notificacoes pessoais para admin e tecnico */}
+                <div className="px-2 py-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Bell className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Minhas Notificacoes</span>
+                  </div>
+                  <div className="space-y-2 pl-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-sm">Email</span>
+                      </div>
+                      <Checkbox
+                        checked={usuario.notifEmail ?? false}
+                        onCheckedChange={(checked) => updateNotificacoes(!!checked, usuario.notifWhatsapp ?? false)}
+                        className="h-4 w-4"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <MessageCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-sm">WhatsApp</span>
+                      </div>
+                      <Checkbox
+                        checked={usuario.notifWhatsapp ?? false}
+                        onCheckedChange={(checked) => updateNotificacoes(usuario.notifEmail ?? false, !!checked)}
+                        className="h-4 w-4"
+                      />
+                    </div>
+                  </div>
+                </div>
                 <DropdownMenuSeparator />
                 {usuario.cargo === "admin" && (
                   <>
@@ -177,14 +282,92 @@ export function AppHeader() {
                       <div className="flex flex-col flex-1">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium">{usuario.nome}</span>
-                          <Badge
-                            variant={usuario.cargo === "admin" ? "default" : "secondary"}
-                            className={usuario.cargo === "admin" ? "bg-blue-600" : ""}
-                          >
-                            {usuario.cargo === "admin" ? "Admin" : "Técnico"}
-                          </Badge>
+                          <div className="flex items-center gap-1">
+                            <Badge
+                              variant={usuario.cargo === "admin" ? "default" : "secondary"}
+                              className={usuario.cargo === "admin" ? "bg-blue-600" : ""}
+                            >
+                              {usuario.cargo === "admin" ? "Admin" : "Técnico"}
+                            </Badge>
+                            {!isEditingPerfil && (
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={startEditingPerfil}>
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                        <span className="text-xs text-muted-foreground">{usuario.email}</span>
+                        {isEditingPerfil ? (
+                          <div className="space-y-2 mt-2">
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                              <Input 
+                                value={editEmail}
+                                onChange={(e) => setEditEmail(e.target.value)}
+                                placeholder="Email"
+                                className="h-7 text-xs"
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                              <Input 
+                                value={editTelefone}
+                                onChange={(e) => setEditTelefone(e.target.value)}
+                                placeholder="Telefone"
+                                className="h-7 text-xs"
+                              />
+                            </div>
+                            <div className="flex justify-end gap-1 mt-2">
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={cancelEditingPerfil} disabled={savingPerfil}>
+                                <X className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-6 w-6 text-green-600" onClick={savePerfil} disabled={savingPerfil}>
+                                <Check className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Mail className="h-3 w-3" />
+                              <span>{usuario.email}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Phone className="h-3 w-3" />
+                              <span>{usuario.telefone || "Nao informado"}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {/* Notificacoes pessoais mobile */}
+                    <div className="mt-3 p-2 bg-muted rounded-md">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Bell className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">Minhas Notificacoes</span>
+                      </div>
+                      <div className="space-y-2 pl-6">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-sm">Email</span>
+                          </div>
+                          <Checkbox
+                            checked={usuario.notifEmail ?? false}
+                            onCheckedChange={(checked) => updateNotificacoes(!!checked, usuario.notifWhatsapp ?? false)}
+                            className="h-4 w-4"
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <MessageCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-sm">WhatsApp</span>
+                          </div>
+                          <Checkbox
+                            checked={usuario.notifWhatsapp ?? false}
+                            onCheckedChange={(checked) => updateNotificacoes(usuario.notifEmail ?? false, !!checked)}
+                            className="h-4 w-4"
+                          />
+                        </div>
                       </div>
                     </div>
                     {usuario.cargo === "admin" && (
