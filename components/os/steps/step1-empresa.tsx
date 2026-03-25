@@ -9,13 +9,35 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import type { OrdemServico } from "@/lib/storage"
 import { getClientes } from "@/lib/storage"
-import { ArrowRight, Search, Plus, X } from "lucide-react"
+import { ArrowRight, Search, Plus, X, AlertCircle } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { Cliente } from "@prisma/client"
+import { useAuth } from "@/components/auth-provider"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+
+interface ClienteComEquipamentos {
+  id: string
+  razaoSocial: string
+  nomeFantasia: string
+  cnpj: string
+  cidade: string
+  uf: string
+  estado?: string
+  telefone: string
+  email: string
+  responsavel: string
+  createdAt: string
+  equipamentos?: {
+    id: string
+    tipo: string
+    fabricante: string
+    modelo: string
+    numeroSerie: string
+  }[]
+}
 
 const UFS = [
   "AC",
@@ -51,6 +73,40 @@ export interface StepRef {
   getCurrentData: () => Partial<OrdemServico>
 }
 
+// Funcao para normalizar o nome do tipo de equipamento para comparacao
+function normalizarTipo(tipo: string): string {
+  return tipo
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+    .replace(/[^a-z0-9]/g, "") // Remove caracteres especiais
+}
+
+// Verifica se o cliente tem equipamento compativel com o departamento
+function clienteTemEquipamentoCompativel(
+  cliente: ClienteComEquipamentos,
+  departamentos: { id: string; nome: string }[]
+): boolean {
+  if (!cliente.equipamentos || cliente.equipamentos.length === 0) {
+    return false
+  }
+  
+  if (!departamentos || departamentos.length === 0) {
+    return true // Se nao tem departamento, permite todos
+  }
+  
+  // Normaliza os nomes dos departamentos
+  const tiposDepartamento = departamentos.map(d => normalizarTipo(d.nome))
+  
+  // Verifica se algum equipamento do cliente tem tipo compativel
+  return cliente.equipamentos.some(equip => {
+    const tipoEquip = normalizarTipo(equip.tipo)
+    return tiposDepartamento.some(tipoDep => 
+      tipoEquip.includes(tipoDep) || tipoDep.includes(tipoEquip)
+    )
+  })
+}
+
 export const Step1DadosEmpresa = forwardRef<
   StepRef,
   {
@@ -58,7 +114,8 @@ export const Step1DadosEmpresa = forwardRef<
     onSave: (data: Partial<OrdemServico>, goToNext?: boolean) => void
   }
 >(({ os, onSave }, ref) => {
-  const [clientes, setClientes] = useState<Cliente[]>([])
+  const { usuario } = useAuth()
+  const [clientes, setClientes] = useState<ClienteComEquipamentos[]>([])
   const [clienteSelecionado, setClienteSelecionado] = useState<string>("")
   const [open, setOpen] = useState(false)
   const [formData, setFormData] = useState({
@@ -67,6 +124,9 @@ export const Step1DadosEmpresa = forwardRef<
   })
   const [novoEmail, setNovoEmail] = useState("")
   const [loading, setLoading] = useState(true)
+
+  // Departamentos do usuario logado
+  const departamentosUsuario = usuario?.departamentos || []
 
   useEffect(() => {
     setFormData({
@@ -80,7 +140,7 @@ export const Step1DadosEmpresa = forwardRef<
       try {
         setLoading(true)
         const clientesData = await getClientes()
-        setClientes(clientesData)
+        setClientes(clientesData as ClienteComEquipamentos[])
       } catch (error) {
         console.error("Erro ao carregar clientes:", error)
         setClientes([])
@@ -169,6 +229,12 @@ export const Step1DadosEmpresa = forwardRef<
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="cliente">Buscar Cliente</Label>
+            {departamentosUsuario.length > 0 && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                Mostrando clientes com equipamentos de: {departamentosUsuario.map(d => d.nome).join(", ")}
+              </p>
+            )}
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -195,24 +261,56 @@ export const Step1DadosEmpresa = forwardRef<
                         <Search className="mr-2 h-4 w-4" />
                         Preencher manualmente
                       </CommandItem>
-                      {clientes.map((cliente) => (
-                        <CommandItem
-                          key={cliente.id}
-                          value={`${cliente.razaoSocial} ${cliente.cnpj} ${cliente.nomeFantasia}`}
-                          onSelect={() => handleClienteSelect(cliente.id)}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              clienteSelecionado === cliente.id ? "opacity-100" : "opacity-0",
-                            )}
-                          />
-                          <div className="flex flex-col">
-                            <span className="font-medium">{cliente.razaoSocial}</span>
-                            <span className="text-sm text-muted-foreground">{cliente.cnpj}</span>
-                          </div>
-                        </CommandItem>
-                      ))}
+                      {clientes.map((cliente) => {
+                        const isCompativel = departamentosUsuario.length === 0 || 
+                          clienteTemEquipamentoCompativel(cliente, departamentosUsuario)
+                        
+                        return (
+                          <TooltipProvider key={cliente.id}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div>
+                                  <CommandItem
+                                    value={`${cliente.razaoSocial} ${cliente.cnpj} ${cliente.nomeFantasia}`}
+                                    onSelect={() => isCompativel && handleClienteSelect(cliente.id)}
+                                    className={cn(
+                                      !isCompativel && "opacity-50 cursor-not-allowed"
+                                    )}
+                                    disabled={!isCompativel}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        clienteSelecionado === cliente.id ? "opacity-100" : "opacity-0",
+                                      )}
+                                    />
+                                    <div className="flex flex-col flex-1">
+                                      <div className="flex items-center gap-2">
+                                        <span className={cn("font-medium", !isCompativel && "text-muted-foreground")}>
+                                          {cliente.razaoSocial}
+                                        </span>
+                                        {!isCompativel && (
+                                          <AlertCircle className="h-4 w-4 text-amber-500" />
+                                        )}
+                                      </div>
+                                      <span className="text-sm text-muted-foreground">{cliente.cnpj}</span>
+                                    </div>
+                                  </CommandItem>
+                                </div>
+                              </TooltipTrigger>
+                              {!isCompativel && (
+                                <TooltipContent side="right">
+                                  <p>Este cliente não possui equipamentos</p>
+                                  <p>compatíveis com seu departamento</p>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    ({departamentosUsuario.map(d => d.nome).join(", ")})
+                                  </p>
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                          </TooltipProvider>
+                        )
+                      })}
                     </CommandGroup>
                   </CommandList>
                 </Command>

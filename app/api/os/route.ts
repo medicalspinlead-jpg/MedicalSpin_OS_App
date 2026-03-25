@@ -174,6 +174,45 @@ export async function POST(request: Request) {
       },
     })
 
+    // Associar cliente ao departamento do tecnico quando a OS e criada
+    const clienteId = data.cliente?.id
+    const usuarioResponsavel = data.usuarioResponsavel
+    
+    if (clienteId && usuarioResponsavel?.departamentos?.length > 0) {
+      for (const dep of usuarioResponsavel.departamentos) {
+        try {
+          // Verifica se ja existe a associacao
+          const existente = await prisma.clienteDepartamento.findUnique({
+            where: {
+              clienteId_departamentoId: {
+                clienteId,
+                departamentoId: dep.id
+              }
+            }
+          })
+          
+          if (!existente) {
+            // Cria a associacao cliente-departamento com o tecnico responsavel
+            await prisma.clienteDepartamento.create({
+              data: {
+                clienteId,
+                departamentoId: dep.id,
+                usuarioResponsavelId: usuarioResponsavel.id
+              }
+            })
+          } else if (!existente.usuarioResponsavelId) {
+            // Atualiza o responsavel se nao havia um
+            await prisma.clienteDepartamento.update({
+              where: { id: existente.id },
+              data: { usuarioResponsavelId: usuarioResponsavel.id }
+            })
+          }
+        } catch (assocError) {
+          console.error("Erro ao associar cliente ao departamento:", assocError)
+        }
+      }
+    }
+
     return NextResponse.json(mapOS(os), { headers: noCacheHeaders })
   } catch (error) {
     console.error("Erro ao criar ordem de serviço:", error)

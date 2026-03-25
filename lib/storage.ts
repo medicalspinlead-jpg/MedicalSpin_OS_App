@@ -287,11 +287,29 @@ export async function getOSHistorico(): Promise<OrdemServico[]> {
   return res.json()
 }
 
-export async function saveOrdemServico(os: Partial<OrdemServico> & { id?: string }): Promise<OrdemServico> {
+export interface UsuarioOS {
+  id: string
+  nome: string
+  departamentos?: { id: string; nome: string }[]
+}
+
+export async function saveOrdemServico(
+  os: Partial<OrdemServico> & { id?: string },
+  usuario?: UsuarioOS
+): Promise<OrdemServico> {
+  const payload = {
+    ...os,
+    usuarioResponsavel: usuario ? {
+      id: usuario.id,
+      nome: usuario.nome,
+      departamentos: usuario.departamentos || []
+    } : undefined
+  }
+  
   if (os.id) {
     const res = await fetchNoCache(`/api/os/${os.id}`, {
       method: "PUT",
-      body: JSON.stringify(os),
+      body: JSON.stringify(payload),
     })
     if (!res.ok) {
       throw new Error("Erro ao atualizar OS")
@@ -300,7 +318,7 @@ export async function saveOrdemServico(os: Partial<OrdemServico> & { id?: string
   } else {
     const res = await fetchNoCache("/api/os", {
       method: "POST",
-      body: JSON.stringify(os),
+      body: JSON.stringify(payload),
     })
     if (!res.ok) {
       throw new Error("Erro ao criar OS")
@@ -319,21 +337,21 @@ export async function deleteOrdemServico(id: string): Promise<void> {
   await fetchNoCache(`/api/os/${id}`, { method: "DELETE" })
 }
 
-export async function finalizarOrdemServico(id: string): Promise<void> {
+export async function finalizarOrdemServico(id: string, usuario?: UsuarioOS): Promise<void> {
   const os = await getOrdemServico(id)
   if (os) {
     os.status = "finalizada"
     os.finalizedAt = new Date().toISOString()
-    await saveOrdemServico(os)
+    await saveOrdemServico(os, usuario)
   }
 }
 
-export async function fecharOrdemServico(id: string): Promise<void> {
+export async function fecharOrdemServico(id: string, usuario?: UsuarioOS): Promise<void> {
   const os = await getOrdemServico(id)
   if (os) {
     os.status = "fechada"
     os.finalizedAt = new Date().toISOString()
-    await saveOrdemServico(os)
+    await saveOrdemServico(os, usuario)
   }
 }
 

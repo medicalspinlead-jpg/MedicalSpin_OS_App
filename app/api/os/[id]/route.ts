@@ -195,6 +195,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     const numero = generateOSName({ ...data, finalizedAt })
 
+    // Buscar OS atual para verificar mudancas
+    const osAtual = await prisma.ordemServico.findUnique({
+      where: { id },
+      select: { clienteId: true, status: true }
+    })
+
     // Atualizar a OS
     const os = await prisma.ordemServico.update({
       where: { id },
@@ -220,6 +226,44 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         maoDeObra: true,
       },
     })
+
+    // Gerenciar associacao cliente-departamento
+    const clienteId = data.cliente?.id
+    const usuarioResponsavel = data.usuarioResponsavel
+    const clienteAnterior = osAtual?.clienteId
+
+    // Se mudou o cliente ou e uma nova atribuicao, associar ao departamento
+    if (clienteId && usuarioResponsavel?.departamentos?.length > 0 && clienteId !== clienteAnterior) {
+      for (const dep of usuarioResponsavel.departamentos) {
+        try {
+          const existente = await prisma.clienteDepartamento.findUnique({
+            where: {
+              clienteId_departamentoId: {
+                clienteId,
+                departamentoId: dep.id
+              }
+            }
+          })
+          
+          if (!existente) {
+            await prisma.clienteDepartamento.create({
+              data: {
+                clienteId,
+                departamentoId: dep.id,
+                usuarioResponsavelId: usuarioResponsavel.id
+              }
+            })
+          } else if (!existente.usuarioResponsavelId) {
+            await prisma.clienteDepartamento.update({
+              where: { id: existente.id },
+              data: { usuarioResponsavelId: usuarioResponsavel.id }
+            })
+          }
+        } catch (assocError) {
+          console.error("Erro ao associar cliente ao departamento:", assocError)
+        }
+      }
+    }
 
     // Atualizar peças - deletar antigas e inserir novas
     await prisma.peca.deleteMany({ where: { osId: id } })
@@ -323,6 +367,45 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         }
       } catch (solError) {
         console.error("Erro ao atualizar solicitacoes vinculadas:", solError)
+      }
+
+      // Remover associacao cliente-departamento quando a OS e finalizada
+      // Verifica se nao ha outras OS em andamento para este cliente
+      if (clienteId) {
+        try {
+          // Buscar todas as associacoes do cliente
+          const associacoes = await prisma.clienteDepartamento.findMany({
+            where: { clienteId }
+          })
+
+          for (const assoc of associacoes) {
+            // Verificar se existe outra OS (rascunho ou fechada) para este cliente neste departamento
+            // Buscar usuarios do departamento
+            const usuariosDep = await prisma.usuarioDepartamento.findMany({
+              where: { departamentoId: assoc.departamentoId },
+              select: { usuarioId: true }
+            })
+
+            // Verificar se ha outras OS em andamento vinculadas a este cliente
+            // (com status rascunho ou fechada, excluindo a OS atual)
+            const outrasOsEmAndamento = await prisma.ordemServico.findMany({
+              where: {
+                clienteId,
+                id: { not: id },
+                status: { in: ["rascunho", "fechada"] }
+              }
+            })
+
+            // Se nao ha outras OS em andamento, remove a associacao
+            if (outrasOsEmAndamento.length === 0) {
+              await prisma.clienteDepartamento.delete({
+                where: { id: assoc.id }
+              })
+            }
+          }
+        } catch (desassocError) {
+          console.error("Erro ao desassociar cliente do departamento:", desassocError)
+        }
       }
     }
 

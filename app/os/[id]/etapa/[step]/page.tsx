@@ -16,6 +16,7 @@ import { Step9Finalizacao } from "@/components/os/steps/step9-finalizacao"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Save, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/components/auth-provider"
 import Link from "next/link"
 
 export default function OSEtapaPage() {
@@ -29,6 +30,7 @@ export default function OSEtapaPage() {
 function OSEtapaPageClient({ id, step }: { id: string; step: string }) {
   const router = useRouter()
   const { toast } = useToast()
+  const { usuario } = useAuth()
   const [os, setOs] = useState<OrdemServico | null>(null)
   const [loading, setLoading] = useState(true)
   const currentStep = Number.parseInt(step)
@@ -72,8 +74,15 @@ function OSEtapaPageClient({ id, step }: { id: string; step: string }) {
       currentStep: goToNext ? currentStep + 1 : currentStep,
     }
 
+    // Preparar dados do usuario para associacao cliente-departamento
+    const usuarioOS = usuario ? {
+      id: usuario.id,
+      nome: usuario.nome,
+      departamentos: usuario.departamentos
+    } : undefined
+
     try {
-      await saveOrdemServico(updatedOS)
+      await saveOrdemServico(updatedOS, usuarioOS)
       setOs(updatedOS)
 
       toast({
@@ -114,8 +123,14 @@ function OSEtapaPageClient({ id, step }: { id: string; step: string }) {
       currentStep: currentStep,
     }
 
+    const usuarioOS = usuario ? {
+      id: usuario.id,
+      nome: usuario.nome,
+      departamentos: usuario.departamentos
+    } : undefined
+
     try {
-      await saveOrdemServico(updatedOS)
+      await saveOrdemServico(updatedOS, usuarioOS)
 
       toast({
         title: "Rascunho salvo!",
@@ -141,9 +156,15 @@ function OSEtapaPageClient({ id, step }: { id: string; step: string }) {
       ...data,
     }
 
+    const usuarioOS = usuario ? {
+      id: usuario.id,
+      nome: usuario.nome,
+      departamentos: usuario.departamentos
+    } : undefined
+
     try {
-      await saveOrdemServico(updatedOS)
-      await finalizarOrdemServico(id)
+      await saveOrdemServico(updatedOS, usuarioOS)
+      await finalizarOrdemServico(id, usuarioOS)
 
       toast({
         title: "Sucesso!",
@@ -169,9 +190,15 @@ function OSEtapaPageClient({ id, step }: { id: string; step: string }) {
       ...data,
     }
 
+    const usuarioOS = usuario ? {
+      id: usuario.id,
+      nome: usuario.nome,
+      departamentos: usuario.departamentos
+    } : undefined
+
     try {
-      await saveOrdemServico(updatedOS)
-      await fecharOrdemServico(id)
+      await saveOrdemServico(updatedOS, usuarioOS)
+      await fecharOrdemServico(id, usuarioOS)
 
       toast({
         title: "OS Fechada!",
