@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/components/ui/use-toast"
 import {
   AlertDialog,
@@ -18,7 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { ArrowLeft, Building2, Save, Loader2, Wrench, Plus, Pencil, Trash2, X, Check } from "lucide-react"
+import { ArrowLeft, Building2, Save, Loader2, Wrench, Plus, Pencil, Trash2, X, Check, Power } from "lucide-react"
 
 interface PerfilData {
   id: string
@@ -38,6 +39,7 @@ interface Equipamento {
   fabricante: string
   modelo: string
   numeroSerie: string
+  ativo: boolean
 }
 
 const UF_OPTIONS = [
@@ -97,11 +99,11 @@ export default function PerfilPage() {
     loadPerfil()
   }, [toast])
 
-  // Carregar equipamentos
+  // Carregar equipamentos (incluindo inativos)
   useEffect(() => {
     async function loadEquipamentos() {
       try {
-        const res = await fetch("/api/cliente/equipamentos", { credentials: "include" })
+        const res = await fetch("/api/cliente/equipamentos?incluirInativos=true", { credentials: "include" })
         if (res.ok) {
           setEquipamentos(await res.json())
         }
@@ -173,7 +175,7 @@ export default function PerfilPage() {
     }
   }
 
-  // Excluir equipamento
+  // Excluir ou inativar equipamento
   const handleDeleteEquip = async () => {
     if (!deleteEquipId) return
     setEquipSaving(true)
@@ -183,8 +185,21 @@ export default function PerfilPage() {
         credentials: "include",
       })
       if (res.ok) {
-        setEquipamentos((prev) => prev.filter((e) => e.id !== deleteEquipId))
-        toast({ title: "Equipamento removido" })
+        const result = await res.json()
+        if (result.inativado) {
+          // Foi inativado - atualizar na lista
+          setEquipamentos((prev) => 
+            prev.map((e) => (e.id === deleteEquipId ? { ...e, ativo: false } : e))
+          )
+          toast({ 
+            title: "Equipamento inativado", 
+            description: result.motivo || "O equipamento foi inativado pois esta vinculado a registros existentes."
+          })
+        } else {
+          // Foi excluido - remover da lista
+          setEquipamentos((prev) => prev.filter((e) => e.id !== deleteEquipId))
+          toast({ title: "Equipamento removido" })
+        }
       } else {
         toast({ title: "Erro ao remover equipamento", variant: "destructive" })
       }
@@ -193,6 +208,30 @@ export default function PerfilPage() {
     } finally {
       setEquipSaving(false)
       setDeleteEquipId(null)
+    }
+  }
+
+  // Reativar equipamento
+  const handleReativarEquip = async (id: string) => {
+    setEquipSaving(true)
+    try {
+      const res = await fetch(`/api/cliente/equipamentos/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ ativo: true }),
+      })
+      if (res.ok) {
+        const updated = await res.json()
+        setEquipamentos((prev) => prev.map((e) => (e.id === id ? updated : e)))
+        toast({ title: "Equipamento reativado" })
+      } else {
+        toast({ title: "Erro ao reativar equipamento", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Erro ao reativar equipamento", variant: "destructive" })
+    } finally {
+      setEquipSaving(false)
     }
   }
 
@@ -286,7 +325,7 @@ export default function PerfilPage() {
             Dados da Empresa
           </CardTitle>
           <CardDescription>
-            Essas informações ficam visiveis para a equipe técnica. O CNPJ não pode ser alterado.
+            Essas informacoes ficam visiveis para a equipe tecnica. O CNPJ nao pode ser alterado.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -298,7 +337,7 @@ export default function PerfilPage() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="razaoSocial">Razão Social *</Label>
+              <Label htmlFor="razaoSocial">Razao Social *</Label>
               <Input
                 id="razaoSocial"
                 value={form.razaoSocial}
@@ -316,7 +355,7 @@ export default function PerfilPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="responsavel">Responsável *</Label>
+            <Label htmlFor="responsavel">Responsavel *</Label>
             <Input
               id="responsavel"
               value={form.responsavel}
@@ -400,6 +439,10 @@ export default function PerfilPage() {
                 Gerencie os equipamentos vinculados a sua empresa
               </CardDescription>
             </div>
+            <Button size="sm" onClick={() => setAddingEquip(true)} disabled={addingEquip}>
+              <Plus className="h-4 w-4 mr-1" />
+              Adicionar
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -412,7 +455,64 @@ export default function PerfilPage() {
           ) : (
             <div className="space-y-3">
               {/* Formulario de adicao */}
-
+              {addingEquip && (
+                <div className="rounded-lg border border-primary/40 bg-muted/30 p-4 space-y-3">
+                  <p className="text-sm font-medium">Novo Equipamento</p>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Tipo *</Label>
+                      <Input
+                        value={newEquipForm.tipo}
+                        onChange={(e) => setNewEquipForm((p) => ({ ...p, tipo: e.target.value }))}
+                        placeholder="Ex: Raio-X"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Fabricante *</Label>
+                      <Input
+                        value={newEquipForm.fabricante}
+                        onChange={(e) => setNewEquipForm((p) => ({ ...p, fabricante: e.target.value }))}
+                        placeholder="Ex: Shimadzu"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Modelo *</Label>
+                      <Input
+                        value={newEquipForm.modelo}
+                        onChange={(e) => setNewEquipForm((p) => ({ ...p, modelo: e.target.value }))}
+                        placeholder="Ex: RADspeed Pro"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">N. Serie</Label>
+                      <Input
+                        value={newEquipForm.numeroSerie}
+                        onChange={(e) => setNewEquipForm((p) => ({ ...p, numeroSerie: e.target.value }))}
+                        placeholder="Ex: SN123456"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 justify-end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setAddingEquip(false)
+                        setNewEquipForm({ tipo: "", fabricante: "", modelo: "", numeroSerie: "" })
+                      }}
+                      disabled={equipSaving}
+                      className="bg-transparent"
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Cancelar
+                    </Button>
+                    <Button size="sm" onClick={handleAddEquip} disabled={equipSaving}>
+                      {equipSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
+                      Salvar
+                    </Button>
+                  </div>
+                </div>
+              )}
 
               {/* Lista de equipamentos */}
               {equipamentos.length === 0 && !addingEquip ? (
@@ -447,7 +547,7 @@ export default function PerfilPage() {
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">N. Serie *</Label>
+                          <Label className="text-xs">N. Serie</Label>
                           <Input
                             value={editingEquipForm.numeroSerie}
                             onChange={(e) => setEditingEquipForm((p) => ({ ...p, numeroSerie: e.target.value }))}
@@ -473,18 +573,63 @@ export default function PerfilPage() {
                     </div>
                   ) : (
                     /* Card do equipamento */
-                    <div key={equip.id} className="rounded-lg border p-4 flex items-center justify-between gap-4">
+                    <div 
+                      key={equip.id} 
+                      className={`rounded-lg border p-4 flex items-center justify-between gap-4 ${
+                        !equip.ativo ? "opacity-60 bg-muted/40" : ""
+                      }`}
+                    >
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm text-foreground truncate">
-                          {equip.tipo} - {equip.fabricante} {equip.modelo}
-                        </p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-medium text-sm text-foreground truncate">
+                            {equip.tipo} - {equip.fabricante} {equip.modelo}
+                          </p>
+                          {!equip.ativo && (
+                            <Badge variant="secondary" className="text-xs">
+                              Inativo
+                            </Badge>
+                          )}
+                        </div>
                         {equip.numeroSerie && (
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {"N. Serie: "}{equip.numeroSerie}
                           </p>
                         )}
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">                       
+                      <div className="flex items-center gap-1 shrink-0">
+                        {equip.ativo ? (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => startEditEquip(equip)}
+                              className="h-8 w-8"
+                              title="Editar"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setDeleteEquipId(equip.id)}
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              title="Excluir ou inativar"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleReativarEquip(equip.id)}
+                            disabled={equipSaving}
+                            className="h-8 w-8"
+                            title="Reativar equipamento"
+                          >
+                            <Power className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   )
@@ -494,6 +639,30 @@ export default function PerfilPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Dialog de confirmacao de exclusao */}
+      <AlertDialog open={!!deleteEquipId} onOpenChange={() => setDeleteEquipId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Equipamento</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este equipamento? Se ele estiver vinculado a uma ordem de servico ou
+              solicitacao, sera apenas inativado (nao excluido permanentemente).
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteEquip}
+              className="bg-destructive text-destructive-foreground"
+              disabled={equipSaving}
+            >
+              {equipSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

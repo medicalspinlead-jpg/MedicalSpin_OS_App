@@ -9,15 +9,21 @@ const noCacheHeaders = {
 }
 
 // GET - Lista equipamentos do cliente autenticado
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const usuario = await getCurrentUser()
     if (!usuario || usuario.cargo !== "cliente" || !usuario.clienteId) {
       return NextResponse.json({ error: "Nao autorizado" }, { status: 401, headers: noCacheHeaders })
     }
 
+    const { searchParams } = new URL(request.url)
+    const incluirInativos = searchParams.get("incluirInativos") === "true"
+
     const equipamentos = await prisma.equipamento.findMany({
-      where: { clienteId: usuario.clienteId },
+      where: { 
+        clienteId: usuario.clienteId,
+        ...(incluirInativos ? {} : { ativo: true })
+      },
       orderBy: { tipo: "asc" },
     })
 
@@ -29,6 +35,7 @@ export async function GET() {
         fabricante: e.fabricante,
         modelo: e.modelo,
         numeroSerie: e.numeroSerie,
+        ativo: e.ativo,
         createdAt: e.createdAt.toISOString(),
       })),
       { headers: noCacheHeaders }
@@ -86,6 +93,7 @@ export async function POST(request: Request) {
         fabricante: equipamento.fabricante,
         modelo: equipamento.modelo,
         numeroSerie: equipamento.numeroSerie,
+        ativo: equipamento.ativo,
         createdAt: equipamento.createdAt.toISOString(),
       },
       { status: 201, headers: noCacheHeaders }
