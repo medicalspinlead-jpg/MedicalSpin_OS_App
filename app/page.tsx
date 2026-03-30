@@ -20,7 +20,7 @@ const departamentoIcons: Record<string, React.ElementType> = {
   "Building2": Building2,
 }
 
-// Cores padrão para departamentos
+// Cores padrao para departamentos
 const departamentoCores: Record<string, { bg: string; text: string; border: string }> = {
   "#ef4444": { bg: "bg-red-500/10", text: "text-red-600", border: "border-red-500/20" },
   "#f97316": { bg: "bg-orange-500/10", text: "text-orange-600", border: "border-orange-500/20" },
@@ -97,150 +97,171 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
-      <main className="container mx-auto px-4 py-6 md:py-10">
+      <main className="container mx-auto px-4 py-6 sm:py-8 lg:py-10 max-w-7xl">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+        <header className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground text-balance">
             Bem-vindo{usuario?.nome ? `, ${usuario.nome.split(" ")[0]}` : ""}
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Gerencie ordens de servico, clientes e departamentos
           </p>
-        </div>
+        </header>
 
         {/* Quick Stats */}
-        <div className="grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-4 mb-8">
-          <Card className="border-l-4 border-l-amber-500">
-            <CardHeader className="pb-2">
-              <CardDescription className="text-xs md:text-sm flex items-center gap-2">
-                <Inbox className="h-4 w-4" />
-                Solicitacoes Pendentes
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <Card className="border-l-4 border-l-amber-500 overflow-hidden">
+            <CardHeader className="p-3 sm:p-4 pb-2">
+              <CardDescription className="text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2">
+                <Inbox className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <span className="truncate">Solicitacoes</span>
               </CardDescription>
-              <CardTitle className="text-2xl md:text-3xl text-amber-600">
+              <CardTitle className="text-xl sm:text-2xl lg:text-3xl text-amber-600 tabular-nums">
                 {loading ? "..." : stats.solicitacoesPendentes}
               </CardTitle>
             </CardHeader>
           </Card>
-          <Card className="border-l-4 border-l-orange-500">
-            <CardHeader className="pb-2">
-              <CardDescription className="text-xs md:text-sm flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Rascunhos
+          <Card className="border-l-4 border-l-orange-500 overflow-hidden">
+            <CardHeader className="p-3 sm:p-4 pb-2">
+              <CardDescription className="text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2">
+                <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <span className="truncate">Rascunhos</span>
               </CardDescription>
-              <CardTitle className="text-2xl md:text-3xl text-orange-600">
+              <CardTitle className="text-xl sm:text-2xl lg:text-3xl text-orange-600 tabular-nums">
                 {loading ? "..." : stats.rascunhos}
               </CardTitle>
             </CardHeader>
           </Card>
-          <Card className="border-l-4 border-l-green-500">
-            <CardHeader className="pb-2">
-              <CardDescription className="text-xs md:text-sm flex items-center gap-2">
-                <History className="h-4 w-4" />
-                OS Finalizadas
+          <Card className="border-l-4 border-l-green-500 overflow-hidden">
+            <CardHeader className="p-3 sm:p-4 pb-2">
+              <CardDescription className="text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2">
+                <History className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <span className="truncate">Finalizadas</span>
               </CardDescription>
-              <CardTitle className="text-2xl md:text-3xl text-green-600">
+              <CardTitle className="text-xl sm:text-2xl lg:text-3xl text-green-600 tabular-nums">
                 {loading ? "..." : stats.finalizadas}
               </CardTitle>
             </CardHeader>
           </Card>
-          <Card className="border-l-4 border-l-blue-500">
-            <CardHeader className="pb-2">
-              <CardDescription className="text-xs md:text-sm flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Clientes
+          <Card className="border-l-4 border-l-blue-500 overflow-hidden">
+            <CardHeader className="p-3 sm:p-4 pb-2">
+              <CardDescription className="text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2">
+                <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <span className="truncate">Clientes</span>
               </CardDescription>
-              <CardTitle className="text-2xl md:text-3xl text-blue-600">
+              <CardTitle className="text-xl sm:text-2xl lg:text-3xl text-blue-600 tabular-nums">
                 {loading ? "..." : stats.clientes}
               </CardTitle>
             </CardHeader>
           </Card>
-        </div>
+        </section>
 
         {/* Main Content Grid */}
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 lg:gap-8 lg:grid-cols-5">
           {/* Quick Actions */}
-          <div className="lg:col-span-1 space-y-4">
-            <h2 className="text-lg font-semibold text-foreground">Acoes Rapidas</h2>
+          <section className="lg:col-span-2 space-y-3 sm:space-y-4">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground">Acoes Rapidas</h2>
             
-            <Card className="hover:shadow-lg transition-all duration-200 group cursor-pointer" onClick={() => window.location.href = "/os/nova"}>
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
-                  <Plus className="h-6 w-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Nova Ordem de Servico</h3>
-                  <p className="text-sm text-muted-foreground">Criar uma nova OS</p>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-all duration-200 group cursor-pointer" onClick={() => window.location.href = "/solicitacoes"}>
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="p-3 bg-amber-500/10 rounded-xl group-hover:bg-amber-500/20 transition-colors">
-                  <Inbox className="h-6 w-6 text-amber-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Ver Solicitacoes</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {stats.solicitacoesPendentes > 0 ? `${stats.solicitacoesPendentes} pendente${stats.solicitacoesPendentes > 1 ? "s" : ""}` : "Nenhuma pendente"}
-                  </p>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-amber-600 transition-colors" />
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-all duration-200 group cursor-pointer" onClick={() => window.location.href = "/clientes"}>
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="p-3 bg-blue-500/10 rounded-xl group-hover:bg-blue-500/20 transition-colors">
-                  <Users className="h-6 w-6 text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Gerenciar Clientes</h3>
-                  <p className="text-sm text-muted-foreground">{stats.clientes} cliente{stats.clientes !== 1 ? "s" : ""} cadastrado{stats.clientes !== 1 ? "s" : ""}</p>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-blue-600 transition-colors" />
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-all duration-200 group cursor-pointer" onClick={() => window.location.href = "/historico"}>
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="p-3 bg-green-500/10 rounded-xl group-hover:bg-green-500/20 transition-colors">
-                  <History className="h-6 w-6 text-green-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Historico de OS</h3>
-                  <p className="text-sm text-muted-foreground">{stats.finalizadas} OS finalizada{stats.finalizadas !== 1 ? "s" : ""}</p>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-green-600 transition-colors" />
-              </CardContent>
-            </Card>
-
-            {isAdmin && (
-              <Card className="hover:shadow-lg transition-all duration-200 group cursor-pointer" onClick={() => window.location.href = "/admin"}>
-                <CardContent className="p-4 flex items-center gap-4">
-                  <div className="p-3 bg-violet-500/10 rounded-xl group-hover:bg-violet-500/20 transition-colors">
-                    <Settings className="h-6 w-6 text-violet-600" />
+            <div className="grid gap-3 sm:gap-4">
+              <Card 
+                className="hover:shadow-md transition-all duration-200 group cursor-pointer active:scale-[0.98]" 
+                onClick={() => window.location.href = "/os/nova"}
+              >
+                <CardContent className="p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+                  <div className="p-2.5 sm:p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors shrink-0">
+                    <Plus className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold">Administracao</h3>
-                    <p className="text-sm text-muted-foreground">Usuarios e departamentos</p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm sm:text-base truncate">Nova Ordem de Servico</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">Criar uma nova OS</p>
                   </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-violet-600 transition-colors" />
+                  <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
                 </CardContent>
               </Card>
-            )}
-          </div>
+
+              <Card 
+                className="hover:shadow-md transition-all duration-200 group cursor-pointer active:scale-[0.98]" 
+                onClick={() => window.location.href = "/solicitacoes"}
+              >
+                <CardContent className="p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+                  <div className="p-2.5 sm:p-3 bg-amber-500/10 rounded-xl group-hover:bg-amber-500/20 transition-colors shrink-0">
+                    <Inbox className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm sm:text-base truncate">Ver Solicitacoes</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                      {stats.solicitacoesPendentes > 0 ? `${stats.solicitacoesPendentes} pendente${stats.solicitacoesPendentes > 1 ? "s" : ""}` : "Nenhuma pendente"}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-amber-600 transition-colors shrink-0" />
+                </CardContent>
+              </Card>
+
+              <Card 
+                className="hover:shadow-md transition-all duration-200 group cursor-pointer active:scale-[0.98]" 
+                onClick={() => window.location.href = "/clientes"}
+              >
+                <CardContent className="p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+                  <div className="p-2.5 sm:p-3 bg-blue-500/10 rounded-xl group-hover:bg-blue-500/20 transition-colors shrink-0">
+                    <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm sm:text-base truncate">Gerenciar Clientes</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                      {stats.clientes} cliente{stats.clientes !== 1 ? "s" : ""} cadastrado{stats.clientes !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-blue-600 transition-colors shrink-0" />
+                </CardContent>
+              </Card>
+
+              <Card 
+                className="hover:shadow-md transition-all duration-200 group cursor-pointer active:scale-[0.98]" 
+                onClick={() => window.location.href = "/historico"}
+              >
+                <CardContent className="p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+                  <div className="p-2.5 sm:p-3 bg-green-500/10 rounded-xl group-hover:bg-green-500/20 transition-colors shrink-0">
+                    <History className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm sm:text-base truncate">Historico de OS</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                      {stats.finalizadas} OS finalizada{stats.finalizadas !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-green-600 transition-colors shrink-0" />
+                </CardContent>
+              </Card>
+
+              {isAdmin && (
+                <Card 
+                  className="hover:shadow-md transition-all duration-200 group cursor-pointer active:scale-[0.98]" 
+                  onClick={() => window.location.href = "/admin"}
+                >
+                  <CardContent className="p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+                    <div className="p-2.5 sm:p-3 bg-violet-500/10 rounded-xl group-hover:bg-violet-500/20 transition-colors shrink-0">
+                      <Settings className="h-5 w-5 sm:h-6 sm:w-6 text-violet-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm sm:text-base truncate">Administracao</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">Usuarios e departamentos</p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-violet-600 transition-colors shrink-0" />
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </section>
 
           {/* Departamentos */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-foreground">Departamentos</h2>
+          <section className="lg:col-span-3">
+            <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
+              <h2 className="text-base sm:text-lg font-semibold text-foreground">Departamentos</h2>
               {isAdmin && (
-                <Button asChild variant="outline" size="sm">
+                <Button asChild variant="outline" size="sm" className="shrink-0">
                   <Link href="/admin?tab=departamentos">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Gerenciar
+                    <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+                    <span className="hidden xs:inline">Gerenciar</span>
                   </Link>
                 </Button>
               )}
@@ -248,22 +269,22 @@ export default function HomePage() {
 
             {loading ? (
               <Card>
-                <CardContent className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <CardContent className="flex items-center justify-center py-12 sm:py-16">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                 </CardContent>
               </Card>
             ) : departamentos.length === 0 ? (
               <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <div className="p-4 bg-muted rounded-full mb-4">
-                    <Building2 className="h-8 w-8 text-muted-foreground" />
+                <CardContent className="flex flex-col items-center justify-center py-10 sm:py-12 px-4 text-center">
+                  <div className="p-3 sm:p-4 bg-muted rounded-full mb-3 sm:mb-4">
+                    <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">Nenhum departamento configurado</h3>
-                  <p className="text-sm text-muted-foreground text-center mb-4">
+                  <h3 className="text-base sm:text-lg font-semibold mb-2">Nenhum departamento configurado</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-4 max-w-sm">
                     {isAdmin ? "Configure os departamentos na area de administracao" : "Aguarde a configuracao dos departamentos pelo administrador"}
                   </p>
                   {isAdmin && (
-                    <Button asChild>
+                    <Button asChild size="sm">
                       <Link href="/admin?tab=departamentos">
                         <Plus className="h-4 w-4 mr-2" />
                         Configurar Departamentos
@@ -274,7 +295,7 @@ export default function HomePage() {
               </Card>
             ) : (
               <Tabs value={selectedDept || departamentos[0]?.id} onValueChange={setSelectedDept} className="w-full">
-                <TabsList className="w-full justify-start mb-4 bg-muted/50 p-1 h-auto flex-wrap gap-1">
+                <TabsList className="w-full justify-start mb-3 sm:mb-4 bg-muted/50 p-1 h-auto flex-wrap gap-1 overflow-x-auto">
                   {departamentos.map((dept) => {
                     const IconComponent = departamentoIcons[dept.icone] || Building2
                     const corClasses = getCorClasses(dept.cor)
@@ -282,10 +303,10 @@ export default function HomePage() {
                       <TabsTrigger
                         key={dept.id}
                         value={dept.id}
-                        className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm px-4 py-2"
+                        className="flex items-center gap-1.5 sm:gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm"
                       >
-                        <IconComponent className={`h-4 w-4 ${corClasses.text}`} />
-                        <span className="hidden sm:inline">{dept.nome}</span>
+                        <IconComponent className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${corClasses.text}`} />
+                        <span className="hidden xs:inline truncate max-w-[80px] sm:max-w-none">{dept.nome}</span>
                       </TabsTrigger>
                     )
                   })}
@@ -300,41 +321,43 @@ export default function HomePage() {
                   return (
                     <TabsContent key={dept.id} value={dept.id} className="mt-0">
                       <Card className={`border ${corClasses.border}`}>
-                        <CardHeader className={`${corClasses.bg} border-b ${corClasses.border}`}>
-                          <div className="flex items-center gap-3">
-                            <div className={`p-3 rounded-xl ${corClasses.bg}`}>
-                              <IconComponent className={`h-6 w-6 ${corClasses.text}`} />
+                        <CardHeader className={`${corClasses.bg} border-b ${corClasses.border} p-3 sm:p-4 lg:p-6`}>
+                          <div className="flex items-center gap-2.5 sm:gap-3">
+                            <div className={`p-2 sm:p-3 rounded-xl ${corClasses.bg} shrink-0`}>
+                              <IconComponent className={`h-5 w-5 sm:h-6 sm:w-6 ${corClasses.text}`} />
                             </div>
-                            <div>
-                              <CardTitle className="text-lg">{dept.nome}</CardTitle>
+                            <div className="min-w-0 flex-1">
+                              <CardTitle className="text-base sm:text-lg truncate">{dept.nome}</CardTitle>
                               {dept.descricao && (
-                                <CardDescription>{dept.descricao}</CardDescription>
+                                <CardDescription className="text-xs sm:text-sm truncate">{dept.descricao}</CardDescription>
                               )}
                             </div>
                           </div>
                         </CardHeader>
                         <CardContent className="p-0">
                           {/* Tecnicos do departamento */}
-                          <div className="p-4 border-b">
-                            <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                              <UserPlus className="h-4 w-4" />
-                              Tecnicos Atribuidos ({usuarios.length})
+                          <div className="p-3 sm:p-4 border-b">
+                            <h4 className="text-xs sm:text-sm font-medium text-muted-foreground mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
+                              <UserPlus className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                              <span>Tecnicos Atribuidos ({usuarios.length})</span>
                             </h4>
                             {usuarios.length === 0 ? (
-                              <p className="text-sm text-muted-foreground italic">Nenhum tecnico atribuido</p>
+                              <p className="text-xs sm:text-sm text-muted-foreground italic">Nenhum tecnico atribuido</p>
                             ) : (
-                              <div className="flex flex-wrap gap-2">
+                              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                                 {usuarios.map((ud) => (
                                   <div
                                     key={ud.id}
-                                    className="flex items-center gap-2 bg-muted/50 rounded-full px-3 py-1.5"
+                                    className="flex items-center gap-1.5 sm:gap-2 bg-muted/50 rounded-full px-2 sm:px-3 py-1 sm:py-1.5"
                                   >
-                                    <Avatar className="h-6 w-6">
-                                      <AvatarFallback className="text-xs">
+                                    <Avatar className="h-5 w-5 sm:h-6 sm:w-6">
+                                      <AvatarFallback className="text-[10px] sm:text-xs">
                                         {getInitials(ud.usuario?.nome || "?")}
                                       </AvatarFallback>
                                     </Avatar>
-                                    <span className="text-sm font-medium">{ud.usuario?.nome}</span>
+                                    <span className="text-xs sm:text-sm font-medium truncate max-w-[100px] sm:max-w-none">
+                                      {ud.usuario?.nome}
+                                    </span>
                                   </div>
                                 ))}
                               </div>
@@ -342,37 +365,41 @@ export default function HomePage() {
                           </div>
 
                           {/* Clientes do departamento */}
-                          <div className="p-4">
-                            <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                              <Users className="h-4 w-4" />
-                              Clientes ({clientes.length})
+                          <div className="p-3 sm:p-4">
+                            <h4 className="text-xs sm:text-sm font-medium text-muted-foreground mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
+                              <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                              <span>Clientes ({clientes.length})</span>
                             </h4>
                             {clientes.length === 0 ? (
-                              <p className="text-sm text-muted-foreground italic">Nenhum cliente atribuido</p>
+                              <p className="text-xs sm:text-sm text-muted-foreground italic">Nenhum cliente atribuido</p>
                             ) : (
-                              <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                              <div className="space-y-1.5 sm:space-y-2 max-h-[250px] sm:max-h-[300px] overflow-y-auto">
                                 {clientes.map((cd) => (
                                   <div
                                     key={cd.id}
-                                    className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
+                                    className="flex items-center justify-between gap-2 p-2 sm:p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
                                   >
                                     <div className="flex-1 min-w-0">
-                                      <p className="font-medium truncate">{cd.cliente?.nomeFantasia || cd.cliente?.razaoSocial}</p>
-                                      <p className="text-xs text-muted-foreground truncate">
+                                      <p className="font-medium text-xs sm:text-sm truncate">
+                                        {cd.cliente?.nomeFantasia || cd.cliente?.razaoSocial}
+                                      </p>
+                                      <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
                                         {cd.cliente?.cidade}, {cd.cliente?.uf}
                                       </p>
                                     </div>
                                     {cd.usuarioResponsavel ? (
-                                      <Badge variant="outline" className="ml-2 shrink-0">
-                                        <Avatar className="h-4 w-4 mr-1">
-                                          <AvatarFallback className="text-[8px]">
+                                      <Badge variant="outline" className="shrink-0 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5">
+                                        <Avatar className="h-3 w-3 sm:h-4 sm:w-4 mr-1">
+                                          <AvatarFallback className="text-[6px] sm:text-[8px]">
                                             {getInitials(cd.usuarioResponsavel.nome)}
                                           </AvatarFallback>
                                         </Avatar>
-                                        {cd.usuarioResponsavel.nome.split(" ")[0]}
+                                        <span className="truncate max-w-[60px] sm:max-w-none">
+                                          {cd.usuarioResponsavel.nome.split(" ")[0]}
+                                        </span>
                                       </Badge>
                                     ) : (
-                                      <Badge variant="secondary" className="ml-2 shrink-0 text-muted-foreground">
+                                      <Badge variant="secondary" className="shrink-0 text-[10px] sm:text-xs text-muted-foreground px-1.5 sm:px-2 py-0.5">
                                         Sem responsavel
                                       </Badge>
                                     )}
@@ -388,7 +415,7 @@ export default function HomePage() {
                 })}
               </Tabs>
             )}
-          </div>
+          </section>
         </div>
       </main>
     </div>
