@@ -46,35 +46,39 @@ const statusConfig: Record<
     cardBorder: string
     cardBg: string
     iconColor: string
+    iconBg: string
     glowColor: string
   }
 > = {
   recebida: {
     label: "Recebida",
-    badgeClass: "bg-cyan-950 text-cyan-300 border-cyan-500/50",
+    badgeClass: "bg-sky-100 text-sky-700 border-sky-300 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-500/50",
     icon: Clock,
-    cardBorder: "border-l-cyan-400",
-    cardBg: "bg-cyan-500/5",
-    iconColor: "text-cyan-400",
-    glowColor: "shadow-cyan-500/20",
+    cardBorder: "border-l-sky-500",
+    cardBg: "bg-sky-50 dark:bg-sky-500/10",
+    iconColor: "text-sky-600 dark:text-sky-400",
+    iconBg: "bg-sky-100 dark:bg-sky-500/20",
+    glowColor: "hover:shadow-sky-200/50 dark:hover:shadow-sky-500/20",
   },
   em_progresso: {
     label: "Em Progresso",
-    badgeClass: "bg-amber-950 text-amber-300 border-amber-500/50",
+    badgeClass: "bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-500/50",
     icon: Wrench,
-    cardBorder: "border-l-amber-400",
-    cardBg: "bg-amber-500/5",
-    iconColor: "text-amber-400",
-    glowColor: "shadow-amber-500/20",
+    cardBorder: "border-l-amber-500",
+    cardBg: "bg-amber-50 dark:bg-amber-500/10",
+    iconColor: "text-amber-600 dark:text-amber-400",
+    iconBg: "bg-amber-100 dark:bg-amber-500/20",
+    glowColor: "hover:shadow-amber-200/50 dark:hover:shadow-amber-500/20",
   },
   finalizada: {
     label: "Finalizada",
-    badgeClass: "bg-emerald-950 text-emerald-300 border-emerald-500/50",
+    badgeClass: "bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-500/50",
     icon: CheckCircle,
-    cardBorder: "border-l-emerald-400",
-    cardBg: "bg-emerald-500/5",
-    iconColor: "text-emerald-400",
-    glowColor: "shadow-emerald-500/20",
+    cardBorder: "border-l-emerald-500",
+    cardBg: "bg-emerald-50 dark:bg-emerald-500/10",
+    iconColor: "text-emerald-600 dark:text-emerald-400",
+    iconBg: "bg-emerald-100 dark:bg-emerald-500/20",
+    glowColor: "hover:shadow-emerald-200/50 dark:hover:shadow-emerald-500/20",
   },
 }
 
@@ -174,35 +178,35 @@ export default function ClienteDashboard() {
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-3 mb-6">
-        <Card className="border-l-4 border-l-cyan-400 bg-cyan-500/5">
+        <Card className={`border-l-4 ${statusConfig.recebida.cardBorder} ${statusConfig.recebida.cardBg}`}>
           <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg bg-cyan-500/10 p-2">
-              <Clock className="h-5 w-5 text-cyan-400" />
+            <div className={`rounded-lg p-2.5 ${statusConfig.recebida.iconBg}`}>
+              <Clock className={`h-5 w-5 ${statusConfig.recebida.iconColor}`} />
             </div>
             <div>
-              <p className="text-2xl font-bold">{counts.recebida}</p>
+              <p className="text-2xl font-bold text-foreground">{counts.recebida}</p>
               <p className="text-xs text-muted-foreground">Recebidas</p>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-amber-400 bg-amber-500/5">
+        <Card className={`border-l-4 ${statusConfig.em_progresso.cardBorder} ${statusConfig.em_progresso.cardBg}`}>
           <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg bg-amber-500/10 p-2">
-              <Wrench className="h-5 w-5 text-amber-400" />
+            <div className={`rounded-lg p-2.5 ${statusConfig.em_progresso.iconBg}`}>
+              <Wrench className={`h-5 w-5 ${statusConfig.em_progresso.iconColor}`} />
             </div>
             <div>
-              <p className="text-2xl font-bold">{counts.em_progresso}</p>
+              <p className="text-2xl font-bold text-foreground">{counts.em_progresso}</p>
               <p className="text-xs text-muted-foreground">Em Progresso</p>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-emerald-400 bg-emerald-500/5">
+        <Card className={`border-l-4 ${statusConfig.finalizada.cardBorder} ${statusConfig.finalizada.cardBg}`}>
           <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg bg-emerald-500/10 p-2">
-              <CheckCircle className="h-5 w-5 text-emerald-400" />
+            <div className={`rounded-lg p-2.5 ${statusConfig.finalizada.iconBg}`}>
+              <CheckCircle className={`h-5 w-5 ${statusConfig.finalizada.iconColor}`} />
             </div>
             <div>
-              <p className="text-2xl font-bold">{counts.finalizada}</p>
+              <p className="text-2xl font-bold text-foreground">{counts.finalizada}</p>
               <p className="text-xs text-muted-foreground">Finalizadas</p>
             </div>
           </CardContent>
@@ -222,22 +226,24 @@ export default function ClienteDashboard() {
 
       {/* List */}
       {filtered.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Inbox className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium text-foreground mb-1">
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Inbox className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-1">
               {searchTerm ? "Nenhuma solicitacao encontrada" : "Nenhuma solicitacao ainda"}
             </h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm text-muted-foreground mb-6 text-center max-w-sm">
               {searchTerm
                 ? "Tente ajustar o termo de busca."
-                : "Crie sua primeira solicitacao de servico tecnico."}
+                : "Crie sua primeira solicitacao de servico tecnico e acompanhe o andamento."}
             </p>
             {!searchTerm && (
-              <Button asChild>
+              <Button asChild size="lg">
                 <Link href="/cliente/nova-solicitacao">
                   <PlusCircle className="h-4 w-4 mr-2" />
-                  Nova OS
+                  Criar Solicitacao
                 </Link>
               </Button>
             )}
@@ -251,17 +257,17 @@ export default function ClienteDashboard() {
             return (
               <Card
                 key={sol.id}
-                className={`border-l-4 ${config.cardBorder} ${config.cardBg} hover:shadow-lg ${config.glowColor} transition-all duration-200`}
+                className={`border-l-4 ${config.cardBorder} ${config.cardBg} shadow-sm ${config.glowColor} transition-all duration-200`}
               >
                 <CardContent className="p-4">
                   <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="font-mono text-sm font-medium text-foreground">
+                        <span className="font-mono text-sm font-semibold text-foreground">
                           {sol.protocolo}
                         </span>
                         <Badge className={`${config.badgeClass} border`}>
-                          <StatusIcon className={`h-3 w-3 mr-1 ${config.iconColor}`} />
+                          <StatusIcon className={`h-3 w-3 mr-1`} />
                           {config.label}
                         </Badge>
                       </div>
@@ -271,7 +277,7 @@ export default function ClienteDashboard() {
                       <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">
                         {sol.descricaoProblema}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-muted-foreground mt-1.5">
                         {new Date(sol.createdAt).toLocaleDateString("pt-BR", {
                           day: "2-digit",
                           month: "2-digit",
@@ -281,7 +287,7 @@ export default function ClienteDashboard() {
                         })}
                       </p>
                     </div>
-                    <Button asChild variant="outline" size="sm" className="bg-transparent shrink-0">
+                    <Button asChild variant="outline" size="sm" className="shrink-0">
                       <Link href={`/cliente/solicitacao/${sol.id}`}>
                         <Eye className="h-4 w-4 mr-2" />
                         Ver Detalhes

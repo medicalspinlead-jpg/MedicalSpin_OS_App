@@ -139,10 +139,24 @@ interface OSData {
 }
 
 const statusConfig: Record<string, { label: string; badgeClass: string; icon: typeof Clock; color: string }> = {
-  recebida: { label: "Recebida", badgeClass: "bg-blue-100 text-blue-800 border-blue-200", icon: Clock, color: "text-blue-600" },
-  em_progresso: { label: "Em Progresso", badgeClass: "bg-amber-100 text-amber-800 border-amber-200", icon: Wrench, color: "text-amber-600" },
-  finalizada: { label: "Finalizada", badgeClass: "bg-green-100 text-green-800 border-green-200", icon: CheckCircle, color: "text-green-600" },
-
+  recebida: { 
+    label: "Recebida", 
+    badgeClass: "bg-sky-100 text-sky-700 border-sky-300 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-500/50", 
+    icon: Clock, 
+    color: "text-sky-600 dark:text-sky-400" 
+  },
+  em_progresso: { 
+    label: "Em Progresso", 
+    badgeClass: "bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-500/50", 
+    icon: Wrench, 
+    color: "text-amber-600 dark:text-amber-400" 
+  },
+  finalizada: { 
+    label: "Finalizada", 
+    badgeClass: "bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-500/50", 
+    icon: CheckCircle, 
+    color: "text-emerald-600 dark:text-emerald-400" 
+  },
 }
 
 export default function SolicitacaoDetalhes() {
