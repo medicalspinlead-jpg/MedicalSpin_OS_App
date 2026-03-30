@@ -119,6 +119,7 @@ model Usuario {
   senha     String
   cargo     String   @default("tecnico") // "admin", "tecnico", "cliente"
   ativo     Boolean  @default(true)
+  aprovado  Boolean  @default(true)
   clienteId String?  @map("cliente_id")
   cliente   Cliente? @relation(fields: [clienteId], references: [id])
   createdAt DateTime @default(now()) @map("created_at")

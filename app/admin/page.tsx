@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { Plus, Search, Trash2, Edit, Users, ArrowLeft, Shield, Wrench, Eye, EyeOff, UserCircle, Building2, Zap, Radio, Scan, UserPlus, X, CheckSquare, Square } from "lucide-react"
+import { Plus, Search, Trash2, Edit, Users, ArrowLeft, Shield, Wrench, Eye, EyeOff, UserCircle, Building2, Zap, Radio, Scan, UserPlus, X, CheckSquare, Square, Clock, CheckCircle, XCircle } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
@@ -51,7 +51,16 @@ interface Usuario {
   email: string
   cargo: string
   ativo: boolean
+  aprovado?: boolean
   createdAt: string
+  cliente?: {
+    id: string
+    razaoSocial: string
+    nomeFantasia: string
+    cnpj: string
+    cidade: string
+    uf: string
+  }
 }
 
 interface Departamento {
@@ -168,6 +177,15 @@ export default function AdminPage() {
     isLoading: isLoadingDepts,
     mutate: mutateDepts,
   } = useSWR<Departamento[]>("/api/departamentos", fetcher, {
+    revalidateOnFocus: true,
+    revalidateOnMount: true,
+  })
+
+  const {
+    data: usuariosPendentes = [],
+    isLoading: isLoadingPendentes,
+    mutate: mutatePendentes,
+  } = useSWR<Usuario[]>("/api/usuarios/pendentes", fetcher, {
     revalidateOnFocus: true,
     revalidateOnMount: true,
   })
@@ -565,6 +583,52 @@ export default function AdminPage() {
     }
   }
 
+  // Aprovacao de usuarios
+  const handleAprovarUsuario = async (id: string) => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/usuarios/${id}/aprovar`, {
+        method: "POST",
+        credentials: "include",
+      })
+
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.error || "Erro ao aprovar usuario")
+      }
+
+      toast.success("Usuario aprovado com sucesso! Uma notificacao foi enviada.")
+      mutatePendentes()
+      mutate()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao aprovar usuario")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleRejeitarUsuario = async (id: string) => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/usuarios/${id}/aprovar`, {
+        method: "DELETE",
+        credentials: "include",
+      })
+
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.error || "Erro ao rejeitar usuario")
+      }
+
+      toast.success("Usuario rejeitado e removido")
+      mutatePendentes()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao rejeitar usuario")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const filteredUsuarios = usuarios.filter(
     (user) =>
       user.nome?.toLowerCase().includes(search.toLowerCase()) ||
@@ -613,6 +677,15 @@ export default function AdminPage() {
             <TabsTrigger value="departamentos" className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
               Departamentos
+            </TabsTrigger>
+            <TabsTrigger value="aprovacoes" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Aprovacoes
+              {usuariosPendentes.length > 0 && (
+                <Badge variant="destructive" className="ml-1 h-5 min-w-5 px-1.5">
+                  {usuariosPendentes.length}
+                </Badge>
+              )}
             </TabsTrigger>
           </TabsList>
 
@@ -960,6 +1033,109 @@ export default function AdminPage() {
                 )}
               </div>
             </div>
+          </TabsContent>
+
+          {/* Tab Aprovacoes */}
+          <TabsContent value="aprovacoes">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-amber-500" />
+                  Contas Aguardando Aprovacao
+                </CardTitle>
+                <CardDescription>
+                  Usuarios que se cadastraram e aguardam liberacao para acessar o sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingPendentes ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+                    <p className="text-sm text-muted-foreground">Carregando...</p>
+                  </div>
+                ) : usuariosPendentes.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
+                      <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-1">Nenhuma pendencia</h3>
+                    <p className="text-sm text-muted-foreground max-w-sm">
+                      Nao ha usuarios aguardando aprovacao no momento.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {usuariosPendentes.map((usuario) => (
+                      <div
+                        key={usuario.id}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border bg-card"
+                      >
+                        <div className="flex items-start gap-4">
+                          <Avatar className="h-12 w-12">
+                            <AvatarFallback className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                              {getInitials(usuario.nome)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-semibold">{usuario.nome}</h4>
+                              <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50 dark:bg-amber-900/20">
+                                <Clock className="h-3 w-3 mr-1" />
+                                Pendente
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{usuario.email}</p>
+                            {usuario.cliente && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <Building2 className="h-4 w-4 text-muted-foreground" />
+                                <span className="font-medium">{usuario.cliente.nomeFantasia || usuario.cliente.razaoSocial}</span>
+                                <span className="text-muted-foreground">-</span>
+                                <span className="text-muted-foreground">{usuario.cliente.cnpj}</span>
+                              </div>
+                            )}
+                            {usuario.cliente && (
+                              <p className="text-xs text-muted-foreground">
+                                {usuario.cliente.cidade}, {usuario.cliente.uf}
+                              </p>
+                            )}
+                            <p className="text-xs text-muted-foreground">
+                              Cadastrado em: {new Date(usuario.createdAt).toLocaleDateString("pt-BR", { 
+                                day: "2-digit", 
+                                month: "2-digit", 
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit"
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 sm:flex-shrink-0">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleRejeitarUsuario(usuario.id)}
+                            disabled={loading}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          >
+                            <XCircle className="h-4 w-4 mr-1" />
+                            Rejeitar
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleAprovarUsuario(usuario.id)}
+                            disabled={loading}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Aprovar
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </main>

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Lock, Mail, AlertTriangle, X } from "lucide-react"
+import { Loader2, Lock, Mail, AlertTriangle, X, Clock } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useTheme } from "@/components/theme-provider"
 import { Moon, Sun } from "lucide-react"
@@ -21,6 +21,7 @@ export default function LoginPage() {
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
+  const [pendingApproval, setPendingApproval] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
     senha: "",
@@ -30,6 +31,7 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setLoginError(null)
+    setPendingApproval(false)
 
     try {
       const response = await fetch("/api/auth/login", {
@@ -42,6 +44,11 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (!response.ok) {
+        // Verificar se e erro de conta pendente
+        if (data.pendingApproval) {
+          setPendingApproval(true)
+          return
+        }
         throw new Error(data.error || "Erro ao fazer login")
       }
 
@@ -64,6 +71,8 @@ export default function LoginPage() {
         setLoginError("Email ou senha incorretos. Verifique suas credenciais e tente novamente.")
       } else if (errorMessage.includes("Usuario") || errorMessage.includes("Usuário") || errorMessage.includes("nao encontrado") || errorMessage.includes("não encontrado")) {
         setLoginError("Usuario nao encontrado. Verifique se voce possui uma conta cadastrada no sistema.")
+      } else if (errorMessage.includes("aguardando aprovacao")) {
+        setPendingApproval(true)
       } else {
         setLoginError(errorMessage)
       }
@@ -138,6 +147,31 @@ export default function LoginPage() {
                 />
               </div>
             </div>
+
+            {/* Card de conta pendente */}
+            {pendingApproval && (
+              <div className="relative overflow-hidden rounded-lg border border-amber-500/50 bg-amber-500/10 p-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 rounded-full bg-amber-500/20 p-2">
+                    <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-amber-700 dark:text-amber-300 mb-1">Aguardando Aprovacao</h3>
+                    <p className="text-sm text-amber-600 dark:text-amber-400/90">
+                      Sua conta ainda esta sendo analisada pela equipe da Medical Spin. 
+                      Voce sera notificado assim que sua conta for aprovada.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPendingApproval(false)}
+                    className="flex-shrink-0 rounded-full p-1 hover:bg-amber-500/20 transition-colors"
+                  >
+                    <X className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Card de erro de login */}
             {loginError && (

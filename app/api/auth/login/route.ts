@@ -30,6 +30,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Usuário desativado" }, { status: 401 })
     }
 
+    // Verificar se usuario esta aprovado (apenas para clientes)
+    if (usuario.cargo === "cliente" && !usuario.aprovado) {
+      return NextResponse.json({ 
+        error: "Sua conta ainda esta aguardando aprovacao. Voce sera notificado quando sua conta for liberada.",
+        pendingApproval: true 
+      }, { status: 403 })
+    }
+
     console.log("[v0] Login: Verificando senha...")
     const senhaValida = verifyPassword(senha, usuario.senha)
 

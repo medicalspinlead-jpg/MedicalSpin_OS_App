@@ -26,6 +26,7 @@ export async function GET(request: Request) {
         email: true,
         cargo: true,
         ativo: true,
+        aprovado: true,
         createdAt: true,
       },
       orderBy: { nome: "asc" },
@@ -74,6 +75,7 @@ export async function POST(request: Request) {
         email: email.toLowerCase(),
         senha: hashPassword(senha),
         cargo: cargo || "tecnico",
+        aprovado: true, // Usuarios criados por admin sao automaticamente aprovados
       },
       select: {
         id: true,
@@ -81,6 +83,7 @@ export async function POST(request: Request) {
         email: true,
         cargo: true,
         ativo: true,
+        aprovado: true,
       },
     })
 

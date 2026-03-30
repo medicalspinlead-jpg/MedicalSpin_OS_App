@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { hashPassword, createSession } from "@/lib/auth"
-import { cookies } from "next/headers"
+import { hashPassword } from "@/lib/auth"
+
+const WEBHOOK_REGISTRO_URL = "https://n8n-www4kggggc4c8k8ow4w8g4g0.95.217.164.173.sslip.io/webhook/73836a3f-236a-4f76-8cbf-522c95c93db9"
 
 export async function POST(request: Request) {
   try {
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
     const cnpjNormalizado = cnpj.replace(/[^\d]/g, "")
 
     // Buscar cliente pelo CNPJ
-    const cliente = await prisma.cliente.findFirst({
+    let cliente = await prisma.cliente.findFirst({
       where: {
         cnpj: {
           contains: cnpjNormalizado,
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
 
     if (!cliente) {
       // Tentar buscar com CNPJ formatado tambem
-      const clienteFormatado = await prisma.cliente.findFirst({
+      cliente = await prisma.cliente.findFirst({
         where: {
           cnpj: {
             contains: cnpj,
@@ -48,51 +49,15 @@ export async function POST(request: Request) {
         },
       })
 
-      if (!clienteFormatado) {
+      if (!cliente) {
         return NextResponse.json(
           { error: "CNPJ nao encontrado no sistema. Entre em contato com a Medical Spin para que sua empresa seja cadastrada antes de criar uma conta." },
           { status: 404 }
         )
       }
-
-      // Encontrou com CNPJ formatado
-      const senhaHash = hashPassword(senha)
-      const usuario = await prisma.usuario.create({
-        data: {
-          nome,
-          email: email.toLowerCase(),
-          senha: senhaHash,
-          cargo: "cliente",
-          clienteId: clienteFormatado.id,
-        },
-      })
-
-      const token = await createSession(usuario.id)
-      const cookieStore = await cookies()
-      const isHttps = request.url.startsWith("https")
-
-      cookieStore.set("session_token", token, {
-        httpOnly: true,
-        secure: isHttps,
-        sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60,
-        path: "/",
-      })
-
-      return NextResponse.json({
-        success: true,
-        usuario: {
-          id: usuario.id,
-          nome: usuario.nome,
-          email: usuario.email,
-          cargo: usuario.cargo,
-          clienteId: clienteFormatado.id,
-        },
-        empresa: clienteFormatado.razaoSocial,
-      })
     }
 
-    // Encontrou com CNPJ normalizado
+    // Criar usuario com aprovado = false (aguardando aprovacao)
     const senhaHash = hashPassword(senha)
     const usuario = await prisma.usuario.create({
       data: {
@@ -101,23 +66,44 @@ export async function POST(request: Request) {
         senha: senhaHash,
         cargo: "cliente",
         clienteId: cliente.id,
+        aprovado: false, // Aguardando aprovacao
       },
     })
 
-    const token = await createSession(usuario.id)
-    const cookieStore = await cookies()
-    const isHttps = request.url.startsWith("https")
+    // Enviar dados para o webhook
+    try {
+      await fetch(WEBHOOK_REGISTRO_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          evento: "novo_registro_cliente",
+          usuario: {
+            id: usuario.id,
+            nome: usuario.nome,
+            email: usuario.email,
+            cargo: usuario.cargo,
+          },
+          empresa: {
+            id: cliente.id,
+            razaoSocial: cliente.razaoSocial,
+            nomeFantasia: cliente.nomeFantasia,
+            cnpj: cliente.cnpj,
+            cidade: cliente.cidade,
+            uf: cliente.uf,
+          },
+          dataRegistro: new Date().toISOString(),
+        }),
+      })
+    } catch (webhookError) {
+      console.error("Erro ao enviar webhook de registro:", webhookError)
+      // Nao falhar o registro se o webhook falhar
+    }
 
-    cookieStore.set("session_token", token, {
-      httpOnly: true,
-      secure: isHttps,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60,
-      path: "/",
-    })
-
+    // NAO criar sessao - aguardar aprovacao
     return NextResponse.json({
       success: true,
+      pendingApproval: true,
+      message: "Cadastro realizado com sucesso! Sua conta esta aguardando aprovacao. Voce recebera uma notificacao quando sua conta for aprovada.",
       usuario: {
         id: usuario.id,
         nome: usuario.nome,
