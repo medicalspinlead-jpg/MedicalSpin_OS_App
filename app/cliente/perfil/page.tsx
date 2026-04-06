@@ -439,10 +439,6 @@ export default function PerfilPage() {
                 Gerencie os equipamentos vinculados a sua empresa
               </CardDescription>
             </div>
-            <Button size="sm" onClick={() => setAddingEquip(true)} disabled={addingEquip}>
-              <Plus className="h-4 w-4 mr-1" />
-              Adicionar
-            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -599,15 +595,7 @@ export default function PerfilPage() {
                       <div className="flex items-center gap-1 shrink-0">
                         {equip.ativo ? (
                           <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => startEditEquip(equip)}
-                              className="h-8 w-8"
-                              title="Editar"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
+                            
                             <Button
                               variant="ghost"
                               size="icon"
