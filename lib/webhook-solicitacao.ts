@@ -1,6 +1,17 @@
 // Webhook para notificar novas solicitações
 const WEBHOOK_URL = "https://n8n-www4kggggc4c8k8ow4w8g4g0.95.217.164.173.sslip.io/webhook/21deb1c6-29b4-4324-9f80-fc1ec485f365"
 
+export interface UsuarioNotificacao {
+  id: string
+  nome: string
+  email: string
+  telefone: string | null
+  canais: {
+    email: boolean
+    whatsapp: boolean
+  }
+}
+
 export interface SolicitacaoWebhookPayload {
   id: string
   protocolo: string
@@ -22,6 +33,7 @@ export interface SolicitacaoWebhookPayload {
   midias: Record<string, unknown>
   createdAt: string
   updatedAt: string
+  usuariosNotificacao?: UsuarioNotificacao[]
 }
 
 export async function enviarWebhookNovaSolicitacao(solicitacao: SolicitacaoWebhookPayload): Promise<void> {
@@ -34,7 +46,29 @@ export async function enviarWebhookNovaSolicitacao(solicitacao: SolicitacaoWebho
       body: JSON.stringify({
         evento: "nova_solicitacao",
         timestamp: new Date().toISOString(),
-        dados: solicitacao,
+        dados: {
+          id: solicitacao.id,
+          protocolo: solicitacao.protocolo,
+          status: solicitacao.status,
+          nomeEmpresa: solicitacao.nomeEmpresa,
+          cnpj: solicitacao.cnpj,
+          nomeContato: solicitacao.nomeContato,
+          telefone: solicitacao.telefone,
+          email: solicitacao.email,
+          cidade: solicitacao.cidade,
+          uf: solicitacao.uf,
+          tipoEquipamento: solicitacao.tipoEquipamento,
+          fabricante: solicitacao.fabricante,
+          modelo: solicitacao.modelo,
+          numeroSerie: solicitacao.numeroSerie,
+          descricaoProblema: solicitacao.descricaoProblema,
+          urgencia: solicitacao.urgencia,
+          clienteId: solicitacao.clienteId,
+          midias: solicitacao.midias,
+          createdAt: solicitacao.createdAt,
+          updatedAt: solicitacao.updatedAt,
+        },
+        usuariosNotificacao: solicitacao.usuariosNotificacao || [],
       }),
     })
 

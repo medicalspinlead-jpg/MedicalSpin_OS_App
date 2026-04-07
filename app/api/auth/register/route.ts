@@ -70,6 +70,26 @@ export async function POST(request: Request) {
       },
     })
 
+    // Buscar admins com notificacoes ativadas
+    const adminsComNotificacao = await prisma.usuario.findMany({
+      where: {
+        cargo: "admin",
+        ativo: true,
+        OR: [
+          { notifEmail: true },
+          { notifWhatsapp: true },
+        ],
+      },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+        telefone: true,
+        notifEmail: true,
+        notifWhatsapp: true,
+      },
+    })
+
     // Enviar dados para o webhook
     try {
       await fetch(WEBHOOK_REGISTRO_URL, {
@@ -91,6 +111,16 @@ export async function POST(request: Request) {
             cidade: cliente.cidade,
             uf: cliente.uf,
           },
+          adminsNotificacao: adminsComNotificacao.map((admin) => ({
+            id: admin.id,
+            nome: admin.nome,
+            email: admin.email,
+            telefone: admin.telefone,
+            canais: {
+              email: admin.notifEmail,
+              whatsapp: admin.notifWhatsapp,
+            },
+          })),
           dataRegistro: new Date().toISOString(),
         }),
       })

@@ -130,6 +130,26 @@ export async function POST(request: Request) {
       console.error("Erro ao registrar historico de status:", histError)
     }
 
+    // Buscar tecnicos e admins com notificacoes ativadas
+    const usuariosComNotificacao = await prisma.usuario.findMany({
+      where: {
+        cargo: { in: ["admin", "tecnico"] },
+        ativo: true,
+        OR: [
+          { notifEmail: true },
+          { notifWhatsapp: true },
+        ],
+      },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+        telefone: true,
+        notifEmail: true,
+        notifWhatsapp: true,
+      },
+    })
+
     // Enviar webhook com todas as informações da solicitação
     enviarWebhookNovaSolicitacao({
       id: solicitacao.id,
@@ -152,6 +172,16 @@ export async function POST(request: Request) {
       midias: (solicitacao.midias as Record<string, unknown>) || {},
       createdAt: solicitacao.createdAt.toISOString(),
       updatedAt: solicitacao.updatedAt.toISOString(),
+      usuariosNotificacao: usuariosComNotificacao.map((u) => ({
+        id: u.id,
+        nome: u.nome,
+        email: u.email,
+        telefone: u.telefone,
+        canais: {
+          email: u.notifEmail,
+          whatsapp: u.notifWhatsapp,
+        },
+      })),
     })
 
     return NextResponse.json(
