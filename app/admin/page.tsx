@@ -938,7 +938,7 @@ export default function AdminPage() {
                             {deptUsuarios.map((ud) => (
                               <div
                                 key={ud.id}
-                                className="flex items-center gap-2 bg-muted/50 rounded-full px-3 py-1.5 group"
+                                className="flex items-center gap-2 bg-muted/50 rounded-full px-3 py-1.5"
                               >
                                 <Avatar className="h-6 w-6">
                                   <AvatarFallback className="text-xs">
@@ -946,12 +946,15 @@ export default function AdminPage() {
                                   </AvatarFallback>
                                 </Avatar>
                                 <span className="text-sm font-medium">{ud.usuario?.nome}</span>
-                                <button
-                                  onClick={() => handleRemoveUsuarioFromDept(ud.usuarioId)}
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-                                >
-                                  <X className="h-3 w-3" />
-                                </button>
+                                {currentUser?.cargo === "admin" && (
+                                  <button
+                                    onClick={() => handleRemoveUsuarioFromDept(ud.usuarioId)}
+                                    className="ml-1 p-0.5 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                                    title="Remover tecnico do departamento"
+                                  >
+                                    <X className="h-3.5 w-3.5" />
+                                  </button>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -977,24 +980,24 @@ export default function AdminPage() {
                             {deptClientes.map((cd) => (
                               <div
                                 key={cd.id}
-                                className="flex items-center justify-between p-3 bg-muted/30 rounded-lg group"
+                                className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3 bg-muted/30 rounded-lg"
                               >
                                 <div className="flex-1 min-w-0">
-                                  <p className="font-medium truncate">
+                                  <p className="font-medium text-sm leading-tight line-clamp-2">
                                     {cd.cliente?.nomeFantasia || cd.cliente?.razaoSocial}
                                   </p>
-                                  <p className="text-xs text-muted-foreground">
+                                  <p className="text-xs text-muted-foreground mt-0.5">
                                     {cd.cliente?.cidade}, {cd.cliente?.uf}
                                   </p>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 w-full sm:w-auto">
                                   <Select
                                     value={cd.usuarioResponsavelId || "none"}
                                     onValueChange={(value) =>
                                       handleUpdateResponsavel(cd.clienteId, value === "none" ? null : value)
                                     }
                                   >
-                                    <SelectTrigger className="w-[160px] h-8 text-xs">
+                                    <SelectTrigger className="flex-1 sm:w-[140px] h-8 text-xs">
                                       <SelectValue placeholder="Responsavel" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1006,12 +1009,17 @@ export default function AdminPage() {
                                       ))}
                                     </SelectContent>
                                   </Select>
-                                  <button
-                                    onClick={() => handleRemoveClienteFromDept(cd.clienteId)}
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive p-1"
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </button>
+                                  {currentUser?.cargo === "admin" && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
+                                      onClick={() => handleRemoveClienteFromDept(cd.clienteId)}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                      <span className="sr-only">Remover cliente</span>
+                                    </Button>
+                                  )}
                                 </div>
                               </div>
                             ))}
@@ -1568,15 +1576,16 @@ export default function AdminPage() {
           setClienteSearch("")
         }
       }}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
+        <DialogContent className="w-[95vw] max-w-lg p-0 gap-0 overflow-hidden">
+          <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-6 shrink-0">
             <DialogTitle>Adicionar Clientes</DialogTitle>
             <DialogDescription>
               Selecione um ou mais clientes para adicionar ao departamento.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            {/* Search */}
+          
+          {/* Search - Fixed */}
+          <div className="px-4 sm:px-6 pb-3 shrink-0">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -1586,8 +1595,10 @@ export default function AdminPage() {
                 className="pl-10"
               />
             </div>
-            
-            {/* Select All */}
+          </div>
+          
+          {/* Select All - Fixed */}
+          <div className="px-4 sm:px-6 pb-2 shrink-0">
             {(() => {
               const availableClientes = allClientes.filter(
                 (c) =>
@@ -1595,33 +1606,37 @@ export default function AdminPage() {
                   (clienteSearch === "" ||
                     c.nomeFantasia?.toLowerCase().includes(clienteSearch.toLowerCase()) ||
                     c.razaoSocial?.toLowerCase().includes(clienteSearch.toLowerCase()) ||
-                    c.cidade?.toLowerCase().includes(clienteSearch.toLowerCase()))
+                    c.cidade?.toLowerCase().includes(clienteSearch.toLowerCase()) ||
+                    c.cnpj?.includes(clienteSearch))
               )
               
               const allSelected = availableClientes.length > 0 && 
                 availableClientes.every((c) => selectedClienteIds.includes(c.id))
               
               return (
-                <div className="flex items-center justify-between px-1">
+                <div className="flex items-center justify-between gap-2 py-2 border-b">
                   <button
                     type="button"
                     onClick={toggleSelectAllClientes}
                     className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
                   >
                     <Checkbox checked={allSelected} />
-                    <span>Selecionar todos ({availableClientes.length})</span>
+                    <span className="hidden sm:inline">Selecionar todos ({availableClientes.length})</span>
+                    <span className="sm:hidden">Todos ({availableClientes.length})</span>
                   </button>
                   {selectedClienteIds.length > 0 && (
-                    <Badge variant="secondary">
+                    <Badge variant="secondary" className="shrink-0">
                       {selectedClienteIds.length} selecionado(s)
                     </Badge>
                   )}
                 </div>
               )
             })()}
-            
-            {/* Cliente List */}
-            <ScrollArea className="h-[280px] border rounded-lg">
+          </div>
+          
+          {/* Cliente List - Scrollable */}
+          <div className="px-4 sm:px-6 min-h-0 shrink">
+            <ScrollArea className="h-[200px] sm:h-[250px] border rounded-lg">
               <div className="p-2 space-y-1">
                 {allClientes
                   .filter(
@@ -1630,7 +1645,8 @@ export default function AdminPage() {
                       (clienteSearch === "" ||
                         c.nomeFantasia?.toLowerCase().includes(clienteSearch.toLowerCase()) ||
                         c.razaoSocial?.toLowerCase().includes(clienteSearch.toLowerCase()) ||
-                        c.cidade?.toLowerCase().includes(clienteSearch.toLowerCase()))
+                        c.cidade?.toLowerCase().includes(clienteSearch.toLowerCase()) ||
+                        c.cnpj?.includes(clienteSearch))
                   )
                   .map((cliente) => {
                     const isSelected = selectedClienteIds.includes(cliente.id)
@@ -1639,19 +1655,22 @@ export default function AdminPage() {
                         key={cliente.id}
                         type="button"
                         onClick={() => toggleClienteSelection(cliente.id)}
-                        className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${
+                        className={`w-full flex items-start gap-3 p-3 rounded-lg text-left transition-colors ${
                           isSelected
-                            ? "bg-primary/10 border border-primary/20"
+                            ? "bg-primary/10 border border-primary/30"
                             : "hover:bg-muted/50 border border-transparent"
                         }`}
                       >
-                        <Checkbox checked={isSelected} />
+                        <Checkbox checked={isSelected} className="mt-0.5 shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">
+                          <p className="font-medium text-sm leading-tight line-clamp-2">
                             {cliente.nomeFantasia || cliente.razaoSocial}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            {cliente.cidade}, {cliente.uf} - {cliente.cnpj}
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {cliente.cidade}, {cliente.uf}
+                          </p>
+                          <p className="text-xs text-muted-foreground font-mono">
+                            {cliente.cnpj}
                           </p>
                         </div>
                       </button>
@@ -1663,7 +1682,8 @@ export default function AdminPage() {
                     (clienteSearch === "" ||
                       c.nomeFantasia?.toLowerCase().includes(clienteSearch.toLowerCase()) ||
                       c.razaoSocial?.toLowerCase().includes(clienteSearch.toLowerCase()) ||
-                      c.cidade?.toLowerCase().includes(clienteSearch.toLowerCase()))
+                      c.cidade?.toLowerCase().includes(clienteSearch.toLowerCase()) ||
+                      c.cnpj?.includes(clienteSearch))
                 ).length === 0 && (
                   <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
                     <Users className="h-8 w-8 mb-2" />
@@ -1672,32 +1692,33 @@ export default function AdminPage() {
                 )}
               </div>
             </ScrollArea>
-            
-            {/* Responsavel Selection */}
-            <div className="space-y-2">
-              <Label>Tecnico Responsavel (opcional)</Label>
-              <p className="text-xs text-muted-foreground">Sera aplicado a todos os clientes selecionados</p>
-              <Select value={selectedResponsavelId} onValueChange={setSelectedResponsavelId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um responsavel" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Sem responsavel</SelectItem>
-                  {deptUsuarios.map((ud) => (
-                    <SelectItem key={ud.usuarioId} value={ud.usuarioId}>
-                      {ud.usuario?.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddClienteOpen(false)}>
+          
+          {/* Responsavel Selection - Fixed */}
+          <div className="px-4 sm:px-6 py-3 space-y-2 shrink-0 border-t mt-3 bg-muted/30">
+            <Label className="text-sm">Tecnico Responsavel (opcional)</Label>
+            <p className="text-xs text-muted-foreground">Sera aplicado a todos os clientes selecionados</p>
+            <Select value={selectedResponsavelId} onValueChange={setSelectedResponsavelId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um responsavel" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Sem responsavel</SelectItem>
+                {deptUsuarios.map((ud) => (
+                  <SelectItem key={ud.usuarioId} value={ud.usuarioId}>
+                    {ud.usuario?.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <DialogFooter className="px-4 py-4 sm:px-6 border-t gap-2 sm:gap-0 shrink-0">
+            <Button variant="outline" onClick={() => setIsAddClienteOpen(false)} className="flex-1 sm:flex-none">
               Cancelar
             </Button>
-            <Button onClick={handleAddClienteToDept} disabled={loading || selectedClienteIds.length === 0}>
-              {loading ? "Adicionando..." : `Adicionar ${selectedClienteIds.length > 0 ? `(${selectedClienteIds.length})` : ""}`}
+            <Button onClick={handleAddClienteToDept} disabled={loading || selectedClienteIds.length === 0} className="flex-1 sm:flex-none">
+              {loading ? "Adicionando..." : `Adicionar${selectedClienteIds.length > 0 ? ` (${selectedClienteIds.length})` : ""}`}
             </Button>
           </DialogFooter>
         </DialogContent>
