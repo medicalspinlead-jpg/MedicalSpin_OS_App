@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manual do Tecnico - Sistema de Ordens de Servico</title>
+  <title>Manual do Técnico - Sistema de Ordens de Serviço</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     
@@ -343,74 +343,64 @@
   <button class="print-btn no-print" onclick="window.print()">Salvar como PDF</button>
   
   <div class="header">
-    <h1>Manual do Tecnico</h1>
-    <p class="subtitle">Sistema de Ordens de Servico - Guia Completo</p>
-    <p class="version">Versao 1.0 - Abril 2026</p>
+    <h1>Manual do Técnico</h1>
+    <p class="subtitle">Sistema de Ordens de Serviço - Guia Completo</p>
+    <p class="version">Versão 1.0 - Abril 2026</p>
   </div>
   
   <div class="toc">
-    <h3>Indice</h3>
+    <h3>Índice</h3>
     <ul>
-      <li><a href="#introducao">1. Introducao</a></li>
+      <li><a href="#introducao">1. Introdução</a></li>
       <li><a href="#acesso">2. Acesso ao Sistema</a></li>
       <li><a href="#dashboard">3. Painel Principal</a></li>
-      <li><a href="#solicitacoes">4. Gerenciamento de Solicitacoes</a></li>
-      <li><a href="#nova-os">5. Criacao de Ordem de Servico</a></li>
-      <li><a href="#etapas">6. Etapas da Ordem de Servico</a></li>
-      <li><a href="#historico">7. Historico de OS</a></li>
+      <li><a href="#solicitacoes">4. Gerenciamento de Solicitações</a></li>
+      <li><a href="#nova-os">5. Criação de Ordem de Serviço</a></li>
+      <li><a href="#etapas">6. Etapas da Ordem de Serviço</a></li>
+      <li><a href="#historico">7. Histórico de OS</a></li>
       <li><a href="#clientes">8. Gerenciamento de Clientes</a></li>
-      <li><a href="#admin">9. Administracao (Admin)</a></li>
-      <li><a href="#dicas">10. Dicas e Boas Praticas</a></li>
+      <li><a href="#admin">9. Administração (Admin)</a></li>
+      <li><a href="#dicas">10. Dicas e Boas Práticas</a></li>
     </ul>
   </div>
   
-  <h2 id="introducao">1. Introducao</h2>
-  <p>O Sistema de Ordens de Servico foi desenvolvido para otimizar o fluxo de trabalho dos tecnicos, desde o recebimento de solicitacoes ate a finalizacao das ordens de servico.</p>
+  <h2 id="introducao">1. Introdução</h2>
+  <p>O Sistema de Ordens de Serviço foi desenvolvido para otimizar o fluxo de trabalho dos técnicos, desde o recebimento de solicitações até a finalização das ordens de serviço.</p>
   
   <p>Principais funcionalidades:</p>
   <ul>
-    <li>Recepcao e gerenciamento de solicitacoes de clientes</li>
-    <li>Criacao e edicao de Ordens de Servico em etapas</li>
-    <li>Registro detalhado de intervencoes, pecas e mao de obra</li>
-    <li>Historico completo de atendimentos</li>
+    <li>Recepção e gerenciamento de solicitações de clientes</li>
+    <li>Criação e edição de Ordens de Serviço em etapas</li>
+    <li>Registro detalhado de intervenções, peças e mão de obra</li>
+    <li>Histórico completo de atendimentos</li>
     <li>Gerenciamento de clientes e equipamentos</li>
-    <li>Envio automatico de documentos por e-mail</li>
-    <li>Painel administrativo (para usuarios admin)</li>
+    <li>Envio automático de documentos por e-mail</li>
+    <li>Painel administrativo (para usuários admin)</li>
   </ul>
   
   <h2 id="acesso">2. Acesso ao Sistema</h2>
   
   <h3>2.1 Login</h3>
-  <p>Acesse o sistema com suas credenciais (e-mail e senha). Usuarios novos precisam ser aprovados por um administrador antes de conseguir acessar.</p>
+  <p>Acesse o sistema com suas credenciais (e-mail e senha). Usuários novos precisam ser aprovados por um administrador antes de conseguir acessar.</p>
   
-  <div class="image-placeholder">
-    <span class="image-number">Figura 1</span>
-    <p class="image-title">Tela de Login</p>
-    <p class="image-desc">Pagina de login do sistema com campos de e-mail e senha para tecnicos</p>
+  <div class="image-container">
+    <img src="./imgs/2.1-login.png" alt="Tela de Login">
+    <p class="image-caption">Figura 1 - Tela de Login: Screenshot da página de login do sistema mostrando os campos de e-mail e senha</p>
   </div>
   
-  <h3>2.2 Registro de Novo Usuario</h3>
-  <p>Tecnicos podem se registrar no sistema. Apos o registro, um administrador devera aprovar o acesso.</p>
-  
-  <div class="image-placeholder">
-    <span class="image-number">Figura 2</span>
-    <p class="image-title">Tela de Registro</p>
-    <p class="image-desc">Formulario de registro para novos tecnicos com campos de nome, e-mail e senha</p>
-  </div>
-  
-  <h3>2.3 Tipos de Usuario</h3>
+  <h3>2.2 Tipos de Usuário</h3>
   <table>
     <tr>
       <th>Tipo</th>
-      <th>Permissoes</th>
+      <th>Permissões</th>
     </tr>
     <tr>
-      <td><strong>Tecnico</strong></td>
-      <td>Criar/editar OS, gerenciar solicitacoes, visualizar clientes</td>
+      <td><strong>Técnico</strong></td>
+      <td>Criar/editar OS, gerenciar solicitações, visualizar clientes</td>
     </tr>
     <tr>
       <td><strong>Admin</strong></td>
-      <td>Todas as permissoes + gerenciar usuarios e departamentos</td>
+      <td>Todas as permissões + gerenciar usuários e departamentos</td>
     </tr>
     <tr>
       <td><strong>Cliente</strong></td>
@@ -419,18 +409,18 @@
   </table>
   
   <h2 id="dashboard">3. Painel Principal</h2>
-  <p>O painel principal oferece uma visao geral do sistema com acesso rapido as principais funcionalidades.</p>
+  <p>O painel principal oferece uma visão geral do sistema com acesso rápido às principais funcionalidades.</p>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 3</span>
     <p class="image-title">Painel Principal do Tecnico</p>
-    <p class="image-desc">Dashboard completo mostrando cards de estatisticas, acoes rapidas e departamentos</p>
+    <p class="image-desc">Dashboard completo mostrando cards de estatísticas, ações rápidas e departamentos</p>
   </div>
   
-  <h3>3.1 Cards de Estatisticas</h3>
+  <h3>3.1 Cards de Estatísticas</h3>
   <ul>
-    <li><strong>Solicitacoes:</strong> Numero de solicitacoes pendentes (recebidas)</li>
-    <li><strong>Rascunhos:</strong> Ordens de servico em andamento</li>
+    <li><strong>Solicitações:</strong> Número de solicitações pendentes (recebidas)</li>
+    <li><strong>Rascunhos:</strong> Ordens de serviço em andamento</li>
     <li><strong>Finalizadas:</strong> Total de OS finalizadas</li>
     <li><strong>Clientes:</strong> Total de clientes cadastrados</li>
   </ul>
@@ -438,141 +428,141 @@
   <div class="image-placeholder">
     <span class="image-number">Figura 4</span>
     <p class="image-title">Cards de Estatisticas</p>
-    <p class="image-desc">Detalhe dos quatro cards com numeros de Solicitacoes, Rascunhos, Finalizadas e Clientes</p>
+    <p class="image-desc">Detalhe dos quatro cards com números de Solicitações, Rascunhos, Finalizadas e Clientes</p>
   </div>
   
-  <h3>3.2 Acoes Rapidas</h3>
+  <h3>3.2 Ações Rápidas</h3>
   <ul>
-    <li><strong>Nova Ordem de Servico:</strong> Inicia criacao de uma nova OS</li>
-    <li><strong>Ver Solicitacoes:</strong> Acessa lista de solicitacoes dos clientes</li>
+    <li><strong>Nova Ordem de Serviço:</strong> Inicia criação de uma nova OS</li>
+    <li><strong>Ver Solicitações:</strong> Acessa lista de solicitações dos clientes</li>
     <li><strong>Gerenciar Clientes:</strong> Acessa cadastro de clientes</li>
-    <li><strong>Historico de OS:</strong> Visualiza OS finalizadas</li>
-    <li><strong>Administracao:</strong> (somente admin) Gerencia usuarios e departamentos</li>
+    <li><strong>Histórico de OS:</strong> Visualiza OS finalizadas</li>
+    <li><strong>Administração:</strong> (somente admin) Gerencia usuários e departamentos</li>
   </ul>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 5</span>
     <p class="image-title">Menu de Acoes Rapidas</p>
-    <p class="image-desc">Secao de acoes rapidas com botoes para as principais funcionalidades do sistema</p>
+    <p class="image-desc">Seção de ações rápidas com botões para as principais funcionalidades do sistema</p>
   </div>
   
   <h3>3.3 Departamentos</h3>
-  <p>O sistema organiza tecnicos e clientes por departamentos (ex: Ressonancia, Tomografia, Ultrassom). Cada departamento pode ter:</p>
+  <p>O sistema organiza técnicos e clientes por departamentos (ex: Ressonância, Tomografia, Ultrassom). Cada departamento pode ter:</p>
   <ul>
-    <li>Tecnicos atribuidos</li>
+    <li>Técnicos atribuídos</li>
     <li>Clientes vinculados</li>
-    <li>Tecnico responsavel por cliente</li>
+    <li>Técnico responsável por cliente</li>
   </ul>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 6</span>
     <p class="image-title">Secao de Departamentos</p>
-    <p class="image-desc">Cards de departamentos com icones, cores e contadores de tecnicos/clientes</p>
+    <p class="image-desc">Cards de departamentos com ícones, cores e contadores de técnicos/clientes</p>
   </div>
   
   <div class="page-break"></div>
   
-  <h2 id="solicitacoes">4. Gerenciamento de Solicitacoes</h2>
-  <p>Solicitacoes sao requisicoes de servico enviadas pelos clientes atraves do portal.</p>
+  <h2 id="solicitacoes">4. Gerenciamento de Solicitações</h2>
+  <p>Solicitações são requisições de serviço enviadas pelos clientes através do portal.</p>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 7</span>
     <p class="image-title">Pagina de Solicitacoes</p>
-    <p class="image-desc">Lista completa de solicitacoes com filtros, busca e graficos de estatisticas</p>
+    <p class="image-desc">Lista completa de solicitações com filtros, busca e gráficos de estatísticas</p>
   </div>
   
-  <h3>4.1 Lista de Solicitacoes</h3>
-  <p>Na pagina de solicitacoes, voce pode:</p>
+  <h3>4.1 Lista de Solicitações</h3>
+  <p>Na página de solicitações, você pode:</p>
   <ul>
-    <li>Visualizar todas as solicitacoes recebidas</li>
+    <li>Visualizar todas as solicitações recebidas</li>
     <li>Filtrar por status (OS Nova, Em Progresso, Finalizada)</li>
     <li>Buscar por empresa, protocolo, contato ou modelo</li>
-    <li>Visualizar graficos de estatisticas</li>
+    <li>Visualizar gráficos de estatísticas</li>
   </ul>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 8</span>
     <p class="image-title">Graficos de Estatisticas</p>
-    <p class="image-desc">Graficos de pizza e barras mostrando distribuicao de solicitacoes por status e periodo</p>
+    <p class="image-desc">Gráficos de pizza e barras mostrando distribuição de solicitações por status e período</p>
   </div>
   
-  <h3>4.2 Status das Solicitacoes</h3>
+  <h3>4.2 Status das Solicitações</h3>
   <ul>
-    <li><strong>OS Nova (Recebida):</strong> Solicitacao recebida, aguardando atendimento</li>
-    <li><strong>Em Progresso:</strong> Tecnico esta trabalhando na solicitacao</li>
-    <li><strong>Finalizada:</strong> Servico concluido</li>
+    <li><strong>OS Nova (Recebida):</strong> Solicitação recebida, aguardando atendimento</li>
+    <li><strong>Em Progresso:</strong> Técnico está trabalhando na solicitação</li>
+    <li><strong>Finalizada:</strong> Serviço concluído</li>
   </ul>
   
-  <h3>4.3 Detalhes da Solicitacao</h3>
-  <p>Ao clicar em uma solicitacao, voce tera acesso a:</p>
+  <h3>4.3 Detalhes da Solicitação</h3>
+  <p>Ao clicar em uma solicitação, você terá acesso a:</p>
   <ul>
     <li>Dados completos da empresa cliente</li>
-    <li>Informacoes do equipamento</li>
-    <li>Descricao detalhada do problema</li>
-    <li>Fotos e videos enviados pelo cliente</li>
-    <li>Historico de atualizacoes de status</li>
+    <li>Informações do equipamento</li>
+    <li>Descrição detalhada do problema</li>
+    <li>Fotos e vídeos enviados pelo cliente</li>
+    <li>Histórico de atualizações de status</li>
   </ul>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 9</span>
     <p class="image-title">Detalhes da Solicitacao (Visao Tecnico)</p>
-    <p class="image-desc">Pagina completa de detalhes mostrando dados do cliente, equipamento, problema e midias</p>
+    <p class="image-desc">Página completa de detalhes mostrando dados do cliente, equipamento, problema e mídias</p>
   </div>
   
-  <h3>4.4 Acoes na Solicitacao</h3>
+  <h3>4.4 Ações na Solicitação</h3>
   <ul>
     <li><strong>Alterar Status:</strong> Atualizar para "Em Progresso" ou "Finalizada"</li>
-    <li><strong>Adicionar Observacao:</strong> Registrar notas sobre o andamento</li>
-    <li><strong>Criar OS:</strong> Iniciar uma Ordem de Servico a partir da solicitacao</li>
-    <li><strong>Cancelar:</strong> Cancelar a solicitacao (com motivo obrigatorio)</li>
+    <li><strong>Adicionar Observação:</strong> Registrar notas sobre o andamento</li>
+    <li><strong>Criar OS:</strong> Iniciar uma Ordem de Serviço a partir da solicitação</li>
+    <li><strong>Cancelar:</strong> Cancelar a solicitação (com motivo obrigatório)</li>
   </ul>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 10</span>
     <p class="image-title">Botoes de Acao da Solicitacao</p>
-    <p class="image-desc">Area de acoes mostrando botoes de alterar status, criar OS e cancelar</p>
+    <p class="image-desc">Área de ações mostrando botões de alterar status, criar OS e cancelar</p>
   </div>
   
   <div class="highlight-box info">
-    <h4>Criando OS a partir de Solicitacao</h4>
-    <p>Ao criar uma OS a partir de uma solicitacao, os dados do cliente e equipamento sao preenchidos automaticamente. A solicitacao fica vinculada a OS para rastreabilidade.</p>
+    <h4>Criando OS a partir de Solicitação</h4>
+    <p>Ao criar uma OS a partir de uma solicitação, os dados do cliente e equipamento são preenchidos automaticamente. A solicitação fica vinculada à OS para rastreabilidade.</p>
   </div>
   
-  <h2 id="nova-os">5. Criacao de Ordem de Servico</h2>
-  <p>Uma Ordem de Servico (OS) pode ser criada de duas formas:</p>
+  <h2 id="nova-os">5. Criação de Ordem de Serviço</h2>
+  <p>Uma Ordem de Serviço (OS) pode ser criada de duas formas:</p>
   <ul>
-    <li>A partir de uma solicitacao existente</li>
-    <li>Manualmente, clicando em "Nova Ordem de Servico"</li>
+    <li>A partir de uma solicitação existente</li>
+    <li>Manualmente, clicando em "Nova Ordem de Serviço"</li>
   </ul>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 11</span>
     <p class="image-title">Tela Inicial de Nova OS</p>
-    <p class="image-desc">Pagina inicial para criacao de nova OS com opcoes de criar do zero ou a partir de solicitacao</p>
+    <p class="image-desc">Página inicial para criação de nova OS com opções de criar do zero ou a partir de solicitação</p>
   </div>
   
-  <h3>5.1 Fluxo de Criacao</h3>
-  <p>A OS e preenchida em etapas sequenciais. Voce pode salvar a qualquer momento como rascunho e continuar depois.</p>
+  <h3>5.1 Fluxo de Criação</h3>
+  <p>A OS é preenchida em etapas sequenciais. Você pode salvar a qualquer momento como rascunho e continuar depois.</p>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 12</span>
     <p class="image-title">Indicador de Etapas</p>
-    <p class="image-desc">Barra de progresso mostrando as 9 etapas da OS com indicacao da etapa atual</p>
+    <p class="image-desc">Barra de progresso mostrando as 9 etapas da OS com indicação da etapa atual</p>
   </div>
   
-  <h3>5.2 Salvamento Automatico</h3>
-  <p>O sistema salva automaticamente as alteracoes ao navegar entre etapas ou ao clicar em "Salvar".</p>
+  <h3>5.2 Salvamento Automático</h3>
+  <p>O sistema salva automaticamente as alterações ao navegar entre etapas ou ao clicar em "Salvar".</p>
   
   <div class="page-break"></div>
   
-  <h2 id="etapas">6. Etapas da Ordem de Servico</h2>
-  <p>A Ordem de Servico e dividida em 9 etapas para organizacao do preenchimento:</p>
+  <h2 id="etapas">6. Etapas da Ordem de Serviço</h2>
+  <p>A Ordem de Serviço é dividida em 9 etapas para organização do preenchimento:</p>
   
   <div class="etapa-card">
     <h4>Etapa 1: Dados da Empresa</h4>
     <p>Selecione ou cadastre o cliente. Campos principais:</p>
     <ul>
-      <li>Nome Fantasia / Razao Social</li>
+      <li>Nome Fantasia / Razão Social</li>
       <li>CNPJ</li>
       <li>Cidade, UF</li>
       <li>Telefone e E-mail</li>
@@ -583,7 +573,7 @@
   <div class="image-placeholder">
     <span class="image-number">Figura 13</span>
     <p class="image-title">Etapa 1 - Dados da Empresa</p>
-    <p class="image-desc">Formulario de selecao/cadastro de cliente com campos de dados da empresa</p>
+    <p class="image-desc">Formulário de seleção/cadastro de cliente com campos de dados da empresa</p>
   </div>
   
   <div class="etapa-card">
@@ -593,7 +583,7 @@
       <li>Tipo de equipamento</li>
       <li>Fabricante</li>
       <li>Modelo</li>
-      <li>Numero de serie</li>
+      <li>Número de série</li>
     </ul>
   </div>
   
@@ -605,10 +595,10 @@
   
   <div class="etapa-card">
     <h4>Etapa 3: Motivo</h4>
-    <p>Descreva o motivo do servico:</p>
+    <p>Descreva o motivo do serviço:</p>
     <ul>
-      <li>Motivacao do servico (por que o cliente solicitou)</li>
-      <li>Eventos relevantes (historico do problema)</li>
+      <li>Motivação do serviço (por que o cliente solicitou)</li>
+      <li>Eventos relevantes (histórico do problema)</li>
     </ul>
   </div>
   
@@ -619,42 +609,42 @@
   </div>
   
   <div class="etapa-card">
-    <h4>Etapa 4: Intervencao</h4>
-    <p>Registre os detalhes da intervencao:</p>
+    <h4>Etapa 4: Intervenção</h4>
+    <p>Registre os detalhes da intervenção:</p>
     <ul>
-      <li>Tipo de intervencao (Corretiva, Preventiva, Instalacao, etc.)</li>
-      <li>Descricao detalhada dos servicos realizados</li>
+      <li>Tipo de intervenção (Corretiva, Preventiva, Instalação, etc.)</li>
+      <li>Descrição detalhada dos serviços realizados</li>
     </ul>
   </div>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 16</span>
     <p class="image-title">Etapa 4 - Intervencao</p>
-    <p class="image-desc">Selecao do tipo de intervencao e campo para descricao dos servicos realizados</p>
+    <p class="image-desc">Seleção do tipo de intervenção e campo para descrição dos serviços realizados</p>
   </div>
   
   <div class="etapa-card">
-    <h4>Etapa 5: Pecas</h4>
-    <p>Cadastre as pecas utilizadas:</p>
+    <h4>Etapa 5: Peças</h4>
+    <p>Cadastre as peças utilizadas:</p>
     <ul>
-      <li>Pecas Removidas (retiradas do equipamento)</li>
-      <li>Pecas Inclusas (adicionadas ao equipamento)</li>
-      <li>Para cada peca: nome, modelo/ref, numero de serie, quantidade, posse</li>
+      <li>Peças Removidas (retiradas do equipamento)</li>
+      <li>Peças Inclusas (adicionadas ao equipamento)</li>
+      <li>Para cada peça: nome, modelo/ref, número de série, quantidade, posse</li>
     </ul>
   </div>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 17</span>
     <p class="image-title">Etapa 5 - Pecas</p>
-    <p class="image-desc">Tabelas de pecas removidas e inclusas com formulario para adicionar novas pecas</p>
+    <p class="image-desc">Tabelas de peças removidas e inclusas com formulário para adicionar novas peças</p>
   </div>
   
   <div class="etapa-card">
-    <h4>Etapa 6: Mao de Obra</h4>
+    <h4>Etapa 6: Mão de Obra</h4>
     <p>Registre as horas trabalhadas:</p>
     <ul>
       <li>Data do trabalho</li>
-      <li>Descricao da atividade</li>
+      <li>Descrição da atividade</li>
       <li>Quantidade de horas</li>
     </ul>
     <p>O sistema calcula automaticamente o total de horas.</p>
@@ -667,51 +657,51 @@
   </div>
   
   <div class="etapa-card">
-    <h4>Etapa 7: Pendencias</h4>
-    <p>Informe se existem pendencias:</p>
+    <h4>Etapa 7: Pendências</h4>
+    <p>Informe se existem pendências:</p>
     <ul>
-      <li>Pendencias da empresa (pecas a enviar, servicos a realizar)</li>
-      <li>Pendencias do cliente (pagamentos, providencias)</li>
-      <li>Marcar se possui ou nao pendencias</li>
+      <li>Pendências da empresa (peças a enviar, serviços a realizar)</li>
+      <li>Pendências do cliente (pagamentos, providências)</li>
+      <li>Marcar se possui ou não pendências</li>
     </ul>
   </div>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 19</span>
     <p class="image-title">Etapa 7 - Pendencias</p>
-    <p class="image-desc">Campos para informar pendencias da empresa e do cliente com opcoes sim/nao</p>
+    <p class="image-desc">Campos para informar pendências da empresa e do cliente com opções sim/não</p>
   </div>
   
   <div class="etapa-card">
     <h4>Etapa 8: Estado do Equipamento</h4>
     <p>Documente o estado do equipamento:</p>
     <ul>
-      <li>Estado inicial (antes da intervencao)</li>
-      <li>Estado final (apos a intervencao)</li>
+      <li>Estado inicial (antes da intervenção)</li>
+      <li>Estado final (após a intervenção)</li>
     </ul>
   </div>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 20</span>
     <p class="image-title">Etapa 8 - Estado do Equipamento</p>
-    <p class="image-desc">Campos para descricao do estado inicial e final do equipamento</p>
+    <p class="image-desc">Campos para descrição do estado inicial e final do equipamento</p>
   </div>
   
   <div class="etapa-card">
-    <h4>Etapa 9: Finalizacao</h4>
-    <p>Complete a OS com as informacoes finais:</p>
+    <h4>Etapa 9: Finalização</h4>
+    <p>Complete a OS com as informações finais:</p>
     <ul>
-      <li>Cidade e UF da finalizacao</li>
-      <li>Nome e CFT do engenheiro responsavel</li>
+      <li>Cidade e UF da finalização</li>
+      <li>Nome e CFT do engenheiro responsável</li>
       <li>Nome do recebedor (cliente)</li>
-      <li>Fotos do servico (opcional)</li>
+      <li>Fotos do serviço (opcional)</li>
     </ul>
   </div>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 21</span>
-    <p class="image-title">Etapa 9 - Finalizacao</p>
-    <p class="image-desc">Formulario final com dados do engenheiro, recebedor e area de upload de fotos</p>
+    <p class="image-title">Etapa 9 - Finalização</p>
+    <p class="image-desc">Formulário final com dados do engenheiro, recebedor e área de upload de fotos</p>
   </div>
   
   <h3>6.1 Status da OS</h3>
@@ -721,7 +711,7 @@
   </p>
   <p>
     <span class="status-badge status-fechada">Fechada</span>
-    OS preenchida, aguardando finalizacao. Pode ser reaberta para edicao.
+    OS preenchida, aguardando finalização. Pode ser reaberta para edição.
   </p>
   <p>
     <span class="status-badge status-finalizada">Finalizada</span>
@@ -730,48 +720,48 @@
   
   <div class="highlight-box warning">
     <h4>Importante</h4>
-    <p>Apos finalizar a OS, ela e enviada para processamento e geracao do PDF. Revise todas as informacoes antes de finalizar.</p>
+    <p>Após finalizar a OS, ela é enviada para processamento e geração do PDF. Revise todas as informações antes de finalizar.</p>
   </div>
   
   <div class="page-break"></div>
   
-  <h2 id="historico">7. Historico de OS</h2>
-  <p>A pagina de historico exibe todas as Ordens de Servico finalizadas.</p>
+  <h2 id="historico">7. Histórico de OS</h2>
+  <p>A página de histórico exibe todas as Ordens de Serviço finalizadas.</p>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 22</span>
-    <p class="image-title">Pagina de Historico de OS</p>
-    <p class="image-desc">Lista de OS finalizadas com busca, filtros e acoes de visualizacao/download</p>
+    <p class="image-title">Página de Histórico de OS</p>
+    <p class="image-desc">Lista de OS finalizadas com busca, filtros e ações de visualização/download</p>
   </div>
   
   <h3>7.1 Funcionalidades</h3>
   <ul>
-    <li><strong>Busca:</strong> Por numero, cliente ou equipamento</li>
-    <li><strong>Filtro por periodo:</strong> Todos, Este mes, Ultimo mes</li>
+    <li><strong>Busca:</strong> Por número, cliente ou equipamento</li>
+    <li><strong>Filtro por período:</strong> Todos, Este mês, Último mês</li>
     <li><strong>Ver Detalhes:</strong> Visualizar OS completa</li>
     <li><strong>Baixar PDF:</strong> Obter link para download do documento</li>
     <li><strong>Enviar por E-mail:</strong> Enviar OS para o cliente por e-mail</li>
-    <li><strong>Reabrir:</strong> Reabrir OS fechada para edicao</li>
+    <li><strong>Reabrir:</strong> Reabrir OS fechada para edição</li>
   </ul>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 23</span>
     <p class="image-title">Visualizacao de OS Finalizada</p>
-    <p class="image-desc">Pagina de detalhes da OS finalizada com todas as informacoes e botao de download PDF</p>
+    <p class="image-desc">Página de detalhes da OS finalizada com todas as informações e botão de download PDF</p>
   </div>
   
   <h3>7.2 Envio de E-mail</h3>
   <p>Ao enviar por e-mail:</p>
   <ul>
-    <li>Selecione os destinatarios (e-mail do cliente + adicionais)</li>
-    <li>Personalize o assunto se necessario</li>
+    <li>Selecione os destinatários (e-mail do cliente + adicionais)</li>
+    <li>Personalize o assunto se necessário</li>
     <li>O sistema busca automaticamente o link do PDF</li>
   </ul>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 24</span>
     <p class="image-title">Modal de Envio por E-mail</p>
-    <p class="image-desc">Formulario de envio de OS por e-mail com selecao de destinatarios e personalizacao</p>
+    <p class="image-desc">Formulário de envio de OS por e-mail com seleção de destinatários e personalização</p>
   </div>
   
   <h2 id="clientes">8. Gerenciamento de Clientes</h2>
@@ -779,7 +769,7 @@
   <div class="image-placeholder">
     <span class="image-number">Figura 25</span>
     <p class="image-title">Pagina de Clientes</p>
-    <p class="image-desc">Lista de clientes cadastrados com busca e opcoes de gerenciamento</p>
+    <p class="image-desc">Lista de clientes cadastrados com busca e opções de gerenciamento</p>
   </div>
   
   <h3>8.1 Lista de Clientes</h3>
@@ -796,19 +786,19 @@
   <p>Para cadastrar um novo cliente:</p>
   <ul>
     <li>Clique em "Novo Cliente"</li>
-    <li>Preencha os dados obrigatorios (Nome/Razao Social, CNPJ)</li>
-    <li>Adicione equipamentos se necessario</li>
+    <li>Preencha os dados obrigatórios (Nome/Razão Social, CNPJ)</li>
+    <li>Adicione equipamentos se necessário</li>
     <li>Salve o cadastro</li>
   </ul>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 26</span>
     <p class="image-title">Formulario de Novo Cliente</p>
-    <p class="image-desc">Pagina de cadastro de novo cliente com todos os campos de dados da empresa</p>
+    <p class="image-desc">Página de cadastro de novo cliente com todos os campos de dados da empresa</p>
   </div>
   
-  <h3>8.3 Edicao de Cliente</h3>
-  <p>Na pagina de edicao voce pode:</p>
+  <h3>8.3 Edição de Cliente</h3>
+  <p>Na página de edição você pode:</p>
   <ul>
     <li>Atualizar dados cadastrais</li>
     <li>Adicionar novos equipamentos</li>
@@ -818,52 +808,52 @@
   <div class="image-placeholder">
     <span class="image-number">Figura 27</span>
     <p class="image-title">Edicao de Cliente com Equipamentos</p>
-    <p class="image-desc">Pagina de edicao mostrando dados do cliente e lista de equipamentos cadastrados</p>
+    <p class="image-desc">Página de edição mostrando dados do cliente e lista de equipamentos cadastrados</p>
   </div>
   
   <div class="highlight-box">
     <h4>Equipamentos</h4>
-    <p>Cada cliente pode ter multiplos equipamentos cadastrados. Ao criar uma OS, voce pode selecionar o equipamento da lista do cliente ou cadastrar um novo.</p>
+    <p>Cada cliente pode ter múltiplos equipamentos cadastrados. Ao criar uma OS, você pode selecionar o equipamento da lista do cliente ou cadastrar um novo.</p>
   </div>
   
   <div class="page-break"></div>
   
-  <h2 id="admin">9. Administracao (Admin)</h2>
-  <p>O painel administrativo esta disponivel apenas para usuarios com cargo "admin".</p>
+  <h2 id="admin">9. Administração (Admin)</h2>
+  <p>O painel administrativo está disponível apenas para usuários com cargo "admin".</p>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 28</span>
     <p class="image-title">Painel de Administracao</p>
-    <p class="image-desc">Visao geral do painel admin com abas de usuarios e departamentos</p>
+    <p class="image-desc">Visão geral do painel admin com abas de usuários e departamentos</p>
   </div>
   
-  <h3>9.1 Gerenciamento de Usuarios</h3>
+  <h3>9.1 Gerenciamento de Usuários</h3>
   
-  <h4>Usuarios Pendentes</h4>
-  <p>Usuarios que se registraram e aguardam aprovacao:</p>
+  <h4>Usuários Pendentes</h4>
+  <p>Usuários que se registraram e aguardam aprovação:</p>
   <ul>
-    <li><strong>Aprovar:</strong> Libera o acesso do usuario</li>
-    <li><strong>Rejeitar:</strong> Remove o cadastro do usuario</li>
+    <li><strong>Aprovar:</strong> Libera o acesso do usuário</li>
+    <li><strong>Rejeitar:</strong> Remove o cadastro do usuário</li>
   </ul>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 29</span>
     <p class="image-title">Usuarios Pendentes</p>
-    <p class="image-desc">Lista de usuarios aguardando aprovacao com botoes de aprovar e rejeitar</p>
+    <p class="image-desc">Lista de usuários aguardando aprovação com botões de aprovar e rejeitar</p>
   </div>
   
-  <h4>Lista de Usuarios</h4>
-  <p>Gerencie todos os usuarios do sistema:</p>
+  <h4>Lista de Usuários</h4>
+  <p>Gerencie todos os usuários do sistema:</p>
   <ul>
     <li>Criar novos usuarios</li>
     <li>Editar nome, e-mail, cargo e senha</li>
-    <li>Excluir usuarios</li>
+    <li>Excluir usuários</li>
   </ul>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 30</span>
     <p class="image-title">Lista de Usuarios</p>
-    <p class="image-desc">Tabela de usuarios cadastrados com opcoes de edicao e exclusao</p>
+    <p class="image-desc">Tabela de usuários cadastrados com opções de edição e exclusão</p>
   </div>
   
   <h3>9.2 Gerenciamento de Departamentos</h3>
@@ -872,74 +862,74 @@
   <h4>Criar Departamento</h4>
   <ul>
     <li>Nome do departamento</li>
-    <li>Descricao (opcional)</li>
-    <li>Cor de identificacao</li>
-    <li>Icone</li>
+    <li>Descrição (opcional)</li>
+    <li>Cor de identificação</li>
+    <li>Ícone</li>
   </ul>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 31</span>
     <p class="image-title">Formulario de Novo Departamento</p>
-    <p class="image-desc">Modal de criacao de departamento com campos de nome, descricao, cor e icone</p>
+    <p class="image-desc">Modal de criação de departamento com campos de nome, descrição, cor e ícone</p>
   </div>
   
-  <h4>Atribuir Tecnicos</h4>
-  <p>Adicione tecnicos ao departamento para que eles possam atender os clientes daquele departamento.</p>
+  <h4>Atribuir Técnicos</h4>
+  <p>Adicione técnicos ao departamento para que eles possam atender os clientes daquele departamento.</p>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 32</span>
     <p class="image-title">Atribuicao de Tecnicos</p>
-    <p class="image-desc">Interface para adicionar e remover tecnicos de um departamento</p>
+    <p class="image-desc">Interface para adicionar e remover técnicos de um departamento</p>
   </div>
   
   <h4>Vincular Clientes</h4>
   <p>Associe clientes ao departamento:</p>
   <ul>
     <li>Selecione um ou mais clientes</li>
-    <li>Defina um tecnico responsavel (opcional)</li>
-    <li>Clientes vinculados aparecem para os tecnicos do departamento</li>
+    <li>Defina um técnico responsável (opcional)</li>
+    <li>Clientes vinculados aparecem para os técnicos do departamento</li>
   </ul>
   
   <div class="image-placeholder">
     <span class="image-number">Figura 33</span>
     <p class="image-title">Vinculacao de Clientes</p>
-    <p class="image-desc">Lista de clientes vinculados ao departamento com opcao de definir tecnico responsavel</p>
+    <p class="image-desc">Lista de clientes vinculados ao departamento com opção de definir técnico responsável</p>
   </div>
   
-  <h2 id="dicas">10. Dicas e Boas Praticas</h2>
+  <h2 id="dicas">10. Dicas e Boas Práticas</h2>
   
   <div class="highlight-box">
-    <h4>Descricao Detalhada</h4>
-    <p>Sempre descreva os servicos realizados de forma clara e detalhada. Isso facilita o historico e a comunicacao com o cliente.</p>
-  </div>
-  
-  <div class="highlight-box">
-    <h4>Registro de Pecas</h4>
-    <p>Cadastre todas as pecas utilizadas com numero de serie quando disponivel. Isso ajuda no controle de estoque e garantia.</p>
+    <h4>Descrição Detalhada</h4>
+    <p>Sempre descreva os serviços realizados de forma clara e detalhada. Isso facilita o histórico e a comunicação com o cliente.</p>
   </div>
   
   <div class="highlight-box">
-    <h4>Fotos do Servico</h4>
-    <p>Tire fotos do equipamento antes e depois da intervencao. Isso documenta o trabalho realizado e serve como referencia futura.</p>
+    <h4>Registro de Peças</h4>
+    <p>Cadastre todas as peças utilizadas com número de série quando disponível. Isso ajuda no controle de estoque e garantia.</p>
+  </div>
+  
+  <div class="highlight-box">
+    <h4>Fotos do Serviço</h4>
+    <p>Tire fotos do equipamento antes e depois da intervenção. Isso documenta o trabalho realizado e serve como referência futura.</p>
   </div>
   
   <div class="highlight-box warning">
     <h4>Antes de Finalizar</h4>
-    <p>Revise todos os campos antes de finalizar a OS. Apos finalizada, a OS e enviada para processamento e nao pode ser editada.</p>
+    <p>Revise todos os campos antes de finalizar a OS. Após finalizada, a OS é enviada para processamento e não pode ser editada.</p>
   </div>
   
   <div class="highlight-box info">
     <h4>Rascunhos</h4>
-    <p>Use a funcao de rascunho para salvar OS em andamento. Voce pode continuar o preenchimento depois, em qualquer dispositivo.</p>
+    <p>Use a função de rascunho para salvar OS em andamento. Você pode continuar o preenchimento depois, em qualquer dispositivo.</p>
   </div>
   
   <div class="highlight-box">
-    <h4>Comunicacao com Cliente</h4>
-    <p>Mantenha o status das solicitacoes atualizado. O cliente pode acompanhar o andamento pelo portal e recebe notificacoes automaticas.</p>
+    <h4>Comunicação com Cliente</h4>
+    <p>Mantenha o status das solicitações atualizado. O cliente pode acompanhar o andamento pelo portal e recebe notificações automáticas.</p>
   </div>
   
   <div class="footer">
-    <p>Manual do Tecnico - Sistema de Ordens de Servico</p>
+    <p>Manual do Técnico - Sistema de Ordens de Serviço</p>
     <p>Documento gerado em Abril de 2026</p>
   </div>
 </body>
