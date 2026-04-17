@@ -30,9 +30,9 @@ export default function RegistroPage() {
     setLoading(true)
     setError(null)
 
-    // Validacoes
+    // Validações
     if (!formData.nome || !formData.email || !formData.senha || !formData.cnpj) {
-      setError("Todos os campos sao obrigatorios.")
+      setError("Todos os campos são obrigatórios.")
       setLoading(false)
       return
     }
@@ -44,7 +44,7 @@ export default function RegistroPage() {
     }
 
     if (formData.senha !== formData.confirmarSenha) {
-      setError("As senhas nao coincidem.")
+      setError("As senhas não coincidem.")
       setLoading(false)
       return
     }
@@ -106,7 +106,7 @@ export default function RegistroPage() {
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold text-foreground">Cadastro Recebido!</h2>
                 <p className="text-muted-foreground">
-                  Sua solicitacao de cadastro foi enviada com sucesso.
+                  Sua solicitação de cadastro foi enviada com sucesso.
                 </p>
               </div>
 
@@ -114,10 +114,10 @@ export default function RegistroPage() {
                 <div className="flex items-start gap-3">
                   <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                   <div className="text-left">
-                    <h3 className="font-semibold text-amber-800 dark:text-amber-300">Aguardando Aprovacao</h3>
+                    <h3 className="font-semibold text-amber-800 dark:text-amber-300">Aguardando Aprovação</h3>
                     <p className="text-sm text-amber-700 dark:text-amber-400/90 mt-1">
-                      Sua conta esta sendo analisada pela equipe da Medical Spin. 
-                      Voce recebera uma notificacao assim que sua conta for aprovada.
+                      Sua conta está sendo analisada pela equipe da Medical Spin. 
+                      Você receberá uma notificação assim que sua conta for aprovada.
                     </p>
                   </div>
                 </div>
@@ -130,7 +130,7 @@ export default function RegistroPage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Clock className="h-4 w-4 text-amber-500" />
-                  <span>Aguardando aprovacao do administrador</span>
+                  <span>Aguardando aprovação do administrador</span>
                 </div>
               </div>
 
@@ -165,7 +165,7 @@ export default function RegistroPage() {
           <div>
             <CardTitle className="text-2xl font-bold">Criar Conta de Cliente</CardTitle>
             <CardDescription>
-              Cadastre-se para acompanhar suas solicitacoes de servico
+              Cadastre-se para acompanhar suas solicitações de serviço
             </CardDescription>
           </div>
         </CardHeader>
@@ -231,7 +231,7 @@ export default function RegistroPage() {
                 <Input
                   id="senha"
                   type="password"
-                  placeholder="Minimo 6 caracteres"
+                  placeholder="Mínimo 6 caracteres"
                   className="pl-10"
                   value={formData.senha}
                   onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
@@ -258,12 +258,12 @@ export default function RegistroPage() {
               </div>
             </div>
 
-            {/* Aviso de aprovacao */}
+            {/* Aviso de aprovação */}
             <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3">
               <div className="flex items-start gap-2">
                 <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-blue-700 dark:text-blue-300">
-                  Apos o cadastro, sua conta sera analisada pela equipe da Medical Spin antes de ser liberada.
+                  Após o cadastro, sua conta será analisada pela equipe da Medical Spin antes de ser liberada.
                 </p>
               </div>
             </div>
@@ -302,9 +302,9 @@ export default function RegistroPage() {
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
-              Ja possui uma conta?{" "}
+              Já possui uma conta?{" "}
               <Link href="/login" className="text-primary hover:underline font-medium">
-                Faca login
+                Faça login
               </Link>
             </p>
           </form>

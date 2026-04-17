@@ -187,7 +187,7 @@ function ClienteCard({
         <div className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
           {cliente.responsavel && (
             <div className="flex flex-wrap gap-1">
-              <span className="text-muted-foreground shrink-0">Responsavel:</span>
+              <span className="text-muted-foreground shrink-0">Responsável:</span>
               <span className="text-foreground truncate">{cliente.responsavel}</span>
             </div>
           )}

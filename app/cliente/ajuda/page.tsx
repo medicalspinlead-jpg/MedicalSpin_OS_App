@@ -23,20 +23,20 @@ export default function AjudaClientePage() {
       icon: Phone,
       label: "Telefone",
       valor: "(51) 3181-1899",
-      descricao: "Segunda a Sexta, 8h as 18h",
+      descricao: "Segunda a Sexta, 8h às 18h",
     },
     {
       icon: MessageCircle,
       label: "WhatsApp",
       valor: "(51) 3181-1899",
-      descricao: "Atendimento rapido",
+      descricao: "Atendimento rápido",
       link: "https://wa.me/555131811899?text=Ol%C3%A1%2C+preciso+de+suporte+tecnico+no+Portal+do+Cliente+MedicalSpin",
     },
     {
       icon: Mail,
       label: "E-mail",
       valor: "contato@medicalspin.com.br",
-      descricao: "Resposta em ate 24h",
+      descricao: "Resposta em até 24h",
       link: "mailto:contato@medicalspin.com.br",
     },
   ]
@@ -44,7 +44,7 @@ export default function AjudaClientePage() {
   const manual = {
     id: "cliente",
     titulo: "Manual do Cliente",
-    descricao: "Guia completo para utilizar o Portal do Cliente, incluindo criacao de solicitacoes, acompanhamento e gerenciamento de dados.",
+    descricao: "Guia completo para utilizar o Portal do Cliente, incluindo criação de solicitações, acompanhamento e gerenciamento de dados.",
     icon: Users,
     cor: "bg-blue-500/10 text-blue-600 border-blue-200",
     corBadge: "bg-blue-100 text-blue-700",
@@ -52,11 +52,11 @@ export default function AjudaClientePage() {
     topicos: [
       "Acesso ao sistema",
       "Painel principal",
-      "Nova solicitacao de servico",
-      "Acompanhamento de solicitacoes",
-      "Detalhes da solicitacao",
+      "Nova solicitação de serviço",
+      "Acompanhamento de solicitações",
+      "Detalhes da solicitação",
       "Gerenciamento de dados e equipamentos",
-      "Status das solicitacoes",
+      "Status das solicitações",
     ],
   }
 
@@ -77,21 +77,21 @@ export default function AjudaClientePage() {
             <div>
               <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Ajuda</h1>
               <p className="text-sm md:text-base text-muted-foreground mt-1">
-                Central de suporte e documentacao
+                Central de suporte e documentação
               </p>
             </div>
           </div>
         </div>
 
-        {/* Informacoes de Contato */}
+        {/* Informações de Contato */}
         <Card className="mb-8">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Phone className="h-5 w-5 text-primary" />
-              <CardTitle className="text-lg">Informacoes de Contato</CardTitle>
+              <CardTitle className="text-lg">Informações de Contato</CardTitle>
             </div>
             <CardDescription>
-              Entre em contato conosco para suporte tecnico
+              Entre em contato conosco para suporte técnico
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -124,14 +124,14 @@ export default function AjudaClientePage() {
           </CardContent>
         </Card>
 
-        {/* Documentacao */}
+        {/* Documentação */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-4">
             <BookOpen className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-semibold text-foreground">Documentacao</h2>
+            <h2 className="text-xl font-semibold text-foreground">Documentação</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            Manual disponivel para voce aprender a utilizar o portal
+            Manual disponível para você aprender a utilizar o portal
           </p>
         </div>
 
@@ -152,7 +152,7 @@ export default function AjudaClientePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h4 className="text-sm font-medium text-foreground mb-2">Conteudo:</h4>
+              <h4 className="text-sm font-medium text-foreground mb-2">Conteúdo:</h4>
               <ul className="text-sm text-muted-foreground space-y-1">
                 {manual.topicos.slice(0, 5).map((topico, index) => (
                   <li key={index} className="flex items-center gap-2">
@@ -162,7 +162,7 @@ export default function AjudaClientePage() {
                 ))}
                 {manual.topicos.length > 5 && (
                   <li className="text-xs text-muted-foreground/70">
-                    E mais {manual.topicos.length - 5} topicos...
+                    E mais {manual.topicos.length - 5} tópicos...
                   </li>
                 )}
               </ul>
@@ -187,8 +187,8 @@ export default function AjudaClientePage() {
           <h3 className="font-medium text-foreground mb-2">Como salvar como PDF</h3>
           <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
             <li>Abra o manual desejado clicando em &quot;Abrir Manual&quot;</li>
-            <li>No canto inferior direito, clique no botao &quot;Salvar como PDF&quot;</li>
-            <li>Na janela de impressao, selecione &quot;Salvar como PDF&quot; como destino</li>
+            <li>No canto inferior direito, clique no botão &quot;Salvar como PDF&quot;</li>
+            <li>Na janela de impressão, selecione &quot;Salvar como PDF&quot; como destino</li>
             <li>Clique em &quot;Salvar&quot; e escolha onde guardar o arquivo</li>
           </ol>
         </div>

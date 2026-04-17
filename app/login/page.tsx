@@ -44,7 +44,7 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        // Verificar se e erro de conta pendente
+        // Verificar se é erro de conta pendente
         if (data.pendingApproval) {
           setPendingApproval(true)
           return
@@ -66,12 +66,12 @@ export default function LoginPage() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro ao fazer login"
       
-      // Define mensagem amigavel baseada no tipo de erro
+      // Define mensagem amigável baseada no tipo de erro
       if (errorMessage.includes("Credenciais") || errorMessage.includes("credenciais") || errorMessage.includes("invalidas") || errorMessage.includes("inválidas")) {
         setLoginError("Email ou senha incorretos. Verifique suas credenciais e tente novamente.")
       } else if (errorMessage.includes("Usuario") || errorMessage.includes("Usuário") || errorMessage.includes("nao encontrado") || errorMessage.includes("não encontrado")) {
-        setLoginError("Usuario nao encontrado. Verifique se voce possui uma conta cadastrada no sistema.")
-      } else if (errorMessage.includes("aguardando aprovacao")) {
+        setLoginError("Usuário não encontrado. Verifique se você possui uma conta cadastrada no sistema.")
+      } else if (errorMessage.includes("aguardando aprovacao") || errorMessage.includes("aguardando aprovação")) {
         setPendingApproval(true)
       } else {
         setLoginError(errorMessage)
@@ -156,10 +156,10 @@ export default function LoginPage() {
                     <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-amber-700 dark:text-amber-300 mb-1">Aguardando Aprovacao</h3>
+                    <h3 className="font-semibold text-amber-700 dark:text-amber-300 mb-1">Aguardando Aprovação</h3>
                     <p className="text-sm text-amber-600 dark:text-amber-400/90">
-                      Sua conta ainda esta sendo analisada pela equipe da Medical Spin. 
-                      Voce sera notificado assim que sua conta for aprovada.
+                      Sua conta ainda está sendo analisada pela equipe da Medical Spin. 
+                      Você será notificado assim que sua conta for aprovada.
                     </p>
                   </div>
                   <button

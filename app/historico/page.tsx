@@ -56,7 +56,7 @@ export default function HistoricoPage() {
   const handleDelete = async () => {
     if (osToDelete) {
       try {
-        // Envia webhook de exclusao (nao bloqueia a exclusao local)
+        // Envia webhook de exclusão (não bloqueia a exclusão local)
         fetch(
           "https://n8n-www4kggggc4c8k8ow4w8g4g0.95.217.164.173.sslip.io/webhook/40aa4c15-e9ff-4960-a1ee-94a8b6fdf64b",
           {
@@ -71,7 +71,7 @@ export default function HistoricoPage() {
               excluidoEm: new Date().toISOString(),
             }),
           }
-        ).catch((err) => console.error("Erro ao enviar webhook de exclusao:", err))
+        ).catch((err) => console.error("Erro ao enviar webhook de exclusão:", err))
 
         await deleteOrdemServico(osToDelete.id)
         toast({
@@ -173,8 +173,8 @@ export default function HistoricoPage() {
 
     if (destinatarios.length === 0) {
       toast({
-        title: "Email nao encontrado",
-        description: "Adicione pelo menos um destinatario.",
+        title: "Email não encontrado",
+        description: "Adicione pelo menos um destinatário.",
         variant: "destructive",
       })
       return
@@ -248,7 +248,7 @@ export default function HistoricoPage() {
 
       if (response.ok) {
         const emailsEnviados = destinatarios.length > 1 
-          ? `${destinatarios.length} destinatarios (${destinatarios.join(", ")})`
+          ? `${destinatarios.length} destinatários (${destinatarios.join(", ")})`
           : destinatarios[0]
         toast({
           title: "Email enviado!",
@@ -263,7 +263,7 @@ export default function HistoricoPage() {
       console.error("Erro ao enviar email:", error)
       toast({
         title: "Erro ao enviar email",
-        description: "Nao foi possivel enviar o email. Tente novamente.",
+        description: "Não foi possível enviar o email. Tente novamente.",
         variant: "destructive",
       })
     } finally {

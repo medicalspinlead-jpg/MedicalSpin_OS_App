@@ -153,7 +153,7 @@ export default function NovaSolicitacaoCliente() {
 
     for (const { field, label } of required) {
       if (!form[field as keyof typeof form] || form[field as keyof typeof form].trim() === "") {
-        setError(`O campo "${label}" e obrigatorio.`)
+        setError(`O campo "${label}" é obrigatório.`)
         return
       }
     }
@@ -176,14 +176,14 @@ export default function NovaSolicitacaoCliente() {
 
       if (!res.ok) {
         const errorData = await res.json()
-        throw new Error(errorData.error || "Erro ao enviar solicitacao")
+        throw new Error(errorData.error || "Erro ao enviar solicitação")
       }
 
       const data = await res.json()
       setProtocolo(data.protocolo)
       setStep("success")
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao enviar solicitacao.")
+      setError(err instanceof Error ? err.message : "Erro ao enviar solicitação.")
     } finally {
       setLoading(false)
     }
@@ -197,9 +197,9 @@ export default function NovaSolicitacaoCliente() {
             <div className="mx-auto p-3 bg-green-100 dark:bg-green-900/30 rounded-full w-fit mb-3">
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
-            <CardTitle className="text-xl">Solicitacao Enviada</CardTitle>
+            <CardTitle className="text-xl">Solicitação Enviada</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Sua solicitacao foi registrada com sucesso.
+              Sua solicitação foi registrada com sucesso.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -208,11 +208,11 @@ export default function NovaSolicitacaoCliente() {
               <p className="text-2xl font-bold font-mono tracking-wider text-foreground">{protocolo}</p>
             </div>
             <p className="text-sm text-muted-foreground text-center leading-relaxed">
-              Voce pode acompanhar o andamento da sua solicitacao no painel principal.
+              Você pode acompanhar o andamento da sua solicitação no painel principal.
             </p>
             <div className="flex flex-col gap-2">
               <Button asChild className="w-full">
-                <Link href="/cliente">Ver Minhas Solicitacoes</Link>
+                <Link href="/cliente">Ver Minhas Solicitações</Link>
               </Button>
               <Button
                 variant="outline"
@@ -249,7 +249,7 @@ export default function NovaSolicitacaoCliente() {
                   }
                 }}
               >
-                Nova Solicitacao
+                Nova Solicitação
               </Button>
             </div>
           </CardContent>
@@ -267,7 +267,7 @@ export default function NovaSolicitacaoCliente() {
             Voltar
           </Link>
         </Button>
-        <h2 className="text-xl md:text-2xl font-bold text-foreground text-balance">Nova Solicitacao de Servico</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-foreground text-balance">Nova Solicitação de Servico</h2>
         {perfil && (
           <p className="text-sm text-muted-foreground mt-1">
             Solicitando para: <span className="font-medium">{perfil.razaoSocial}</span> ({perfil.cnpj})
@@ -345,7 +345,7 @@ export default function NovaSolicitacaoCliente() {
           </CardContent>
         </Card>
 
-        {/* Descricao */}
+        {/* Descrição */}
         <Card>
           <CardHeader className="pb-4">
             <div className="flex items-center gap-2">
@@ -355,10 +355,10 @@ export default function NovaSolicitacaoCliente() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="descricaoProblema">Descreva o problema ou motivo do servico *</Label>
+              <Label htmlFor="descricaoProblema">Descreva o problema ou motivo do serviço *</Label>
               <Textarea
                 id="descricaoProblema"
-                placeholder="Descreva detalhadamente o problema que esta enfrentando com o equipamento..."
+                placeholder="Descreva detalhadamente o problema que está enfrentando com o equipamento..."
                 rows={5}
                 value={form.descricaoProblema}
                 onChange={(e) => updateField("descricaoProblema", e.target.value)}
@@ -368,15 +368,15 @@ export default function NovaSolicitacaoCliente() {
           </CardContent>
         </Card>
 
-        {/* Fotos e Videos */}
+        {/* Fotos e Vídeos */}
         <Card>
           <CardHeader className="pb-4">
             <div className="flex items-center gap-2">
               <ImageIcon className="h-5 w-5 text-primary" />
-              <CardTitle className="text-base">Fotos e Videos</CardTitle>
+              <CardTitle className="text-base">Fotos e Vídeos</CardTitle>
             </div>
             <p className="text-xs text-muted-foreground">
-              Anexe fotos ou videos do problema para auxiliar o diagnostico. (Opcional)
+              Anexe fotos ou vídeos do problema para auxiliar o diagnóstico. (Opcional)
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -395,8 +395,8 @@ export default function NovaSolicitacaoCliente() {
                     const arquivosValidos = Array.from(files).filter((file) => {
                       if (!isImageFile(file) && !isVideoFile(file)) {
                         toast({
-                          title: "Arquivo nao permitido",
-                          description: `"${file.name}" nao e uma imagem ou video valido.`,
+                          title: "Arquivo não permitido",
+                          description: `"${file.name}" não é uma imagem ou vídeo válido.`,
                           variant: "destructive",
                         })
                         return false
@@ -404,7 +404,7 @@ export default function NovaSolicitacaoCliente() {
                       // Limite de 50MB por video
                       if (isVideoFile(file) && file.size > 50 * 1024 * 1024) {
                         toast({
-                          title: "Video muito grande",
+                          title: "Vídeo muito grande",
                           description: `"${file.name}" excede o limite de 50MB.`,
                           variant: "destructive",
                         })
@@ -472,7 +472,7 @@ export default function NovaSolicitacaoCliente() {
                 {isUploading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
               </div>
               <p className="text-xs text-muted-foreground">
-                Imagens: JPG, PNG, WebP, HEIC. Videos: MP4, MOV, WebM (max 50MB).
+                Imagens: JPG, PNG, WebP, HEIC. Vídeos: MP4, MOV, WebM (máx 50MB).
               </p>
             </div>
 

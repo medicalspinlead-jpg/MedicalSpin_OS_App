@@ -30,14 +30,14 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
   const [notifEmail, setNotifEmail] = useState(false)
   const [notifLoading, setNotifLoading] = useState(false)
 
-  // Carregar preferencias de notificacao do banco
+  // Carregar preferências de notificação do banco
   useEffect(() => {
     async function loadNotif() {
       try {
         const res = await fetch("/api/cliente/notificacoes")
         if (res.ok) {
           const data = await res.json()
-          // Se ambas as opcoes estao desabilitadas, assume primeira vez e habilita as duas por padrao
+          // Se ambas as opções estão desabilitadas, assume primeira vez e habilita as duas por padrão
           if (!data.notifEmail && !data.notifWhatsapp) {
             setNotifEmail(true)
             setNotifWhatsapp(true)
@@ -58,7 +58,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
     loadNotif()
   }, [])
 
-  // Persistir alteracao no banco
+  // Persistir alteração no banco
   const salvarNotificacoes = useCallback(async (email: boolean, whatsapp: boolean) => {
     setNotifLoading(true)
     try {
@@ -87,7 +87,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
   if (!usuario) return null
 
   const navItems = [
-    { href: "/cliente", label: "Minhas Solicitações", icon: Inbox },
+    { href: "/cliente", label: "Solicitações", icon: Inbox },
     { href: "/cliente/nova-solicitacao", label: "Nova OS", icon: PlusCircle },
     { href: "/cliente/perfil", label: "Meus Dados", icon: Settings },
     { href: "/cliente/ajuda", label: "Ajuda", icon: HelpCircle },
@@ -242,7 +242,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                       ))}
                     </nav>
 
-                    {/* Notificacoes */}
+                    {/* Notificações */}
                     <div className="border-t pt-4">
                       <div className="flex items-center gap-1.5 mb-3 px-3">
                         <Bell className="h-3.5 w-3.5 text-muted-foreground" />

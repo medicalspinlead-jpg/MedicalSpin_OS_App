@@ -217,7 +217,7 @@ export default function ClienteDashboard() {
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Buscar por protocolo, equipamento, descricao..."
+          placeholder="Buscar por protocolo, equipamento, descrição..."
           className="pl-10"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -232,18 +232,18 @@ export default function ClienteDashboard() {
               <Inbox className="h-8 w-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-1">
-              {searchTerm ? "Nenhuma solicitacao encontrada" : "Nenhuma solicitacao ainda"}
+              {searchTerm ? "Nenhuma solicitação encontrada" : "Nenhuma solicitação ainda"}
             </h3>
             <p className="text-sm text-muted-foreground mb-6 text-center max-w-sm">
               {searchTerm
                 ? "Tente ajustar o termo de busca."
-                : "Crie sua primeira solicitacao de servico tecnico e acompanhe o andamento."}
+                : "Crie sua primeira solicitação de serviço técnico e acompanhe o andamento."}
             </p>
             {!searchTerm && (
               <Button asChild size="lg">
                 <Link href="/cliente/nova-solicitacao">
                   <PlusCircle className="h-4 w-4 mr-2" />
-                  Criar Solicitacao
+                  Criar Solicitação
                 </Link>
               </Button>
             )}

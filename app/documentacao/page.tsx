@@ -33,7 +33,7 @@ export default function DocumentacaoPage() {
     }
     toast({
       title: "Copiado!",
-      description: "Comando copiado para a area de transferencia.",
+      description: "Comando copiado para a área de transferência.",
     })
   }
 
@@ -74,14 +74,14 @@ console.log(data);`
 
   const apiRoutes = [
     {
-      category: "Usuarios",
+      category: "Usuários",
       routes: [
         {
           method: "GET",
           path: "/api/usuarios",
-          description: "Listar todos os usuarios",
+          description: "Listar todos os usuários",
           body: null,
-          response: [{ id: "uuid", nome: "Usuario", email: "user@email.com", createdAt: "2024-01-01T00:00:00Z" }],
+          response: [{ id: "uuid", nome: "Usuário", email: "user@email.com", createdAt: "2024-01-01T00:00:00Z" }],
           protected: true,
         },
         {
@@ -108,16 +108,16 @@ console.log(data);`
         {
           method: "POST",
           path: "/api/clientes",
-          description: "Criar um unico cliente",
+          description: "Criar um único cliente",
           body: {
             razaoSocial: "Nova Empresa LTDA",
             nomeFantasia: "Nova Empresa",
             cnpj: "12.345.678/0001-90",
-            cidade: "Sao Paulo",
+            cidade: "São Paulo",
             uf: "SP",
             telefone: "(11) 99999-9999",
             email: "contato@empresa.com",
-            responsavel: "Joao Silva",
+            responsavel: "João Silva",
             equipamentos: [{ tipo: "Monitor", fabricante: "Samsung", modelo: "XYZ-123", numeroSerie: "SN001" }],
           },
           response: { id: "uuid", razaoSocial: "Nova Empresa LTDA", cnpj: "12.345.678/0001-90", equipamentos: [] },
@@ -126,17 +126,17 @@ console.log(data);`
         {
           method: "POST",
           path: "/api/clientes",
-          description: "Criar multiplos clientes em lote (enviar array)",
+          description: "Criar múltiplos clientes em lote (enviar array)",
           body: [
             {
               razaoSocial: "Empresa 1 LTDA",
               nomeFantasia: "Empresa 1",
               cnpj: "11.111.111/0001-11",
-              cidade: "Sao Paulo",
+              cidade: "São Paulo",
               uf: "SP",
               telefone: "(11) 11111-1111",
               email: "empresa1@email.com",
-              responsavel: "Responsavel 1",
+              responsavel: "Responsável 1",
               equipamentos: [{ tipo: "Monitor", fabricante: "Samsung", modelo: "ABC-111", numeroSerie: "SN111" }],
             },
             {
@@ -147,7 +147,7 @@ console.log(data);`
               uf: "RJ",
               telefone: "(21) 22222-2222",
               email: "empresa2@email.com",
-              responsavel: "Responsavel 2",
+              responsavel: "Responsável 2",
               equipamentos: [{ tipo: "Impressora", fabricante: "HP", modelo: "DEF-222", numeroSerie: "SN222" }],
             },
           ],
@@ -202,7 +202,7 @@ console.log(data);`
         {
           method: "POST",
           path: "/api/equipamentos",
-          description: "Criar um unico equipamento",
+          description: "Criar um único equipamento",
           body: {
             clienteId: "uuid-do-cliente",
             tipo: "Monitor",
@@ -216,7 +216,7 @@ console.log(data);`
         {
           method: "POST",
           path: "/api/equipamentos",
-          description: "Criar multiplos equipamentos em lote (enviar array)",
+          description: "Criar múltiplos equipamentos em lote (enviar array)",
           body: [
             {
               clienteId: "uuid-do-cliente",
@@ -279,7 +279,7 @@ console.log(data);`
       ],
     },
     {
-      category: "Ordens de Servico",
+      category: "Ordens de Serviço",
       routes: [
         {
           method: "GET",
@@ -325,7 +325,7 @@ console.log(data);`
           body: {
             status: "finalizada",
             currentStep: 9,
-            motivo: { dataEntrada: "2024-01-01", descricaoProblema: "Equipamento nao liga" },
+            motivo: { dataEntrada: "2024-01-01", descricaoProblema: "Equipamento não liga" },
           },
           response: { id: "uuid", numero: "OS-001", status: "finalizada" },
           protected: true,
@@ -366,20 +366,20 @@ console.log(data);`
               Voltar
             </Link>
           </Button>
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Documentacao da API</h1>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Documentação da API</h1>
         <p className="text-muted-foreground text-sm sm:text-base mt-1 sm:mt-2">
-          Referencia completa das rotas de API disponiveis no sistema. Comandos prontos para copiar e colar.
+          Referência completa das rotas de API disponíveis no sistema. Comandos prontos para copiar e colar.
         </p>
       </div>
 
       {/* Card de Autenticação da API */}
       <Alert className="mb-4 sm:mb-6 border-primary/50 bg-primary/5">
         <ShieldCheck className="h-4 w-4" />
-        <AlertTitle className="text-sm sm:text-base">Autenticacao da API</AlertTitle>
+        <AlertTitle className="text-sm sm:text-base">Autenticação da API</AlertTitle>
         <AlertDescription className="mt-2">
           <p className="text-xs sm:text-sm mb-3">
             Todas as rotas protegidas requerem o header <code className="bg-muted px-1 rounded">x-api-key</code> com a
-            chave de seguranca.
+            chave de segurança.
           </p>
           
         </AlertDescription>
@@ -388,7 +388,7 @@ console.log(data);`
       <Card className="mb-4 sm:mb-6">
         <CardHeader className="p-3 sm:p-6">
           <CardTitle className="text-sm sm:text-base">Base URL</CardTitle>
-          <CardDescription className="text-xs sm:text-sm">Todas as requisicoes devem ser feitas para:</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Todas as requisições devem ser feitas para:</CardDescription>
         </CardHeader>
         <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
           <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">

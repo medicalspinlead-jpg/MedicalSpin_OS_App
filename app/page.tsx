@@ -12,7 +12,7 @@ import { getRascunhos, getOSFinalizadas, getClientes, getSolicitacoes, getDepart
 import type { Departamento, UsuarioDepartamento, ClienteDepartamento } from "@/lib/storage"
 import { useAuth } from "@/components/auth-provider"
 
-// Mapeamento de icones para departamentos
+// Mapeamento de ícones para departamentos
 const departamentoIcons: Record<string, React.ElementType> = {
   "Zap": Zap,
   "Radio": Radio,
@@ -20,7 +20,7 @@ const departamentoIcons: Record<string, React.ElementType> = {
   "Building2": Building2,
 }
 
-// Cores padrao para departamentos
+// Cores padrão para departamentos
 const departamentoCores: Record<string, { bg: string; text: string; border: string }> = {
   "#ef4444": { bg: "bg-red-500/10", text: "text-red-600", border: "border-red-500/20" },
   "#f97316": { bg: "bg-orange-500/10", text: "text-orange-600", border: "border-orange-500/20" },
@@ -78,7 +78,7 @@ export default function HomePage() {
           setSelectedDept(deptData.departamentos[0].id)
         }
       } catch (error) {
-        console.error("Erro ao carregar estatisticas:", error)
+        console.error("Erro ao carregar estatísticas:", error)
       } finally {
         setLoading(false)
       }
@@ -104,7 +104,7 @@ export default function HomePage() {
             Bem-vindo{usuario?.nome ? `, ${usuario.nome.split(" ")[0]}` : ""}
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">
-            Gerencie ordens de servico, clientes e departamentos
+            Gerencie ordens de serviço, clientes e departamentos
           </p>
         </header>
 
@@ -114,7 +114,7 @@ export default function HomePage() {
             <CardHeader className="p-3 sm:p-4 pb-2">
               <CardDescription className="text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2">
                 <Inbox className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-                <span className="truncate">Solicitacoes</span>
+                <span className="truncate">Solicitações</span>
               </CardDescription>
               <CardTitle className="text-xl sm:text-2xl lg:text-3xl text-amber-600 tabular-nums">
                 {loading ? "..." : stats.solicitacoesPendentes}
@@ -160,7 +160,7 @@ export default function HomePage() {
         <div className="grid gap-6 lg:gap-8 lg:grid-cols-5">
           {/* Quick Actions */}
           <section className="lg:col-span-2 space-y-3 sm:space-y-4">
-            <h2 className="text-base sm:text-lg font-semibold text-foreground">Acoes Rapidas</h2>
+            <h2 className="text-base sm:text-lg font-semibold text-foreground">Ações Rápidas</h2>
             
             <div className="grid gap-3 sm:gap-4">
               <Card 
@@ -172,7 +172,7 @@ export default function HomePage() {
                     <Plus className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm sm:text-base truncate">Nova Ordem de Servico</h3>
+                    <h3 className="font-semibold text-sm sm:text-base truncate">Nova Ordem de Serviço</h3>
                     <p className="text-xs sm:text-sm text-muted-foreground truncate">Criar uma nova OS</p>
                   </div>
                   <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
@@ -188,7 +188,7 @@ export default function HomePage() {
                     <Inbox className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm sm:text-base truncate">Ver Solicitacoes</h3>
+                    <h3 className="font-semibold text-sm sm:text-base truncate">Ver Solicitações</h3>
                     <p className="text-xs sm:text-sm text-muted-foreground truncate">
                       {stats.solicitacoesPendentes > 0 ? `${stats.solicitacoesPendentes} pendente${stats.solicitacoesPendentes > 1 ? "s" : ""}` : "Nenhuma pendente"}
                     </p>
@@ -224,7 +224,7 @@ export default function HomePage() {
                     <History className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm sm:text-base truncate">Historico de OS</h3>
+                    <h3 className="font-semibold text-sm sm:text-base truncate">Histórico de OS</h3>
                     <p className="text-xs sm:text-sm text-muted-foreground truncate">
                       {stats.finalizadas} OS finalizada{stats.finalizadas !== 1 ? "s" : ""}
                     </p>
@@ -243,8 +243,8 @@ export default function HomePage() {
                       <Settings className="h-5 w-5 sm:h-6 sm:w-6 text-violet-600" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm sm:text-base truncate">Administracao</h3>
-                      <p className="text-xs sm:text-sm text-muted-foreground truncate">Usuarios e departamentos</p>
+                      <h3 className="font-semibold text-sm sm:text-base truncate">Administração</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">Usuários e departamentos</p>
                     </div>
                     <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-violet-600 transition-colors shrink-0" />
                   </CardContent>
@@ -281,7 +281,7 @@ export default function HomePage() {
                   </div>
                   <h3 className="text-base sm:text-lg font-semibold mb-2">Nenhum departamento configurado</h3>
                   <p className="text-xs sm:text-sm text-muted-foreground mb-4 max-w-sm">
-                    {isAdmin ? "Configure os departamentos na area de administracao" : "Aguarde a configuracao dos departamentos pelo administrador"}
+                    {isAdmin ? "Configure os departamentos na área de administração" : "Aguarde a configuração dos departamentos pelo administrador"}
                   </p>
                   {isAdmin && (
                     <Button asChild size="sm">
@@ -335,14 +335,14 @@ export default function HomePage() {
                           </div>
                         </CardHeader>
                         <CardContent className="p-0">
-                          {/* Tecnicos do departamento */}
+                          {/* Técnicos do departamento */}
                           <div className="p-3 sm:p-4 border-b">
                             <h4 className="text-xs sm:text-sm font-medium text-muted-foreground mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
                               <UserPlus className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-                              <span>Tecnicos Atribuidos ({usuarios.length})</span>
+                              <span>Técnicos Atribuídos ({usuarios.length})</span>
                             </h4>
                             {usuarios.length === 0 ? (
-                              <p className="text-xs sm:text-sm text-muted-foreground italic">Nenhum tecnico atribuido</p>
+                              <p className="text-xs sm:text-sm text-muted-foreground italic">Nenhum técnico atribuído</p>
                             ) : (
                               <div className="flex flex-wrap gap-1.5 sm:gap-2">
                                 {usuarios.map((ud) => (

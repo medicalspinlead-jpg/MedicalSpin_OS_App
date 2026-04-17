@@ -104,7 +104,7 @@ const departamentoTipos = [
 ];
 
 const departamentoIcons = [
-  { value: "Zap", label: "Ressonancia", Icon: Zap },
+  { value: "Zap", label: "Ressonância", Icon: Zap },
   { value: "Radio", label: "Ultrassom", Icon: Radio },
   { value: "Scan", label: "Tomografia", Icon: Scan },
   { value: "Building2", label: "Geral", Icon: Building2 },
@@ -210,7 +210,7 @@ export default function AdminPage() {
     }
   }, [selectedDept])
 
-  // Verificar se o usuario é admin
+  // Verificar se o usuário é admin
   if (currentUser && currentUser.cargo !== "admin") {
     return (
       <div className="min-h-screen bg-muted/30 flex items-center justify-center">
@@ -221,10 +221,10 @@ export default function AdminPage() {
             </div>
             <h3 className="text-lg font-semibold mb-2">Acesso Negado</h3>
             <p className="text-sm text-muted-foreground text-center mb-4">
-              Apenas administradores podem acessar esta pagina.
+              Apenas administradores podem acessar esta página.
             </p>
             <Button asChild>
-              <Link href="/">Voltar ao Inicio</Link>
+              <Link href="/">Voltar ao Início</Link>
             </Button>
           </CardContent>
         </Card>
@@ -232,10 +232,10 @@ export default function AdminPage() {
     )
   }
 
-  // Usuario handlers
+  // Usuário handlers
   const handleCreate = async () => {
     if (!formData.nome || !formData.email || !formData.senha) {
-      toast.error("Preencha todos os campos obrigatorios")
+      toast.error("Preencha todos os campos obrigatórios")
       return
     }
 
@@ -250,15 +250,15 @@ export default function AdminPage() {
 
       if (!res.ok) {
         const error = await res.json()
-        throw new Error(error.error || "Erro ao criar usuario")
+        throw new Error(error.error || "Erro ao criar usuário")
       }
 
-      toast.success("Usuario criado com sucesso")
+      toast.success("Usuário criado com sucesso")
       setIsCreateOpen(false)
       setFormData({ nome: "", email: "", senha: "", cargo: "tecnico" })
       mutate()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao criar usuario")
+      toast.error(err instanceof Error ? err.message : "Erro ao criar usuário")
     } finally {
       setLoading(false)
     }
@@ -267,7 +267,7 @@ export default function AdminPage() {
   const handleUpdate = async () => {
     if (!editUser) return
     if (!formData.nome || !formData.email) {
-      toast.error("Nome e email sao obrigatorios")
+      toast.error("Nome e email são obrigatórios")
       return
     }
 
@@ -292,15 +292,15 @@ export default function AdminPage() {
 
       if (!res.ok) {
         const error = await res.json()
-        throw new Error(error.error || "Erro ao atualizar usuario")
+        throw new Error(error.error || "Erro ao atualizar usuário")
       }
 
-      toast.success("Usuario atualizado com sucesso")
+      toast.success("Usuário atualizado com sucesso")
       setEditUser(null)
       setFormData({ nome: "", email: "", senha: "", cargo: "tecnico" })
       mutate()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao atualizar usuario")
+      toast.error(err instanceof Error ? err.message : "Erro ao atualizar usuário")
     } finally {
       setLoading(false)
     }
@@ -315,14 +315,14 @@ export default function AdminPage() {
 
       if (!res.ok) {
         const error = await res.json()
-        throw new Error(error.error || "Erro ao excluir usuario")
+        throw new Error(error.error || "Erro ao excluir usuário")
       }
 
-      toast.success("Usuario excluido com sucesso")
+      toast.success("Usuário excluído com sucesso")
       setDeleteId(null)
       mutate()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao excluir usuario")
+      toast.error(err instanceof Error ? err.message : "Erro ao excluir usuário")
     }
   }
 
@@ -346,7 +346,7 @@ export default function AdminPage() {
   // Departamento handlers
   const handleCreateDept = async () => {
     if (!deptFormData.nome) {
-      toast.error("Nome e obrigatorio")
+      toast.error("Nome é obrigatório")
       return
     }
 
@@ -414,7 +414,7 @@ export default function AdminPage() {
         throw new Error(error.error || "Erro ao excluir departamento")
       }
 
-      toast.success("Departamento excluido com sucesso")
+      toast.success("Departamento excluído com sucesso")
       setSelectedDept(null)
       mutateDepts()
     } catch (err) {
@@ -436,18 +436,18 @@ export default function AdminPage() {
 
       if (!res.ok) {
         const error = await res.json()
-        throw new Error(error.error || "Erro ao adicionar usuario")
+        throw new Error(error.error || "Erro ao adicionar usuário")
       }
 
-      toast.success("Usuario adicionado ao departamento")
+      toast.success("Usuário adicionado ao departamento")
       setIsAddUserOpen(false)
       setSelectedUsuarioId("")
       
-      // Reload usuarios
+      // Reload usuários
       const usersRes = await fetch(`/api/departamentos/${selectedDept.id}/usuarios`, { credentials: "include" })
       setDeptUsuarios(await usersRes.json())
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao adicionar usuario")
+      toast.error(err instanceof Error ? err.message : "Erro ao adicionar usuário")
     } finally {
       setLoading(false)
     }
@@ -462,10 +462,10 @@ export default function AdminPage() {
         credentials: "include",
       })
 
-      toast.success("Usuario removido do departamento")
+      toast.success("Usuário removido do departamento")
       setDeptUsuarios(deptUsuarios.filter((u) => u.usuarioId !== usuarioId))
     } catch (err) {
-      toast.error("Erro ao remover usuario")
+      toast.error("Erro ao remover usuário")
     }
   }
 
@@ -503,7 +503,7 @@ export default function AdminPage() {
         toast.success(`${successCount} cliente(s) adicionado(s) ao departamento`)
       }
       if (errorCount > 0) {
-        toast.error(`${errorCount} cliente(s) nao puderam ser adicionados`)
+        toast.error(`${errorCount} cliente(s) não puderam ser adicionados`)
       }
 
       setIsAddClienteOpen(false)
@@ -573,17 +573,17 @@ export default function AdminPage() {
         body: JSON.stringify({ usuarioResponsavelId: usuarioId }),
       })
 
-      toast.success("Responsavel atualizado")
+      toast.success("Responsável atualizado")
       
       // Reload clientes
       const clientesRes = await fetch(`/api/departamentos/${selectedDept.id}/clientes`, { credentials: "include" })
       setDeptClientes(await clientesRes.json())
     } catch (err) {
-      toast.error("Erro ao atualizar responsavel")
+      toast.error("Erro ao atualizar responsável")
     }
   }
 
-  // Aprovacao de usuarios
+  // Aprovação de usuários
   const handleAprovarUsuario = async (id: string) => {
     setLoading(true)
     try {
@@ -594,14 +594,14 @@ export default function AdminPage() {
 
       if (!res.ok) {
         const error = await res.json()
-        throw new Error(error.error || "Erro ao aprovar usuario")
+        throw new Error(error.error || "Erro ao aprovar usuário")
       }
 
-      toast.success("Usuario aprovado com sucesso! Uma notificacao foi enviada.")
+      toast.success("Usuário aprovado com sucesso! Uma notificação foi enviada.")
       mutatePendentes()
       mutate()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao aprovar usuario")
+      toast.error(err instanceof Error ? err.message : "Erro ao aprovar usuário")
     } finally {
       setLoading(false)
     }
@@ -617,13 +617,13 @@ export default function AdminPage() {
 
       if (!res.ok) {
         const error = await res.json()
-        throw new Error(error.error || "Erro ao rejeitar usuario")
+        throw new Error(error.error || "Erro ao rejeitar usuário")
       }
 
-      toast.success("Usuario rejeitado e removido")
+      toast.success("Usuário rejeitado e removido")
       mutatePendentes()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao rejeitar usuario")
+      toast.error(err instanceof Error ? err.message : "Erro ao rejeitar usuário")
     } finally {
       setLoading(false)
     }
@@ -663,7 +663,7 @@ export default function AdminPage() {
                 Voltar
               </Link>
             </Button>
-            <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Administracao</h1>
+            <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Administração</h1>
             <p className="text-sm md:text-base text-muted-foreground mt-1">Gerencie usuarios e departamentos</p>
           </div>
         </div>
@@ -672,7 +672,7 @@ export default function AdminPage() {
           <TabsList className="mb-6">
             <TabsTrigger value="usuarios" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Usuarios
+              Usuários
             </TabsTrigger>
             <TabsTrigger value="departamentos" className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
@@ -680,7 +680,7 @@ export default function AdminPage() {
             </TabsTrigger>
             <TabsTrigger value="aprovacoes" className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
-              Aprovacoes
+              Aprovações
               {usuariosPendentes.length > 0 && (
                 <Badge variant="destructive" className="ml-1 h-5 min-w-5 px-1.5">
                   {usuariosPendentes.length}

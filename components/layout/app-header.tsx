@@ -183,18 +183,18 @@ export function AppHeader() {
                         </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Phone className="h-3 w-3" />
-                          <span>{usuario.telefone || "Nao informado"}</span>
+                          <span>{usuario.telefone || "Não informado"}</span>
                         </div>
                       </div>
                     )}
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {/* Notificacoes pessoais para admin e tecnico */}
+                {/* Notificações pessoais para admin e técnico */}
                 <div className="px-2 py-2">
                   <div className="flex items-center gap-2 mb-2">
                     <Bell className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Minhas Notificacoes</span>
+                    <span className="text-sm font-medium">Minhas Notificações</span>
                   </div>
                   <div className="space-y-2 pl-6">
                     <div className="flex items-center justify-between">
@@ -333,17 +333,17 @@ export function AppHeader() {
                             </div>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                               <Phone className="h-3 w-3" />
-                              <span>{usuario.telefone || "Nao informado"}</span>
+                              <span>{usuario.telefone || "Não informado"}</span>
                             </div>
                           </div>
                         )}
                       </div>
                     </div>
-                    {/* Notificacoes pessoais mobile */}
+                    {/* Notificações pessoais mobile */}
                     <div className="mt-3 p-2 bg-muted rounded-md">
                       <div className="flex items-center gap-2 mb-2">
                         <Bell className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Minhas Notificacoes</span>
+                        <span className="text-sm font-medium">Minhas Notificações</span>
                       </div>
                       <div className="space-y-2 pl-6">
                         <div className="flex items-center justify-between">

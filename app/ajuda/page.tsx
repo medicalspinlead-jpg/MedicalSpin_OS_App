@@ -44,20 +44,20 @@ export default function AjudaPage() {
       icon: Phone,
       label: "Telefone",
       valor: "(51) 3181-1899",
-      descricao: "Segunda a Sexta, 8h as 18h",
+      descricao: "Segunda a Sexta, 8h às 18h",
     },
     {
       icon: MessageCircle,
       label: "WhatsApp",
       valor: "(51) 3181-1899",
-      descricao: "Atendimento rapido",
+      descricao: "Atendimento rápido",
       link: "https://wa.me/555131811899?text=Ol%C3%A1%2C+preciso+de+suporte+tecnico+no+Portal+do+Cliente+MedicalSpin",
     },
     {
       icon: Mail,
       label: "E-mail",
       valor: "contato@medicalspin.com.br",
-      descricao: "Resposta em ate 24h",
+      descricao: "Resposta em até 24h",
       link: "mailto:contato@medicalspin.com.br",
     },
   ]
@@ -66,7 +66,7 @@ export default function AjudaPage() {
     {
       id: "cliente",
       titulo: "Manual do Cliente",
-      descricao: "Guia completo para clientes utilizarem o Portal do Cliente, incluindo criacao de solicitacoes, acompanhamento e gerenciamento de dados.",
+      descricao: "Guia completo para clientes utilizarem o Portal do Cliente, incluindo criação de solicitações, acompanhamento e gerenciamento de dados.",
       icon: Users,
       cor: "bg-blue-500/10 text-blue-600 border-blue-200",
       corBadge: "bg-blue-100 text-blue-700",
@@ -75,17 +75,17 @@ export default function AjudaPage() {
       topicos: [
         "Acesso ao sistema",
         "Painel principal",
-        "Nova solicitacao de servico",
-        "Acompanhamento de solicitacoes",
-        "Detalhes da solicitacao",
+        "Nova solicitação de serviço",
+        "Acompanhamento de solicitações",
+        "Detalhes da solicitação",
         "Gerenciamento de dados e equipamentos",
-        "Status das solicitacoes",
+        "Status das solicitações",
       ],
     },
     {
       id: "tecnico",
-      titulo: "Manual do Tecnico",
-      descricao: "Documentacao completa para tecnicos, cobrindo desde o gerenciamento de solicitacoes ate a criacao de ordens de servico.",
+      titulo: "Manual do Técnico",
+      descricao: "Documentação completa para técnicos, cobrindo desde o gerenciamento de solicitações até a criação de ordens de serviço.",
       icon: Wrench,
       cor: "bg-emerald-500/10 text-emerald-600 border-emerald-200",
       corBadge: "bg-emerald-100 text-emerald-700",
@@ -93,13 +93,13 @@ export default function AjudaPage() {
       niveis: ["admin", "tecnico"],
       topicos: [
         "Painel principal",
-        "Gerenciamento de solicitacoes",
-        "Criacao de Ordem de Servico",
+        "Gerenciamento de solicitações",
+        "Criação de Ordem de Serviço",
         "Etapas da OS (9 etapas)",
-        "Historico de OS",
+        "Histórico de OS",
         "Gerenciamento de clientes",
-        "Administracao (Admin)",
-        "Dicas e boas praticas",
+        "Administração (Admin)",
+        "Dicas e boas práticas",
       ],
     },
   ]
@@ -126,21 +126,21 @@ export default function AjudaPage() {
             <div>
               <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Ajuda</h1>
               <p className="text-sm md:text-base text-muted-foreground mt-1">
-                Central de suporte e documentacao
+                Central de suporte e documentação
               </p>
             </div>
           </div>
         </div>
 
-        {/* Informacoes de Contato */}
+        {/* Informações de Contato */}
         <Card className="mb-8">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Phone className="h-5 w-5 text-primary" />
-              <CardTitle className="text-lg">Informacoes de Contato</CardTitle>
+              <CardTitle className="text-lg">Informações de Contato</CardTitle>
             </div>
             <CardDescription>
-              Entre em contato conosco para suporte tecnico
+              Entre em contato conosco para suporte técnico
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -173,14 +173,14 @@ export default function AjudaPage() {
           </CardContent>
         </Card>
 
-        {/* Documentacoes */}
+        {/* Documentações */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-4">
             <BookOpen className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-semibold text-foreground">Documentacao</h2>
+            <h2 className="text-xl font-semibold text-foreground">Documentação</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            Manuais disponiveis para o seu nivel de acesso ({usuario.cargo === "admin" ? "Administrador" : "Tecnico"})
+            Manuais disponíveis para o seu nível de acesso ({usuario.cargo === "admin" ? "Administrador" : "Técnico"})
           </p>
         </div>
 
@@ -205,7 +205,7 @@ export default function AjudaPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h4 className="text-sm font-medium text-foreground mb-2">Conteudo:</h4>
+                    <h4 className="text-sm font-medium text-foreground mb-2">Conteúdo:</h4>
                     <ul className="text-sm text-muted-foreground space-y-1">
                       {manual.topicos.slice(0, 5).map((topico, index) => (
                         <li key={index} className="flex items-center gap-2">
@@ -215,7 +215,7 @@ export default function AjudaPage() {
                       ))}
                       {manual.topicos.length > 5 && (
                         <li className="text-xs text-muted-foreground/70">
-                          E mais {manual.topicos.length - 5} topicos...
+                          E mais {manual.topicos.length - 5} tópicos...
                         </li>
                       )}
                     </ul>
@@ -243,7 +243,7 @@ export default function AjudaPage() {
             <CardContent className="flex flex-col items-center justify-center py-8">
               <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
               <p className="text-sm text-muted-foreground">
-                Nenhum manual disponivel para o seu nivel de acesso.
+                Nenhum manual disponível para o seu nível de acesso.
               </p>
             </CardContent>
           </Card>
@@ -263,7 +263,7 @@ export default function AjudaPage() {
         {/* Info do usuario */}
         <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
           <Shield className="h-3.5 w-3.5" />
-          <span>Logado como: {usuario.nome} ({usuario.cargo === "admin" ? "Administrador" : "Tecnico"})</span>
+          <span>Logado como: {usuario.nome} ({usuario.cargo === "admin" ? "Administrador" : "Técnico"})</span>
         </div>
       </main>
     </div>
