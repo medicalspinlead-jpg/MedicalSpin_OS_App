@@ -112,26 +112,6 @@ export default function ManuaisPage() {
           })}
         </div>
 
-        <Card className="mt-8">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-muted-foreground" />
-              <CardTitle className="text-base">Documentacao da API</CardTitle>
-            </div>
-            <CardDescription>
-              Para desenvolvedores que desejam integrar com o sistema
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild variant="outline" className="bg-transparent">
-              <Link href="/documentacao">
-                Ver Documentacao da API
-                <ExternalLink className="h-4 w-4 ml-2" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-
         <div className="mt-8 p-4 bg-muted rounded-lg">
           <h3 className="font-medium text-foreground mb-2">Como salvar como PDF</h3>
           <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">

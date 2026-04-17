@@ -244,9 +244,9 @@ export function AppHeader() {
                   </>
                 )}
                 <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link href="/documentacao">
+                  <Link href="/ajuda">
                     <BookOpen className="h-4 w-4 mr-2" />
-                    Documentação API
+                    Ajuda
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -409,13 +409,13 @@ export function AppHeader() {
                     ))}
                     <Button
                       asChild
-                      variant={pathname === "/documentacao" ? "secondary" : "ghost"}
+                      variant={pathname === "/ajuda" ? "secondary" : "ghost"}
                       className="justify-start"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <Link href="/documentacao">
+                      <Link href="/ajuda">
                         <BookOpen className="h-4 w-4 mr-2" />
-                        Documentacao API
+                        Ajuda
                       </Link>
                     </Button>
                     {usuario.cargo === "admin" && (

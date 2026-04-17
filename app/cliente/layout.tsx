@@ -4,7 +4,7 @@ import type React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Inbox, PlusCircle, Moon, Sun, LogOut, User, Menu, Building2, MessageCircle, Mail, Bell, Settings } from "lucide-react"
+import { Inbox, PlusCircle, Moon, Sun, LogOut, User, Menu, Building2, MessageCircle, Mail, Bell, Settings, HelpCircle } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/components/auth-provider"
 import { useState, useEffect, useCallback } from "react"
@@ -90,6 +90,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
     { href: "/cliente", label: "Minhas Solicitações", icon: Inbox },
     { href: "/cliente/nova-solicitacao", label: "Nova OS", icon: PlusCircle },
     { href: "/cliente/perfil", label: "Meus Dados", icon: Settings },
+    { href: "/cliente/ajuda", label: "Ajuda", icon: HelpCircle },
   ]
 
   return (
