@@ -43,22 +43,22 @@ export default function AjudaPage() {
     {
       icon: Phone,
       label: "Telefone",
-      valor: "(11) 99999-9999",
+      valor: "(51) 3181-1899",
       descricao: "Segunda a Sexta, 8h as 18h",
     },
     {
       icon: MessageCircle,
       label: "WhatsApp",
-      valor: "(11) 99999-9999",
+      valor: "(51) 3181-1899",
       descricao: "Atendimento rapido",
-      link: "https://wa.me/5511999999999",
+      link: "https://wa.me/555131811899?text=Ol%C3%A1%2C+preciso+de+suporte+tecnico+no+Portal+do+Cliente+MedicalSpin",
     },
     {
       icon: Mail,
       label: "E-mail",
-      valor: "suporte@medicalspin.com.br",
+      valor: "contato@medicalspin.com.br",
       descricao: "Resposta em ate 24h",
-      link: "mailto:suporte@medicalspin.com.br",
+      link: "mailto:contato@medicalspin.com.br",
     },
   ]
 
@@ -144,7 +144,7 @@ export default function AjudaPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-colss-3">
               {contatos.map((contato) => {
                 const Icon = contato.icon
                 const content = (
