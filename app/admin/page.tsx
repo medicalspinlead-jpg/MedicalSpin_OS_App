@@ -636,6 +636,9 @@ export default function AdminPage() {
       user.cargo?.toLowerCase().includes(search.toLowerCase())
   )
 
+  // Separar usuários por tipo
+  const tecnicosEAdmins = filteredUsuarios.filter((u) => u.cargo === "tecnico" || u.cargo === "admin")
+  const clientes = filteredUsuarios.filter((u) => u.cargo === "cliente")
   const tecnicos = usuarios.filter((u) => u.cargo === "tecnico" && u.ativo)
 
   const getInitials = (name: string) => {
@@ -724,89 +727,203 @@ export default function AdminPage() {
                   <p className="text-sm text-muted-foreground mb-4">{error.message}</p>
                 </CardContent>
               </Card>
-            ) : filteredUsuarios.length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <div className="p-4 bg-muted rounded-full mb-4">
-                    <Users className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2">Nenhum usuario encontrado</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {search ? "Tente buscar por outro termo" : "Comece cadastrando um novo usuario"}
-                  </p>
-                  {!search && (
-                    <Button onClick={openCreateDialog}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Cadastrar Usuario
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {filteredUsuarios.map((user) => (
-                  <Card key={user.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader className="p-4 md:p-6 pb-2 md:pb-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base md:text-lg truncate">{user.nome}</CardTitle>
-                          <CardDescription className="mt-1 text-xs md:text-sm truncate">{user.email}</CardDescription>
-                        </div>
-                        <Badge 
-                          variant={user.cargo === "admin" ? "default" : user.cargo === "cliente" ? "outline" : "secondary"} 
-                          className="flex items-center gap-1 shrink-0 text-xs"
-                        >
-                          {user.cargo === "admin" ? (
-                            <Shield className="h-3 w-3" />
-                          ) : user.cargo === "cliente" ? (
-                            <UserCircle className="h-3 w-3" />
-                          ) : (
-                            <Wrench className="h-3 w-3" />
-                          )}
-                          {user.cargo === "admin" ? "Admin" : user.cargo === "cliente" ? "Cliente" : "Tecnico"}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-4 md:p-6 pt-2 md:pt-3">
-                      <div className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
-                        <div className="flex flex-wrap gap-1">
-                          <span className="text-muted-foreground">Status:</span>
-                          <span className={user.ativo ? "text-green-600" : "text-red-600"}>
-                            {user.ativo ? "Ativo" : "Inativo"}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                          <span className="text-muted-foreground">Criado em:</span>
-                          <span className="text-foreground">
-                            {new Date(user.createdAt).toLocaleDateString("pt-BR")}
-                          </span>
-                        </div>
-                      </div>
+              <Tabs defaultValue="tecnicos" className="w-full">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="tecnicos" className="flex items-center gap-2">
+                    <Wrench className="h-4 w-4" />
+                    Tecnicos e Admins
+                    <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1.5">
+                      {tecnicosEAdmins.length}
+                    </Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="clientes" className="flex items-center gap-2">
+                    <UserCircle className="h-4 w-4" />
+                    Clientes
+                    <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1.5">
+                      {clientes.length}
+                    </Badge>
+                  </TabsTrigger>
+                </TabsList>
 
-                      <div className="flex gap-2 mt-3 md:mt-4">
-                        <Button 
-                          size="sm" 
-                          className="flex-1 bg-transparent text-xs md:text-sm" 
-                          variant="outline"
-                          onClick={() => openEditDialog(user)}
-                        >
-                          <Edit className="h-3 w-3 mr-1.5 md:mr-2" />
-                          Editar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setDeleteId(user.id)}
-                          className="text-destructive hover:text-destructive bg-transparent"
-                          disabled={user.id === currentUser?.id}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                {/* Sub-tab Tecnicos e Admins */}
+                <TabsContent value="tecnicos">
+                  {tecnicosEAdmins.length === 0 ? (
+                    <Card>
+                      <CardContent className="flex flex-col items-center justify-center py-12">
+                        <div className="p-4 bg-muted rounded-full mb-4">
+                          <Wrench className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">Nenhum tecnico ou admin encontrado</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          {search ? "Tente buscar por outro termo" : "Comece cadastrando um novo usuario"}
+                        </p>
+                        {!search && (
+                          <Button onClick={openCreateDialog}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Cadastrar Usuario
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      {tecnicosEAdmins.map((user) => (
+                        <Card key={user.id} className="hover:shadow-md transition-shadow">
+                          <CardHeader className="p-4 md:p-6 pb-2 md:pb-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <CardTitle className="text-base md:text-lg truncate">{user.nome}</CardTitle>
+                                <CardDescription className="mt-1 text-xs md:text-sm truncate">{user.email}</CardDescription>
+                              </div>
+                              <Badge 
+                                variant={user.cargo === "admin" ? "default" : "secondary"} 
+                                className="flex items-center gap-1 shrink-0 text-xs"
+                              >
+                                {user.cargo === "admin" ? (
+                                  <Shield className="h-3 w-3" />
+                                ) : (
+                                  <Wrench className="h-3 w-3" />
+                                )}
+                                {user.cargo === "admin" ? "Admin" : "Tecnico"}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="p-4 md:p-6 pt-2 md:pt-3">
+                            <div className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
+                              <div className="flex flex-wrap gap-1">
+                                <span className="text-muted-foreground">Status:</span>
+                                <span className={user.ativo ? "text-green-600" : "text-red-600"}>
+                                  {user.ativo ? "Ativo" : "Inativo"}
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                <span className="text-muted-foreground">Criado em:</span>
+                                <span className="text-foreground">
+                                  {new Date(user.createdAt).toLocaleDateString("pt-BR")}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex gap-2 mt-3 md:mt-4">
+                              <Button 
+                                size="sm" 
+                                className="flex-1 bg-transparent text-xs md:text-sm" 
+                                variant="outline"
+                                onClick={() => openEditDialog(user)}
+                              >
+                                <Edit className="h-3 w-3 mr-1.5 md:mr-2" />
+                                Editar
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setDeleteId(user.id)}
+                                className="text-destructive hover:text-destructive bg-transparent"
+                                disabled={user.id === currentUser?.id}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* Sub-tab Clientes */}
+                <TabsContent value="clientes">
+                  {clientes.length === 0 ? (
+                    <Card>
+                      <CardContent className="flex flex-col items-center justify-center py-12">
+                        <div className="p-4 bg-muted rounded-full mb-4">
+                          <UserCircle className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">Nenhum cliente encontrado</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          {search ? "Tente buscar por outro termo" : "Clientes aparecerao aqui quando se cadastrarem"}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      {clientes.map((user) => (
+                        <Card key={user.id} className="hover:shadow-md transition-shadow">
+                          <CardHeader className="p-4 md:p-6 pb-2 md:pb-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <CardTitle className="text-base md:text-lg truncate">{user.nome}</CardTitle>
+                                <CardDescription className="mt-1 text-xs md:text-sm truncate">{user.email}</CardDescription>
+                              </div>
+                              <Badge 
+                                variant="outline" 
+                                className="flex items-center gap-1 shrink-0 text-xs"
+                              >
+                                <UserCircle className="h-3 w-3" />
+                                Cliente
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="p-4 md:p-6 pt-2 md:pt-3">
+                            <div className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
+                              {user.cliente && (
+                                <div className="flex flex-wrap gap-1">
+                                  <span className="text-muted-foreground">Empresa:</span>
+                                  <span className="text-foreground truncate">
+                                    {user.cliente.nomeFantasia || user.cliente.razaoSocial}
+                                  </span>
+                                </div>
+                              )}
+                              {user.cliente && (
+                                <div className="flex flex-wrap gap-1">
+                                  <span className="text-muted-foreground">Cidade:</span>
+                                  <span className="text-foreground">
+                                    {user.cliente.cidade}, {user.cliente.uf}
+                                  </span>
+                                </div>
+                              )}
+                              <div className="flex flex-wrap gap-1">
+                                <span className="text-muted-foreground">Status:</span>
+                                <span className={user.ativo ? "text-green-600" : "text-red-600"}>
+                                  {user.ativo ? "Ativo" : "Inativo"}
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                <span className="text-muted-foreground">Criado em:</span>
+                                <span className="text-foreground">
+                                  {new Date(user.createdAt).toLocaleDateString("pt-BR")}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex gap-2 mt-3 md:mt-4">
+                              <Button 
+                                size="sm" 
+                                className="flex-1 bg-transparent text-xs md:text-sm" 
+                                variant="outline"
+                                onClick={() => openEditDialog(user)}
+                              >
+                                <Edit className="h-3 w-3 mr-1.5 md:mr-2" />
+                                Editar
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setDeleteId(user.id)}
+                                className="text-destructive hover:text-destructive bg-transparent"
+                                disabled={user.id === currentUser?.id}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             )}
           </TabsContent>
 
