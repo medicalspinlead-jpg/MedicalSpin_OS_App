@@ -53,7 +53,7 @@ export function AppHeader() {
     }
   }
 
-  if (pathname === "/login" || pathname === "/setup" || pathname.startsWith("/cliente") || pathname === "/registro") {
+  if (pathname === "/login" || pathname === "/setup" || pathname.startsWith("/cliente/") || pathname === "/cliente" || pathname === "/registro") {
     return null
   }
 

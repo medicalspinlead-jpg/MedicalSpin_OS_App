@@ -53,6 +53,7 @@ export default function ClientesPage() {
 
   return (
     <div className="min-h-screen bg-muted/30">
+      
       <main className="container mx-auto px-4 py-4 md:py-8">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           <div>
