@@ -263,8 +263,12 @@ export async function getOrdensServico(): Promise<OrdemServico[]> {
   return res.json()
 }
 
-export async function getRascunhos(): Promise<OrdemServico[]> {
-  const res = await fetchNoCache("/api/os?status=rascunho")
+export async function getRascunhos(usuarioId?: string): Promise<OrdemServico[]> {
+  const params = new URLSearchParams({ status: "rascunho" })
+  if (usuarioId) {
+    params.append("usuarioId", usuarioId)
+  }
+  const res = await fetchNoCache(`/api/os?${params.toString()}`)
   if (!res.ok) return []
   return res.json()
 }

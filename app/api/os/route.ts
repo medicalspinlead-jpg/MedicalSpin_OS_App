@@ -122,12 +122,22 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get("status")
+    const usuarioId = searchParams.get("usuarioId")
 
     // Suporta múltiplos status separados por vírgula (ex: "fechada,finalizada")
     const statusList = status ? status.split(",").map((s) => s.trim()) : null
 
+    // Construir filtro
+    const where: { status?: { in: string[] }; usuarioId?: string } = {}
+    if (statusList) {
+      where.status = { in: statusList }
+    }
+    if (usuarioId) {
+      where.usuarioId = usuarioId
+    }
+
     const ordens = await prisma.ordemServico.findMany({
-      where: statusList ? { status: { in: statusList } } : undefined,
+      where: Object.keys(where).length > 0 ? where : undefined,
       orderBy: { updatedAt: "desc" },
       include: {
         cliente: true,
@@ -159,6 +169,7 @@ export async function POST(request: Request) {
         empresa: data.empresa || {},
         clienteId: data.cliente?.id || null,
         equipamentoId: data.equipamento?.id || null,
+        usuarioId: data.usuarioResponsavel?.id || null,
         motivo: data.motivo || {},
         intervencao: data.intervencao || {},
         pendencias: data.pendencias || {},

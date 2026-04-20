@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { getOrdemServico, saveOrdemServico, type OrdemServico } from "@/lib/storage"
+import { useAuth } from "@/components/auth-provider"
 import { ArrowLeft, Download, CheckCircle, AlertCircle, Loader2, Copy, ExternalLink, Pencil, Link2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -19,6 +20,7 @@ export default function VisualizarOSPage() {
   const id = params?.id as string
   const router = useRouter()
   const { toast } = useToast()
+  const { usuario } = useAuth()
   const [os, setOs] = useState<OrdemServico | null>(null)
   const [loading, setLoading] = useState(true)
   const [buscandoLink, setBuscandoLink] = useState(false)
@@ -204,7 +206,11 @@ export default function VisualizarOSPage() {
       }
 
       const sucesso = await enviarParaWebhook(osAtualizada, imagensWebhook)
-      await saveOrdemServico({ ...osAtualizada })
+      await saveOrdemServico({ ...osAtualizada }, usuario ? {
+        id: usuario.id,
+        nome: usuario.nome,
+        departamentos: usuario.departamentos
+      } : undefined)
       setOs(osAtualizada)
 
       toast({

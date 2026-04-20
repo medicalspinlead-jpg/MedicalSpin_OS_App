@@ -3,21 +3,27 @@
 import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { createNovaOS, saveOrdemServico } from "@/lib/storage"
+import { useAuth } from "@/components/auth-provider"
 
 export default function NovaOSPage() {
   const router = useRouter()
   const [error, setError] = useState<string>("")
   const isCreating = useRef(false)
+  const { usuario } = useAuth()
 
   useEffect(() => {
-    if (isCreating.current) return
+    if (isCreating.current || !usuario) return
 
     async function criarOS() {
       isCreating.current = true
       try {
         const novaOS = createNovaOS()
         const { id, ...osData } = novaOS
-        const osCriada = await saveOrdemServico(osData as any)
+        const osCriada = await saveOrdemServico(osData as any, {
+          id: usuario.id,
+          nome: usuario.nome,
+          departamentos: usuario.departamentos
+        })
 
         if (osCriada && osCriada.id) {
           router.push(`/os/${osCriada.id}/etapa/1`)
@@ -33,7 +39,7 @@ export default function NovaOSPage() {
     }
 
     criarOS()
-  }, [router])
+  }, [router, usuario])
 
   if (error) {
     return (

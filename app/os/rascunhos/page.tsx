@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -19,15 +19,22 @@ import {
 } from "@/components/ui/alert-dialog"
 import { ArrowLeft } from "lucide-react"
 import useSWR from "swr"
+import { useAuth } from "@/components/auth-provider"
 
 export default function RascunhosPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const { usuario } = useAuth()
+
+  const fetchRascunhos = useCallback(() => {
+    if (!usuario?.id) return Promise.resolve([])
+    return getRascunhos(usuario.id)
+  }, [usuario?.id])
 
   const {
     data: rascunhos = [],
     isLoading: loading,
     mutate,
-  } = useSWR("rascunhos", getRascunhos, {
+  } = useSWR(usuario?.id ? `rascunhos-${usuario.id}` : null, fetchRascunhos, {
     revalidateOnFocus: true,
     revalidateOnMount: true,
     dedupingInterval: 0,

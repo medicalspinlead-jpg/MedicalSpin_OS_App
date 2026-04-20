@@ -284,7 +284,11 @@ export default function SolicitacaoDetailPage({ params }: { params: Promise<{ id
         }
       }
 
-      const osCriada = await saveOrdemServico(novaOS)
+      const osCriada = await saveOrdemServico(novaOS, usuario ? {
+        id: usuario.id,
+        nome: usuario.nome,
+        departamentos: usuario.departamentos
+      } : undefined)
 
       // Atualizar status da solicitação
       await updateSolicitacao(id, {

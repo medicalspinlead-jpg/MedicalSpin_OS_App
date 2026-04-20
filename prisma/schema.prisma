@@ -59,6 +59,10 @@ model OrdemServico {
   updatedAt     DateTime @updatedAt @map("updated_at")
   finalizedAt   DateTime? @map("finalized_at")
   
+  // Usuario que criou a OS
+  usuarioId     String?  @map("usuario_id")
+  usuario       Usuario? @relation(fields: [usuarioId], references: [id])
+  
   // Dados da empresa (JSON)
   empresa       Json     @default("{}")
   
@@ -131,6 +135,7 @@ model Usuario {
   
   departamentos        UsuarioDepartamento[]
   clientesResponsavel  ClienteDepartamento[]
+  ordensServico        OrdemServico[]
 
   @@map("usuarios")
 }
