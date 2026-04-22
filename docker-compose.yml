@@ -9,7 +9,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://os_medical:jh3tMYngZ5fEiQB3nCayGkHniiMIUkV08D4JN56sP6fEBHG3jbzCNWFheCGYa4Hq@95.217.164.173:5432/postgres
+      - DATABASE_URL=postgresql://appuser:apppass@95.217.164.173:5433/appdb
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
