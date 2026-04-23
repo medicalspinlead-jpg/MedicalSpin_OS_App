@@ -196,7 +196,6 @@ export default function AjudaPage() {
                     </div>
                     <div>
                       <CardTitle className="text-lg">{manual.titulo}</CardTitle>
-                      <Badge className={`${manual.corBadge} mt-1`}></Badge>
                     </div>
                   </div>
                   <CardDescription className="text-sm">
