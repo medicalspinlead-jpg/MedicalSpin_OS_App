@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { Plus, Search, Trash2, Edit, Users, ArrowLeft, Shield, Wrench, Eye, EyeOff, UserCircle, Building2, Zap, Radio, Scan, UserPlus, X, CheckSquare, Square, Clock, CheckCircle, XCircle, Settings, HardDrive, RefreshCw, AlertTriangle } from "lucide-react"
+import { Plus, Search, Trash2, Edit, Users, ArrowLeft, Shield, Wrench, Eye, EyeOff, UserCircle, Building2, Zap, Radio, Scan, UserPlus, X, CheckSquare, Square, Clock, CheckCircle, XCircle, Settings, HardDrive, RefreshCw, AlertTriangle, Download, Upload, Database } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
@@ -170,6 +170,34 @@ export default function AdminPage() {
     ordensServico: { encontradas: number; limpas: string[] }
     solicitacoes: { encontradas: number; limpas: string[] }
   } | null>(null)
+
+  // Estado para backup
+  const [backupExportLoading, setBackupExportLoading] = useState(false)
+  const [backupImportLoading, setBackupImportLoading] = useState(false)
+  const [backupResultado, setBackupResultado] = useState<{
+    tipo: "export" | "import"
+    sucesso: boolean
+    mensagem: string
+    estatisticas?: Record<string, { importados: number; erros: number }>
+  } | null>(null)
+  const [isImportConfirmOpen, setIsImportConfirmOpen] = useState(false)
+  const [selectedBackupFile, setSelectedBackupFile] = useState<File | null>(null)
+  const [importProgress, setImportProgress] = useState<{
+    etapa: string
+    progresso: number
+  } | null>(null)
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false)
+  const [exportOptions, setExportOptions] = useState({
+    clientes: true,
+    equipamentos: true,
+    ordensServico: true,
+    pecas: true,
+    maoObra: true,
+    usuarios: true,
+    configuracoes: true,
+    solicitacoes: true,
+    departamentos: true,
+  })
 
   const {
     data: usuarios = [],
@@ -665,6 +693,177 @@ export default function AdminPage() {
       toast.error(err instanceof Error ? err.message : "Erro ao executar limpeza")
     } finally {
       setLimpezaLoading(false)
+    }
+  }
+
+  // Função para exportar backup
+  // Abrir modal de exportação
+  const handleOpenExportModal = () => {
+    setIsExportModalOpen(true)
+    setBackupResultado(null)
+  }
+
+  // Toggle opção de exportação
+  const handleToggleExportOption = (key: keyof typeof exportOptions) => {
+    setExportOptions(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  // Selecionar/desselecionar todos
+  const handleSelectAllExport = (selectAll: boolean) => {
+    setExportOptions({
+      clientes: selectAll,
+      equipamentos: selectAll,
+      ordensServico: selectAll,
+      pecas: selectAll,
+      maoObra: selectAll,
+      usuarios: selectAll,
+      configuracoes: selectAll,
+      solicitacoes: selectAll,
+      departamentos: selectAll,
+    })
+  }
+
+  const handleExportBackup = async () => {
+    // Verificar se pelo menos uma opção está selecionada
+    const algumSelecionado = Object.values(exportOptions).some(v => v)
+    if (!algumSelecionado) {
+      toast.error("Selecione pelo menos um tipo de dado para exportar")
+      return
+    }
+
+    setBackupExportLoading(true)
+    setBackupResultado(null)
+    setIsExportModalOpen(false)
+    
+    try {
+      // Criar query string com as opções
+      const params = new URLSearchParams()
+      Object.entries(exportOptions).forEach(([key, value]) => {
+        if (value) params.append(key, "true")
+      })
+
+      const res = await fetch(`/api/admin/backup?${params.toString()}`, {
+        method: "GET",
+        credentials: "include",
+      })
+
+      if (!res.ok) {
+        throw new Error("Erro ao exportar backup")
+      }
+
+      // Criar blob e fazer download
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      const dataFormatada = new Date().toISOString().split("T")[0]
+      a.download = `backup-msp-${dataFormatada}.json`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      setBackupResultado({
+        tipo: "export",
+        sucesso: true,
+        mensagem: "Backup exportado com sucesso!",
+      })
+      toast.success("Backup exportado com sucesso!")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao exportar backup")
+      setBackupResultado({
+        tipo: "export",
+        sucesso: false,
+        mensagem: err instanceof Error ? err.message : "Erro ao exportar backup",
+      })
+    } finally {
+      setBackupExportLoading(false)
+    }
+  }
+
+  // Função para selecionar arquivo de backup
+  const handleSelectBackupFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (!file.name.endsWith(".json")) {
+        toast.error("Por favor, selecione um arquivo JSON válido")
+        return
+      }
+      setSelectedBackupFile(file)
+      setIsImportConfirmOpen(true)
+    }
+    // Reset input
+    e.target.value = ""
+  }
+
+  // Função para importar backup
+  const handleImportBackup = async () => {
+    if (!selectedBackupFile) return
+
+    setBackupImportLoading(true)
+    setBackupResultado(null)
+    setIsImportConfirmOpen(false)
+    setImportProgress({ etapa: "Lendo arquivo...", progresso: 5 })
+
+    try {
+      const fileContent = await selectedBackupFile.text()
+      setImportProgress({ etapa: "Validando dados...", progresso: 15 })
+      
+      const backupData = JSON.parse(fileContent)
+      setImportProgress({ etapa: "Enviando para o servidor...", progresso: 25 })
+
+      const res = await fetch("/api/admin/backup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(backupData),
+      })
+
+      setImportProgress({ etapa: "Processando importação...", progresso: 50 })
+
+      // Simular progresso enquanto aguarda resposta
+      const progressInterval = setInterval(() => {
+        setImportProgress(prev => {
+          if (!prev || prev.progresso >= 90) return prev
+          return { ...prev, progresso: prev.progresso + 5 }
+        })
+      }, 1000)
+
+      if (!res.ok) {
+        clearInterval(progressInterval)
+        const error = await res.json()
+        throw new Error(error.error || "Erro ao importar backup")
+      }
+
+      clearInterval(progressInterval)
+      setImportProgress({ etapa: "Finalizando...", progresso: 95 })
+
+      const resultado = await res.json()
+      setImportProgress({ etapa: "Concluído!", progresso: 100 })
+      
+      setBackupResultado({
+        tipo: "import",
+        sucesso: true,
+        mensagem: resultado.mensagem,
+        estatisticas: resultado.estatisticas,
+      })
+      toast.success("Backup importado com sucesso!")
+      
+      // Recarregar dados
+      mutate()
+      mutateDepts()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao importar backup")
+      setBackupResultado({
+        tipo: "import",
+        sucesso: false,
+        mensagem: err instanceof Error ? err.message : "Erro ao importar backup",
+      })
+    } finally {
+      setBackupImportLoading(false)
+      setSelectedBackupFile(null)
+      // Limpar progresso após um pequeno delay
+      setTimeout(() => setImportProgress(null), 2000)
     }
   }
 
@@ -1393,6 +1592,155 @@ export default function AdminPage() {
                 </CardContent>
               </Card>
 
+              {/* Card de Backup de Dados */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <Database className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">Backup de Dados</CardTitle>
+                      <CardDescription>
+                        Exporte ou importe todos os dados do sistema (exceto mídias/arquivos)
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <Database className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+                    <div className="text-sm text-blue-800">
+                      <p className="font-medium">Sobre o Backup</p>
+                      <p>O backup inclui: clientes, equipamentos, ordens de serviço, usuarios, departamentos, solicitações e configurações. As mídias (fotos e videos) não são incluídas no backup.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Exportar */}
+                    <div className="p-4 border rounded-lg space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Download className="h-5 w-5 text-green-600" />
+                        <span className="font-medium">Exportar Backup</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Selecione os dados que deseja exportar em formato JSON.
+                      </p>
+                      <Button
+                        onClick={handleOpenExportModal}
+                        disabled={backupExportLoading}
+                        className="w-full"
+                      >
+                        {backupExportLoading ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                            Exportando...
+                          </>
+                        ) : (
+                          <>
+                            <Download className="h-4 w-4 mr-2" />
+                            Selecionar Dados
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    {/* Importar */}
+                    <div className="p-4 border rounded-lg space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Upload className="h-5 w-5 text-orange-600" />
+                        <span className="font-medium">Importar Backup</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Restaure dados a partir de um arquivo de backup JSON.
+                      </p>
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept=".json"
+                          onChange={handleSelectBackupFile}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          disabled={backupImportLoading}
+                        />
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          disabled={backupImportLoading}
+                        >
+                          {backupImportLoading ? (
+                            <>
+                              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                              Importando...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="h-4 w-4 mr-2" />
+                              Selecionar Arquivo
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Barra de Progresso da Importação */}
+                  {importProgress && (
+                    <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <RefreshCw className="h-4 w-4 text-blue-600 animate-spin" />
+                          <span className="text-sm font-medium text-blue-800">
+                            {importProgress.etapa}
+                          </span>
+                        </div>
+                        <span className="text-sm font-bold text-blue-600">
+                          {importProgress.progresso}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-blue-200 rounded-full h-3 overflow-hidden">
+                        <div 
+                          className="bg-blue-600 h-3 rounded-full transition-all duration-500 ease-out"
+                          style={{ width: `${importProgress.progresso}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-blue-700">
+                        Por favor, aguarde enquanto os dados estão sendo importados. Isso pode levar alguns minutos dependendo do tamanho do backup.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Resultado do Backup */}
+                  {backupResultado && (
+                    <div className={`mt-4 p-4 rounded-lg ${backupResultado.sucesso ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        {backupResultado.sucesso ? (
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <XCircle className="h-4 w-4 text-red-600" />
+                        )}
+                        <span className={`text-sm font-medium ${backupResultado.sucesso ? "text-green-800" : "text-red-800"}`}>
+                          {backupResultado.mensagem}
+                        </span>
+                      </div>
+
+                      {backupResultado.tipo === "import" && backupResultado.estatisticas && (
+                        <div className="mt-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                          {Object.entries(backupResultado.estatisticas).map(([tabela, stats]) => (
+                            <div key={tabela} className="p-2 bg-background rounded border text-xs">
+                              <p className="text-muted-foreground capitalize">{tabela}</p>
+                              <p className="font-medium text-green-600">{stats.importados} importados</p>
+                              {stats.erros > 0 && (
+                                <p className="text-red-600">{stats.erros} erros</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Card de Informações do Sistema */}
               <Card>
                 <CardHeader>
@@ -2007,6 +2355,151 @@ export default function AdminPage() {
               {loading ? "Adicionando..." : `Adicionar${selectedClienteIds.length > 0 ? ` (${selectedClienteIds.length})` : ""}`}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Confirmação de Importação de Backup */}
+      <AlertDialog open={isImportConfirmOpen} onOpenChange={setIsImportConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              Confirmar Importação de Backup
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-sm text-muted-foreground">
+                <span>
+                  Você está prestes a importar dados do arquivo:
+                </span>
+                <span className="block font-mono text-sm bg-muted p-2 rounded">
+                  {selectedBackupFile?.name}
+                </span>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-amber-800 text-sm">
+                  <span className="font-medium block mb-1">Atenção:</span>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Dados existentes com mesmo ID serão atualizados</li>
+                    <li>Novos dados serão adicionados ao sistema</li>
+                    <li>Esta ação não pode ser desfeita facilmente</li>
+                    <li>Recomendamos fazer um backup antes de importar</li>
+                  </ul>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedBackupFile(null)}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleImportBackup} className="bg-orange-600 hover:bg-orange-700">
+              Confirmar Importação
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog de Seleção de Dados para Exportação */}
+      <Dialog open={isExportModalOpen} onOpenChange={setIsExportModalOpen}>
+        <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="p-4 pb-3 border-b shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Database className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg">Exportar Backup</DialogTitle>
+                <DialogDescription className="text-sm mt-0.5">
+                  Selecione os dados para incluir no backup
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* Botões selecionar/desselecionar todos */}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSelectAllExport(true)}
+                className="flex-1"
+              >
+                <CheckSquare className="h-4 w-4 mr-1.5" />
+                Selecionar Todos
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSelectAllExport(false)}
+                className="flex-1"
+              >
+                <Square className="h-4 w-4 mr-1.5" />
+                Limpar
+              </Button>
+            </div>
+
+            {/* Opções de exportação */}
+            <div className="grid grid-cols-1 gap-2">
+              {[
+                { key: "clientes" as const, label: "Clientes", desc: "Empresas cadastradas", icon: Building2 },
+                { key: "equipamentos" as const, label: "Equipamentos", desc: "Vinculados aos clientes", icon: Wrench },
+                { key: "ordensServico" as const, label: "Ordens de Serviço", desc: "Inclui peças e mão de obra", icon: Scan },
+                { key: "usuarios" as const, label: "Usuários", desc: "Técnicos e admins", icon: Users },
+                { key: "solicitacoes" as const, label: "Solicitações", desc: "Pedidos dos clientes", icon: Radio },
+                { key: "departamentos" as const, label: "Departamentos", desc: "Vínculos e permissões", icon: Shield },
+                { key: "configuracoes" as const, label: "Configurações", desc: "Configurações gerais", icon: Settings },
+              ].map((item) => {
+                const Icon = item.icon
+                return (
+                  <label
+                    key={item.key}
+                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                      exportOptions[item.key]
+                        ? "bg-primary/10 border-primary"
+                        : "bg-background border-border hover:border-primary/50 hover:bg-muted/50"
+                    }`}
+                  >
+                    <Checkbox
+                      checked={exportOptions[item.key]}
+                      onCheckedChange={() => handleToggleExportOption(item.key)}
+                    />
+                    <div className={`p-1.5 rounded-md ${exportOptions[item.key] ? "bg-primary/20" : "bg-muted"}`}>
+                      <Icon className={`h-4 w-4 ${exportOptions[item.key] ? "text-primary" : "text-muted-foreground"}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-medium text-sm block">
+                        {item.label}
+                      </span>
+                      <p className="text-xs text-muted-foreground truncate">{item.desc}</p>
+                    </div>
+                  </label>
+                )
+              })}
+            </div>
+
+            {/* Aviso sobre mídias */}
+            <div className="flex items-center gap-2.5 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
+              <span className="text-xs text-destructive">Mídias (fotos e vídeos) não são incluídas.</span>
+            </div>
+          </div>
+
+          <div className="p-4 border-t bg-muted/50 flex flex-col gap-2 shrink-0">
+            <Button
+              onClick={handleExportBackup}
+              disabled={!Object.values(exportOptions).some(v => v)}
+              className="w-full"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Exportar Backup
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsExportModalOpen(false)}
+              className="w-full"
+            >
+              Cancelar
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
