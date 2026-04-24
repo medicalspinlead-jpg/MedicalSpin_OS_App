@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { Plus, Search, Trash2, Edit, Users, ArrowLeft, Shield, Wrench, Eye, EyeOff, UserCircle, Building2, Zap, Radio, Scan, UserPlus, X, CheckSquare, Square, Clock, CheckCircle, XCircle, Settings, HardDrive, RefreshCw, AlertTriangle, Download, Upload, Database } from "lucide-react"
+import { Plus, Search, Trash2, Edit, Users, ArrowLeft, Shield, Wrench, Eye, EyeOff, UserCircle, Building2, Zap, Radio, Scan, UserPlus, X, CheckSquare, Square, Clock, CheckCircle, XCircle, Settings, HardDrive, RefreshCw, AlertTriangle, Download, Upload, Database, FileText } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
@@ -907,6 +907,12 @@ export default function AdminPage() {
             <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Administração</h1>
             <p className="text-sm md:text-base text-muted-foreground mt-1">Gerencie usuarios e departamentos</p>
           </div>
+          <Button asChild variant="outline" className="shrink-0">
+            <Link href="/admin/relatorios">
+              <FileText className="h-4 w-4 mr-2" />
+              Relatórios
+            </Link>
+          </Button>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
