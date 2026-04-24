@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { Plus, Search, Trash2, Edit, Users, ArrowLeft, Shield, Wrench, Eye, EyeOff, UserCircle, Building2, Zap, Radio, Scan, UserPlus, X, CheckSquare, Square, Clock, CheckCircle, XCircle } from "lucide-react"
+import { Plus, Search, Trash2, Edit, Users, ArrowLeft, Shield, Wrench, Eye, EyeOff, UserCircle, Building2, Zap, Radio, Scan, UserPlus, X, CheckSquare, Square, Clock, CheckCircle, XCircle, Settings, HardDrive, RefreshCw, AlertTriangle } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
@@ -161,6 +161,15 @@ export default function AdminPage() {
   const [selectedResponsavelId, setSelectedResponsavelId] = useState("")
   const [selectedClienteIds, setSelectedClienteIds] = useState<string[]>([])
   const [clienteSearch, setClienteSearch] = useState("")
+  
+  // Estado para limpeza de mídias
+  const [limpezaLoading, setLimpezaLoading] = useState(false)
+  const [limpezaResultado, setLimpezaResultado] = useState<{
+    sucesso: boolean
+    dataExecucao: string
+    ordensServico: { encontradas: number; limpas: string[] }
+    solicitacoes: { encontradas: number; limpas: string[] }
+  } | null>(null)
 
   const {
     data: usuarios = [],
@@ -629,6 +638,36 @@ export default function AdminPage() {
     }
   }
 
+  // Função para executar limpeza de mídias manualmente
+  const handleLimpezaMidias = async () => {
+    setLimpezaLoading(true)
+    setLimpezaResultado(null)
+    try {
+      const res = await fetch("/api/cron/limpar-midias", {
+        method: "GET",
+        credentials: "include",
+      })
+
+      if (!res.ok) {
+        throw new Error("Erro ao executar limpeza")
+      }
+
+      const resultado = await res.json()
+      setLimpezaResultado(resultado)
+      
+      const totalLimpas = resultado.ordensServico.limpas.length + resultado.solicitacoes.limpas.length
+      if (totalLimpas > 0) {
+        toast.success(`Limpeza concluída: ${totalLimpas} registro(s) com mídias removidas`)
+      } else {
+        toast.info("Nenhuma mídia antiga encontrada para limpeza")
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao executar limpeza")
+    } finally {
+      setLimpezaLoading(false)
+    }
+  }
+
   const filteredUsuarios = usuarios.filter(
     (user) =>
       user.nome?.toLowerCase().includes(search.toLowerCase()) ||
@@ -681,15 +720,19 @@ export default function AdminPage() {
               <Building2 className="h-4 w-4" />
               Departamentos
             </TabsTrigger>
-            <TabsTrigger value="aprovacoes" className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Aprovações
-              {usuariosPendentes.length > 0 && (
-                <Badge variant="destructive" className="ml-1 h-5 min-w-5 px-1.5">
-                  {usuariosPendentes.length}
-                </Badge>
-              )}
-            </TabsTrigger>
+<TabsTrigger value="aprovacoes" className="flex items-center gap-2">
+                <UserPlus className="h-4 w-4" />
+                <span className="hidden sm:inline">Aprovações</span>
+                {usuariosPendentes.length > 0 && (
+                  <Badge variant="destructive" className="h-5 min-w-[20px] rounded-full px-1.5 text-xs">
+                    {usuariosPendentes.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="manutencao" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">Manutenção</span>
+              </TabsTrigger>
           </TabsList>
 
           {/* Tab Usuarios */}
@@ -1261,6 +1304,132 @@ export default function AdminPage() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Tab de Manutenção */}
+          <TabsContent value="manutencao">
+            <div className="grid gap-6">
+              {/* Card de Limpeza de Mídias */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-orange-100 rounded-lg">
+                      <HardDrive className="h-5 w-5 text-orange-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">Limpeza de Mídias</CardTitle>
+                      <CardDescription>
+                        Remove mídias de OS finalizadas há mais de 5 dias para economizar espaço no banco de dados
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                    <div className="text-sm text-amber-800">
+                      <p className="font-medium">Atenção</p>
+                      <p>Esta ação remove permanentemente as mídias (fotos e vídeos) das ordens de serviço e solicitações finalizadas/concluídas há mais de 5 dias. As mídias não poderão ser recuperadas.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-muted-foreground">
+                      <p>A limpeza é executada automaticamente todos os dias às 03:00.</p>
+                      <p>Você também pode executar manualmente clicando no botão ao lado.</p>
+                    </div>
+                    <Button 
+                      onClick={handleLimpezaMidias} 
+                      disabled={limpezaLoading}
+                      variant="outline"
+                      className="shrink-0"
+                    >
+                      {limpezaLoading ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          Executando...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Executar Limpeza
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {limpezaResultado && (
+                    <div className="mt-4 p-4 bg-muted rounded-lg space-y-3">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-medium">Limpeza executada em {new Date(limpezaResultado.dataExecucao).toLocaleString("pt-BR")}</span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="p-3 bg-background rounded border">
+                          <p className="text-muted-foreground">Ordens de Serviço</p>
+                          <p className="text-2xl font-semibold">{limpezaResultado.ordensServico.encontradas}</p>
+                          <p className="text-xs text-muted-foreground">registros com mídias limpas</p>
+                        </div>
+                        <div className="p-3 bg-background rounded border">
+                          <p className="text-muted-foreground">Solicitações</p>
+                          <p className="text-2xl font-semibold">{limpezaResultado.solicitacoes.encontradas}</p>
+                          <p className="text-xs text-muted-foreground">registros com mídias limpas</p>
+                        </div>
+                      </div>
+
+                      {(limpezaResultado.ordensServico.limpas.length > 0 || limpezaResultado.solicitacoes.limpas.length > 0) && (
+                        <div className="text-xs text-muted-foreground">
+                          {limpezaResultado.ordensServico.limpas.length > 0 && (
+                            <p>OS: {limpezaResultado.ordensServico.limpas.join(", ")}</p>
+                          )}
+                          {limpezaResultado.solicitacoes.limpas.length > 0 && (
+                            <p>Protocolos: {limpezaResultado.solicitacoes.limpas.join(", ")}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Card de Informações do Sistema */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Settings className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">Configurações de Compressão</CardTitle>
+                      <CardDescription>
+                        Configurações atuais de compressão de mídias no upload
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="text-muted-foreground">Resolução máxima</p>
+                      <p className="text-lg font-semibold">1200px</p>
+                    </div>
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="text-muted-foreground">Qualidade JPEG</p>
+                      <p className="text-lg font-semibold">50%</p>
+                    </div>
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="text-muted-foreground">Tamanho alvo</p>
+                      <p className="text-lg font-semibold">500KB</p>
+                    </div>
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="text-muted-foreground">Limite vídeo</p>
+                      <p className="text-lg font-semibold">15MB</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </main>

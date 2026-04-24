@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { FABRICANTES, MODELOS } from "@/lib/constants"
 import { Send, CheckCircle, AlertTriangle, Wrench, MessageSquare, ArrowLeft, Loader2, ImageIcon, X, Video, Check } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { converterParaJPG, isImageFile, isVideoFile, converterVideoParaBase64 } from "@/lib/webhook"
+import { converterParaJPG, isImageFile, isVideoFile, converterVideoParaBase64, COMPRESSION_CONFIG } from "@/lib/webhook"
 
 interface MidiaArmazenada {
   nome: string
@@ -401,11 +401,12 @@ export default function NovaSolicitacaoCliente() {
                         })
                         return false
                       }
-                      // Limite de 50MB por video
-                      if (isVideoFile(file) && file.size > 50 * 1024 * 1024) {
+                      // Limite de vídeo configurável (padrão 15MB)
+                      if (isVideoFile(file) && file.size > COMPRESSION_CONFIG.MAX_VIDEO_SIZE) {
+                        const limiteMB = Math.round(COMPRESSION_CONFIG.MAX_VIDEO_SIZE / (1024 * 1024))
                         toast({
                           title: "Vídeo muito grande",
-                          description: `"${file.name}" excede o limite de 50MB.`,
+                          description: `"${file.name}" excede o limite de ${limiteMB}MB. Grave um vídeo mais curto ou de menor qualidade.`,
                           variant: "destructive",
                         })
                         return false
@@ -472,7 +473,7 @@ export default function NovaSolicitacaoCliente() {
                 {isUploading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
               </div>
               <p className="text-xs text-muted-foreground">
-                Imagens: JPG, PNG, WebP, HEIC. Vídeos: MP4, MOV, WebM (máx 50MB).
+                Imagens: JPG, PNG, WebP, HEIC (comprimidas automaticamente). Vídeos: MP4, MOV, WebM (máx {Math.round(COMPRESSION_CONFIG.MAX_VIDEO_SIZE / (1024 * 1024))}MB).
               </p>
             </div>
 
