@@ -212,7 +212,7 @@ export default function VisualizarOSPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">OS {os.numero}</h1>
+                <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">{os.numero}</h1>
                 <Badge
                   variant="default"
                   className={
@@ -249,37 +249,7 @@ export default function VisualizarOSPage() {
                 </div>
               )}
             </div>
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              {os.status === "finalizada" && (
-                <>
-                  <Button
-                    onClick={handleBaixar}
-                    disabled={baixandoPdf}
-                    variant="outline"
-                    className="w-full sm:w-auto bg-transparent"
-                  >
-                    {baixandoPdf ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Gerando PDF...
-                      </>
-                    ) : (
-                      <>
-                        <Download className="h-4 w-4 mr-2" />
-                        Baixar PDF
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    onClick={() => setShowEmailModal(true)}
-                    variant="outline"
-                    className="w-full sm:w-auto bg-transparent"
-                  >
-                    <Mail className="h-4 w-4 mr-2" />
-                    Enviar por Email
-                  </Button>
-                </>
-              )}
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">              
               {os.status === "fechada" && (
                 <>
                   <Button asChild variant="outline" className="w-full sm:w-auto bg-transparent">

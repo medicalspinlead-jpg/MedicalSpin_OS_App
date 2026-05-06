@@ -2,6 +2,7 @@
 
 import type { OrdemServico } from "./storage"
 import type { ImagemWebhook } from "./webhook"
+import { gerarPdfOS } from "./pdf-generator"
 
 const WEBHOOK_DRIVE_URL =
   "https://n8n-www4kggggc4c8k8ow4w8g4g0.95.217.164.173.sslip.io/webhook/04e9a827-45c4-4c4b-805f-c892acc06d99"
@@ -69,9 +70,41 @@ export interface DriveWebhookPayload {
     nomeRecebedor: string
   }
   imagens: ImagemWebhook[]
+  pdf: {
+    nomeArquivo: string
+    base64: string
+    mimeType: string
+  }
+}
+
+// Helper para converter Blob para base64
+async function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const result = reader.result as string
+      // Remove o prefixo data:application/pdf;base64, para enviar apenas o base64 puro
+      const base64 = result.split(",")[1] || result
+      resolve(base64)
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
 }
 
 export async function enviarParaDrive(os: OrdemServico, imagens: ImagemWebhook[]): Promise<boolean> {
+  // Gera o PDF da OS
+  let pdfBase64 = ""
+  let nomeArquivoPdf = `OS-${os.numero || os.id}.pdf`
+  
+  try {
+    const pdfBlob = await gerarPdfOS(os)
+    pdfBase64 = await blobToBase64(pdfBlob)
+  } catch (error) {
+    console.error("[v0] Erro ao gerar PDF para o Drive:", error)
+    // Continua mesmo sem o PDF
+  }
+
   const payload: DriveWebhookPayload = {
     os: {
       id: os.id,
@@ -125,6 +158,11 @@ export async function enviarParaDrive(os: OrdemServico, imagens: ImagemWebhook[]
       nomeRecebedor: os.finalizacao.nomeRecebedor || os.finalizacao.responsavel || "",
     },
     imagens,
+    pdf: {
+      nomeArquivo: nomeArquivoPdf,
+      base64: pdfBase64,
+      mimeType: "application/pdf",
+    },
   }
 
   try {
