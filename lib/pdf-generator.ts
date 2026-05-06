@@ -25,7 +25,7 @@ const COLORS = {
 // Informacoes fixas da MedicalSpin
 const MEDICALSPIN_INFO = {
   nome: "Medical Spin Equipamentos de Ressonância Magnética",
-  razaoSocial: "Scientee Medical Business Group - Equipamentos E Servicos De Radiologia Ltda",
+  razaoSocial: "Scientee Medical Business Group - Equipamentos e Serviços de Radiologia Ltda",
   cnpj: "55.534.724/0001-07",
   email: "contato@medicalspin.com.br",
   site: "https://medicalspin.com.br",
@@ -66,7 +66,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   // Carrega imagens da OS
   const imagensCarregadas: string[] = []
   
-  // Imagens do campo midias
+  // Imagens do campo mídias
   if (os.midias?.arquivos && Array.isArray(os.midias.arquivos)) {
     for (const arquivo of os.midias.arquivos) {
       if (typeof arquivo === "string") {
@@ -80,7 +80,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
     }
   }
   
-  // Imagens da finalizacao
+  // Imagens da finalização
   if (os.finalizacao?.imagens && Array.isArray(os.finalizacao.imagens)) {
     for (const img of os.finalizacao.imagens) {
       if (typeof img === "string" && img.startsWith("data:image")) {
@@ -89,7 +89,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
     }
   }
 
-  // Helper para desenhar header de secao
+  // Helper para desenhar header de seção
   const drawSectionTitle = (title: string, y: number): number => {
     doc.setFillColor(...COLORS.primary)
     doc.roundedRect(margin, y, contentWidth, 7, 1, 1, "F")
@@ -126,8 +126,8 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
     doc.roundedRect(x, y, w, h, 1, 1, "S")
   }
 
-  // Helper para verificar e adicionar nova pagina
-  // Offset maior para dar espaco ao logo que e adicionado em todas as paginas
+  // Helper para verificar e adicionar nova página
+  // Offset maior para dar espaço ao logo que é adicionado em todas as páginas
   const topContentOffset = 22
   const checkNewPage = (currentY: number, neededHeight: number): number => {
     if (currentY + neededHeight > pageHeight - 15) {
@@ -161,7 +161,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   doc.setTextColor(...COLORS.white)
   doc.setFontSize(11)
   doc.setFont("helvetica", "bold")
-  doc.text("ORDEM DE SERVICO", headerBoxX + headerBoxW / 2, y + 5.5, { align: "center" })
+  doc.text("ORDEM DE SERVIÇO", headerBoxX + headerBoxW / 2, y + 5.5, { align: "center" })
   
   doc.setFontSize(7)
   doc.setFont("helvetica", "normal")
@@ -201,7 +201,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   infoY += 4
   doc.setFont("helvetica", "normal")
   doc.setTextColor(...COLORS.black)
-  doc.text(`Razao Social: ${MEDICALSPIN_INFO.razaoSocial}`, margin + 3, infoY)
+  doc.text(`Razão Social: ${MEDICALSPIN_INFO.razaoSocial}`, margin + 3, infoY)
   
   infoY += 3.5
   doc.text(`CNPJ: ${MEDICALSPIN_INFO.cnpj} | E-mail: ${MEDICALSPIN_INFO.email} | Site: ${MEDICALSPIN_INFO.site}`, margin + 3, infoY)
@@ -229,12 +229,12 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   drawBox(margin, y, contentWidth, empresaBoxH)
   
   let fieldY = y + 5
-  fieldY += drawField("Razao Social", empresaRazaoSocial, margin + 3, fieldY, 19.5)
+  fieldY += drawField("Razão Social", empresaRazaoSocial, margin + 3, fieldY, 19.5)
   fieldY += drawField("Nome Fantasia", empresaNomeFantasia, margin + 3, fieldY, 22)
   fieldY += drawField("CNPJ", os.cliente?.cnpj || os.empresa?.cnpj || "N/A", margin + 3, fieldY, 10)
   fieldY += drawField("Cidade", os.empresa?.cidade || "N/A", margin + 3, fieldY, 11.5)
   fieldY += drawField("UF", os.empresa?.uf || "N/A", margin + 3, fieldY, 5.5)
-  fieldY += drawField("Responsavel", empresaResponsavel, margin + 3, fieldY, 19.5)
+  fieldY += drawField("Responsável", empresaResponsavel, margin + 3, fieldY, 19.5)
   
   y += empresaBoxH + 3
 
@@ -302,7 +302,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   doc.setFontSize(8)
   doc.setFont("helvetica", "bold")
   doc.setTextColor(...COLORS.gray)
-  doc.text("Motivacao do Servico:", margin + 3, fieldY)
+  doc.text("Motivação do Serviço:", margin + 3, fieldY)
   doc.setFont("helvetica", "normal")
   doc.setTextColor(...COLORS.black)
   doc.text(motivacaoLines, margin + 35, fieldY)
@@ -329,7 +329,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   const intervBoxH = 14 + (tipoLines.length * 3.5) + (descLines.length * 3.5)
   
   y = checkNewPage(y, intervBoxH + 12)
-  y = drawSectionTitle("4. TIPO DE INTERVENCAO", y)
+  y = drawSectionTitle("4. TIPO DE INTERVENÇÃO", y)
   
   drawBox(margin, y, contentWidth, intervBoxH)
   
@@ -337,7 +337,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   doc.setFontSize(8)
   doc.setFont("helvetica", "bold")
   doc.setTextColor(...COLORS.gray)
-  doc.text("Tipo de Intervencao:", margin + 3, fieldY)
+  doc.text("Tipo de Intervenção:", margin + 3, fieldY)
   doc.setFont("helvetica", "normal")
   doc.setTextColor(...COLORS.black)
   doc.text(tipoLines, margin + 33, fieldY)
@@ -345,7 +345,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   
   doc.setFont("helvetica", "bold")
   doc.setTextColor(...COLORS.gray)
-  doc.text("Descricao dos Servicos:", margin + 3, fieldY)
+  doc.text("Descrição dos Serviços:", margin + 3, fieldY)
   fieldY += 4
   
   doc.setFont("helvetica", "normal")
@@ -356,20 +356,20 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
 
   // ==================== 5. PECAS UTILIZADAS ====================
   y = checkNewPage(y, 40)
-  y = drawSectionTitle("5. PECAS UTILIZADAS", y)
+  y = drawSectionTitle("5. PEÇAS UTILIZADAS", y)
   
   const pecas = os.pecas || []
   if (pecas.length > 0) {
     autoTable(doc, {
       startY: y,
       margin: { left: margin, right: margin, top: margin + 22 }, // top maior para evitar sobreposicao com logo
-      head: [["Descricao", "Qtd", "Tipo", "Em Posse de", "Observacoes"]],
+      head: [["Descrição", "Qtd", "Tipo", "Em Posse de", "Observações"]],
       body: pecas.map((p: any) => {
         // Tipo: removida ou inclusa
         const tipo = p.tipo === "removida" ? "Removida" : p.tipo === "inclusa" ? "Inclusa" : "N/A"
         // Em posse de: cliente ou medical-spin
         const posse = p.categoria === "cliente" ? "Cliente" : p.categoria === "medical-spin" ? "MedicalSpin" : "N/A"
-        // Observacoes (com 's' no final)
+        // Observações (com 's' no final)
         const obs = p.observacoes || "N/A"
         
         return [
@@ -410,7 +410,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
 
   // ==================== 6. MAO DE OBRA ====================
   y = checkNewPage(y, 35)
-  y = drawSectionTitle("6. MAO DE OBRA", y)
+  y = drawSectionTitle("6. MÃO DE OBRA", y)
   
   const maoObra = os.maoDeObra || []
   if (maoObra.length > 0) {
@@ -421,7 +421,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
     autoTable(doc, {
       startY: y,
       margin: { left: margin, right: margin, top: margin + 22 }, // top maior para evitar sobreposicao com logo
-      head: [["Data", "Horas", "Descricao do Trabalho"]],
+      head: [["Data", "Horas", "Descrição do Trabalho"]],
       body: [
         ...maoObra.map((m: any) => [
           m.data ? new Date(m.data).toLocaleDateString("pt-BR") : "N/A",
@@ -467,7 +467,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   const pendBoxH = 10 + (pendMedicalLines.length * 3.5) + (pendClienteLines.length * 3.5)
   
   y = checkNewPage(y, pendBoxH + 12)
-  y = drawSectionTitle("7. PENDENCIAS", y)
+  y = drawSectionTitle("7. PENDÊNCIAS", y)
   
   drawBox(margin, y, contentWidth, pendBoxH)
   
@@ -509,7 +509,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   doc.setFontSize(8)
   doc.setFont("helvetica", "bold")
   doc.setTextColor(...COLORS.gray)
-  doc.text("Antes da Intervencao:", margin + 3, fieldY)
+  doc.text("Antes da Intervenção:", margin + 3, fieldY)
   doc.setFont("helvetica", "normal")
   doc.setTextColor(...COLORS.black)
   doc.text(estadoInicialLines, margin + 33, fieldY)
@@ -517,7 +517,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   
   doc.setFont("helvetica", "bold")
   doc.setTextColor(...COLORS.gray)
-  doc.text("Apos a Intervencao:", margin + 3, fieldY)
+  doc.text("Após a Intervenção:", margin + 3, fieldY)
   doc.setFont("helvetica", "normal")
   doc.setTextColor(...COLORS.black)
   doc.text(estadoFinalLines, margin + 30, fieldY)
@@ -526,7 +526,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
 
   // ==================== REGISTROS FOTOGRAFICOS (antes das assinaturas) ====================
   y = checkNewPage(y, 50)
-  y = drawSectionTitle("REGISTROS FOTOGRAFICOS", y)
+  y = drawSectionTitle("REGISTROS FOTOGRÁFICOS", y)
   
   if (imagensCarregadas.length > 0) {
     const fotosPerRow = 3
@@ -618,7 +618,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   if (cftEng) {
     doc.text(`CFT: ${cftEng}`, margin + 8 + assinaturaWidth / 2, assY + 20, { align: "center" })
   }
-  doc.text("Engenheiro Responsavel", margin + 8 + assinaturaWidth / 2, assY + 23, { align: "center" })
+  doc.text("Engenheiro Responsável", margin + 8 + assinaturaWidth / 2, assY + 23, { align: "center" })
   
   // Assinatura Cliente
   const assClienteX = margin + assinaturaWidth + 16
@@ -634,7 +634,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   doc.setFontSize(6)
   doc.setFont("helvetica", "normal")
   doc.setTextColor(...COLORS.gray)
-  doc.text("Responsavel pelo Recebimento do Servico", assClienteX + assinaturaWidth / 2, assY + 20, { align: "center" })
+  doc.text("Responsável pelo Recebimento do Serviço", assClienteX + assinaturaWidth / 2, assY + 20, { align: "center" })
 
   // ==================== FOOTER ====================
   const totalPages = doc.getNumberOfPages()
