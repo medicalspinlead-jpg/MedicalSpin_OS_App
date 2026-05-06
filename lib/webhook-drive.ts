@@ -3,6 +3,7 @@
 import type { OrdemServico } from "./storage"
 import type { ImagemWebhook } from "./webhook"
 import { gerarPdfOS } from "./pdf-generator"
+import { gerarDocxOS } from "./docx-generator"
 
 const WEBHOOK_DRIVE_URL =
   "https://n8n-www4kggggc4c8k8ow4w8g4g0.95.217.164.173.sslip.io/webhook/04e9a827-45c4-4c4b-805f-c892acc06d99"
@@ -75,6 +76,11 @@ export interface DriveWebhookPayload {
     base64: string
     mimeType: string
   }
+  docx: {
+    nomeArquivo: string
+    base64: string
+    mimeType: string
+  }
 }
 
 // Helper para converter Blob para base64
@@ -103,6 +109,18 @@ export async function enviarParaDrive(os: OrdemServico, imagens: ImagemWebhook[]
   } catch (error) {
     console.error("[v0] Erro ao gerar PDF para o Drive:", error)
     // Continua mesmo sem o PDF
+  }
+
+  // Gera o DOCX da OS
+  let docxBase64 = ""
+  let nomeArquivoDocx = `OS-${os.numero || os.id}.docx`
+  
+  try {
+    const docxBuffer = await gerarDocxOS(os)
+    docxBase64 = docxBuffer.toString("base64")
+  } catch (error) {
+    console.error("[v0] Erro ao gerar DOCX para o Drive:", error)
+    // Continua mesmo sem o DOCX
   }
 
   const payload: DriveWebhookPayload = {
@@ -162,6 +180,11 @@ export async function enviarParaDrive(os: OrdemServico, imagens: ImagemWebhook[]
       nomeArquivo: nomeArquivoPdf,
       base64: pdfBase64,
       mimeType: "application/pdf",
+    },
+    docx: {
+      nomeArquivo: nomeArquivoDocx,
+      base64: docxBase64,
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     },
   }
 
