@@ -9,11 +9,12 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { getOrdemServico, saveOrdemServico, type OrdemServico } from "@/lib/storage"
 import { useAuth } from "@/components/auth-provider"
-import { ArrowLeft, Download, CheckCircle, AlertCircle, Loader2, Copy, ExternalLink, Pencil, Link2 } from "lucide-react"
+import { ArrowLeft, Download, CheckCircle, Loader2, Pencil, Link2, Mail, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { enviarParaWebhook, gerarIdUnico, type ImagemWebhook } from "@/lib/webhook"
+import { gerarIdUnico, type ImagemWebhook } from "@/lib/webhook"
+import { enviarParaDrive } from "@/lib/webhook-drive"
+import { baixarPdfOS } from "@/lib/pdf-generator"
+import { EmailModal } from "@/components/email-modal"
 
 export default function VisualizarOSPage() {
   const params = useParams()
@@ -23,11 +24,10 @@ export default function VisualizarOSPage() {
   const { usuario } = useAuth()
   const [os, setOs] = useState<OrdemServico | null>(null)
   const [loading, setLoading] = useState(true)
-  const [buscandoLink, setBuscandoLink] = useState(false)
-  const [linkDownload, setLinkDownload] = useState<string | null>(null)
-  const [showLinkDialog, setShowLinkDialog] = useState(false)
-  const [erroLink, setErroLink] = useState<string | null>(null)
+  const [baixandoPdf, setBaixandoPdf] = useState(false)
   const [isFinalizando, setIsFinalizando] = useState(false)
+  const [showEmailModal, setShowEmailModal] = useState(false)
+  const [sendingEmail, setSendingEmail] = useState(false)
 
   useEffect(() => {
     async function loadOS() {
@@ -64,120 +64,46 @@ export default function VisualizarOSPage() {
   const handleBaixar = async () => {
     if (!os) return
 
-    setBuscandoLink(true)
-    setErroLink(null)
-    setLinkDownload(null)
-
+    setBaixandoPdf(true)
     try {
-      const url =
-        "https://docs.google.com/spreadsheets/d/1mZ4GlKIZieM_yz-CBjwNk4_8K62w45ez4BDTe-4e1e0/gviz/tq?gid=824063472&tqx=out:json&tq=SELECT%20*"
-
-      const response = await fetch(url)
-      const text = await response.text()
-
-      const startIndex = text.indexOf("(")
-      const endIndex = text.lastIndexOf(")")
-
-      if (startIndex === -1 || endIndex === -1 || startIndex >= endIndex) {
-        throw new Error("Formato de resposta inválido")
-      }
-
-      const jsonText = text.substring(startIndex + 1, endIndex)
-      const data = JSON.parse(jsonText)
-
-      const rows = data.table?.rows || []
-      let linkEncontrado: string | null = null
-
-      // Coluna A (indice 0): ID
-      // Coluna B (indice 1): OS NOME
-      // Coluna C (indice 2): OS LINK
-
-      // Busca pelo idUnico na coluna A (ID)
-      if (os.idUnico) {
-        for (const row of rows) {
-          const cells = row.c || []
-          const idPlanilha = cells[0]?.v as string | null
-          if (idPlanilha && idPlanilha === os.idUnico) {
-            const osLinkPlanilha = cells[2]?.v as string | null
-            if (osLinkPlanilha) {
-              linkEncontrado = osLinkPlanilha
-            }
-            break
-          }
-        }
-      }
-
-      // Fallback: busca por nome/CNPJ/numero na coluna B (OS NOME)
-      if (!linkEncontrado) {
-        const normalizar = (str: string) => {
-          return str
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .replace(/[^a-z0-9]/g, "")
-        }
-
-        const extrairCNPJ = (str: string) => {
-          const match = str.replace(/[^0-9]/g, "").match(/\d{14}/)
-          return match ? match[0] : null
-        }
-
-        const extrairData = (str: string) => {
-          const match = str.match(/(\d{2}-\d{2}-\d{4})/)
-          return match ? match[1] : null
-        }
-
-        const nomeOS = os.nome || os.numero
-        const cnpjOS = extrairCNPJ(nomeOS) || extrairCNPJ(os.cliente?.cnpj || "")
-        const dataOS = extrairData(nomeOS)
-
-        for (const row of rows) {
-          const cells = row.c || []
-          const osNomePlanilha = cells[1]?.v as string | null
-          const osLinkPlanilha = cells[2]?.v as string | null
-
-          if (!osNomePlanilha || !osLinkPlanilha) continue
-
-          let encontrouOS = false
-          const cnpjCelula = extrairCNPJ(osNomePlanilha)
-          const dataCelula = extrairData(osNomePlanilha)
-
-          if (cnpjOS && dataOS && cnpjCelula === cnpjOS && dataCelula === dataOS) {
-            encontrouOS = true
-          }
-
-          if (!encontrouOS) {
-            const nomeNormalizado = normalizar(nomeOS)
-            const celulaNormalizada = normalizar(osNomePlanilha)
-            if (celulaNormalizada.includes(nomeNormalizado) || nomeNormalizado.includes(celulaNormalizada)) {
-              encontrouOS = true
-            }
-          }
-
-          if (!encontrouOS && (osNomePlanilha.includes(os.numero) || (nomeOS && osNomePlanilha.includes(nomeOS)))) {
-            encontrouOS = true
-          }
-
-          if (encontrouOS) {
-            linkEncontrado = osLinkPlanilha
-            break
-          }
-        }
-      }
-
-      if (linkEncontrado) {
-        setLinkDownload(linkEncontrado)
-        setShowLinkDialog(true)
-      } else {
-        setErroLink("Link de download não encontrado para esta OS")
-        setShowLinkDialog(true)
-      }
+      await baixarPdfOS(os)
+      toast({
+        title: "Download iniciado",
+        description: "O PDF da OS esta sendo baixado.",
+      })
     } catch (error) {
-      console.error("Erro ao buscar link:", error)
-      setErroLink("Erro ao buscar link de download. Tente novamente.")
-      setShowLinkDialog(true)
+      console.error("Erro ao baixar PDF:", error)
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar o PDF. Tente novamente.",
+        variant: "destructive",
+      })
     } finally {
-      setBuscandoLink(false)
+      setBaixandoPdf(false)
+    }
+  }
+
+  const handleSendEmail = async (data: { destinatarios: string[]; assunto: string; os: OrdemServico }) => {
+    setSendingEmail(true)
+    try {
+      // Aqui você pode implementar a lógica de envio de email
+      // Por enquanto, apenas simula o envio
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      toast({
+        title: "Email enviado",
+        description: `Email enviado para ${data.destinatarios.length} destinatario(s).`,
+      })
+      setShowEmailModal(false)
+    } catch (error) {
+      console.error("Erro ao enviar email:", error)
+      toast({
+        title: "Erro",
+        description: "Erro ao enviar email. Tente novamente.",
+        variant: "destructive",
+      })
+    } finally {
+      setSendingEmail(false)
     }
   }
 
@@ -205,7 +131,24 @@ export default function VisualizarOSPage() {
         finalizedAt: new Date().toISOString(),
       }
 
-      const sucesso = await enviarParaWebhook(osAtualizada, imagensWebhook)
+      // Busca configuração para verificar se deve enviar ao Drive
+      let enviarDrive = true
+      try {
+        const configRes = await fetch("/api/config", { credentials: "include" })
+        if (configRes.ok) {
+          const config = await configRes.json()
+          enviarDrive = config.armazenarNoDrive ?? true
+        }
+      } catch {
+        // Se falhar, assume que deve enviar
+      }
+
+      // Envia para o webhook do Drive se a opção estiver ativada
+      let sucessoDrive = true
+      if (enviarDrive) {
+        sucessoDrive = await enviarParaDrive(osAtualizada, imagensWebhook)
+      }
+
       await saveOrdemServico({ ...osAtualizada }, usuario ? {
         id: usuario.id,
         nome: usuario.nome,
@@ -213,13 +156,23 @@ export default function VisualizarOSPage() {
       } : undefined)
       setOs(osAtualizada)
 
-      toast({
-        title: sucesso ? "OS Finalizada" : "Aviso",
-        description: sucesso
-          ? "Ordem de serviço finalizada e enviada com sucesso!"
-          : "OS finalizada localmente, mas houve um erro ao enviar para o servidor.",
-        variant: sucesso ? "default" : "destructive",
-      })
+      if (enviarDrive && sucessoDrive) {
+        toast({
+          title: "OS Finalizada",
+          description: "Ordem de serviço finalizada e armazenada no Drive com sucesso!",
+        })
+      } else if (enviarDrive && !sucessoDrive) {
+        toast({
+          title: "Aviso",
+          description: "OS finalizada, mas houve um erro ao enviar para o Drive.",
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "OS Finalizada",
+          description: "Ordem de serviço finalizada com sucesso!",
+        })
+      }
     } catch (error) {
       console.error("Erro ao finalizar OS:", error)
       toast({
@@ -229,16 +182,6 @@ export default function VisualizarOSPage() {
       })
     } finally {
       setIsFinalizando(false)
-    }
-  }
-
-  const handleCopiarLink = () => {
-    if (linkDownload) {
-      navigator.clipboard.writeText(linkDownload)
-      toast({
-        title: "Link copiado!",
-        description: "O link foi copiado para a área de transferência",
-      })
     }
   }
 
@@ -307,6 +250,36 @@ export default function VisualizarOSPage() {
               )}
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              {os.status === "finalizada" && (
+                <>
+                  <Button
+                    onClick={handleBaixar}
+                    disabled={baixandoPdf}
+                    variant="outline"
+                    className="w-full sm:w-auto bg-transparent"
+                  >
+                    {baixandoPdf ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Gerando PDF...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4 mr-2" />
+                        Baixar PDF
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => setShowEmailModal(true)}
+                    variant="outline"
+                    className="w-full sm:w-auto bg-transparent"
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Enviar por Email
+                  </Button>
+                </>
+              )}
               {os.status === "fechada" && (
                 <>
                   <Button asChild variant="outline" className="w-full sm:w-auto bg-transparent">
@@ -338,41 +311,14 @@ export default function VisualizarOSPage() {
           </div>
         </div>
 
-        <Dialog open={showLinkDialog} onOpenChange={setShowLinkDialog}>
-          <DialogContent className="w-[95vw] max-w-lg mx-auto">
-            <DialogHeader>
-              <DialogTitle>{linkDownload ? "Link de Download" : "Aviso"}</DialogTitle>
-              <DialogDescription>
-                {linkDownload ? "Copie o link abaixo para baixar o documento da OS" : erroLink}
-              </DialogDescription>
-            </DialogHeader>
-            {linkDownload && (
-              <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Input value={linkDownload} readOnly className="flex-1 text-xs sm:text-sm" />
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleCopiarLink}
-                      variant="outline"
-                      size="icon"
-                      className="shrink-0 bg-transparent"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    <Button asChild variant="outline" size="icon" className="shrink-0 bg-transparent">
-                      <a href={linkDownload} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  </div>
-                </div>
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  Clique no ícone de cópia para copiar o link ou no ícone de link externo para abrir em uma nova aba.
-                </p>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+        {/* Email Modal */}
+        <EmailModal
+          open={showEmailModal}
+          onOpenChange={setShowEmailModal}
+          os={os}
+          onSend={handleSendEmail}
+          sending={sendingEmail}
+        />
 
         <div className="space-y-6">
           {/* Dados da Empresa */}

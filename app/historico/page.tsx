@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { getOSHistorico, deleteOrdemServico, type OrdemServico, getOSFinalizadas } from "@/lib/storage"
-import { FileText, Search, Eye, Trash2, Download, Copy, ExternalLink, Loader2, Mail, Pencil } from "lucide-react"
+import { FileText, Search, Eye, Trash2, Download, Loader2, Mail, Pencil } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   AlertDialog,
@@ -19,8 +19,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
+import { baixarPdfOS, gerarPdfOS } from "@/lib/pdf-generator"
 import { ArrowLeft } from "lucide-react"
 import useSWR from "swr"
 import { useAuth } from "@/components/auth-provider"
@@ -30,10 +30,7 @@ export default function HistoricoPage() {
   const [search, setSearch] = useState("")
   const [filtroMes, setFiltroMes] = useState("todos")
   const [osToDelete, setOsToDelete] = useState<OrdemServico | null>(null)
-  const [buscandoLink, setBuscandoLink] = useState<string | null>(null)
-  const [linkDownload, setLinkDownload] = useState<string | null>(null)
-  const [showLinkDialog, setShowLinkDialog] = useState(false)
-  const [erroLink, setErroLink] = useState<string | null>(null)
+  const [baixandoPdf, setBaixandoPdf] = useState<string | null>(null)
   const [enviandoEmail, setEnviandoEmail] = useState<string | null>(null)
   const [emailModalOpen, setEmailModalOpen] = useState(false)
   const [emailModalOS, setEmailModalOS] = useState<OrdemServico | null>(null)
@@ -91,71 +88,22 @@ export default function HistoricoPage() {
   }
 
   const handleBaixar = async (os: OrdemServico) => {
-    setBuscandoLink(os.id)
-    setErroLink(null)
-    setLinkDownload(null)
-
+    setBaixandoPdf(os.id)
     try {
-      const url =
-        "https://docs.google.com/spreadsheets/d/1mZ4GlKIZieM_yz-CBjwNk4_8K62w45ez4BDTe-4e1e0/gviz/tq?gid=824063472&tqx=out:json&tq=SELECT%20*"
-
-      const response = await fetch(url)
-      const text = await response.text()
-
-      const startIndex = text.indexOf("(")
-      const endIndex = text.lastIndexOf(")")
-
-      if (startIndex === -1 || endIndex === -1 || startIndex >= endIndex) {
-        throw new Error("Formato de resposta inválido")
-      }
-
-      const jsonText = text.substring(startIndex + 1, endIndex)
-      const data = JSON.parse(jsonText)
-
-      const rows = data.table?.rows || []
-      let linkEncontrado: string | null = null
-
-      // Coluna A (indice 0): ID da OS
-      // Coluna B (indice 1): OS NOME
-      // Coluna C (indice 2): OS LINK
-
-      // Busca exclusivamente pelo ID da OS na coluna A
-      const osId = os.idUnico || os.id
-      for (const row of rows) {
-        const cells = row.c || []
-        const idPlanilha = cells[0]?.v as string | null
-        if (idPlanilha && String(idPlanilha).trim() === String(osId).trim()) {
-          const osLinkPlanilha = cells[2]?.v as string | null
-          if (osLinkPlanilha) {
-            linkEncontrado = osLinkPlanilha
-          }
-          break
-        }
-      }
-
-      if (linkEncontrado) {
-        setLinkDownload(linkEncontrado)
-        setShowLinkDialog(true)
-      } else {
-        setErroLink("Link de download não encontrado para esta OS")
-        setShowLinkDialog(true)
-      }
-    } catch (error) {
-      console.error("Erro ao buscar link:", error)
-      setErroLink("Erro ao buscar link de download. Tente novamente.")
-      setShowLinkDialog(true)
-    } finally {
-      setBuscandoLink(null)
-    }
-  }
-
-  const handleCopiarLink = () => {
-    if (linkDownload) {
-      navigator.clipboard.writeText(linkDownload)
+      await baixarPdfOS(os)
       toast({
-        title: "Link copiado!",
-        description: "O link foi copiado para a área de transferência",
+        title: "Download iniciado",
+        description: "O PDF da OS esta sendo baixado.",
       })
+    } catch (error) {
+      console.error("Erro ao baixar PDF:", error)
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar o PDF. Tente novamente.",
+        variant: "destructive",
+      })
+    } finally {
+      setBaixandoPdf(null)
     }
   }
 
@@ -173,8 +121,8 @@ export default function HistoricoPage() {
 
     if (destinatarios.length === 0) {
       toast({
-        title: "Email não encontrado",
-        description: "Adicione pelo menos um destinatário.",
+        title: "Email nao encontrado",
+        description: "Adicione pelo menos um destinatario.",
         variant: "destructive",
       })
       return
@@ -183,48 +131,21 @@ export default function HistoricoPage() {
     setEnviandoEmail(os.id)
 
     try {
-      // Buscar link de download primeiro
-      let linkDownloadOS: string | null = null
+      // Gerar PDF localmente
+      const pdfBlob = await gerarPdfOS(os)
       
-      try {
-        const url =
-          "https://docs.google.com/spreadsheets/d/1mZ4GlKIZieM_yz-CBjwNk4_8K62w45ez4BDTe-4e1e0/gviz/tq?gid=824063472&tqx=out:json&tq=SELECT%20*"
-
-        const response = await fetch(url)
-        const text = await response.text()
-
-        const startIndex = text.indexOf("(")
-        const endIndex = text.lastIndexOf(")")
-
-        if (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
-          const jsonText = text.substring(startIndex + 1, endIndex)
-          const data = JSON.parse(jsonText)
-
-          const rows = data.table?.rows || []
-
-          // Coluna A (indice 0): ID da OS
-          // Coluna B (indice 1): OS NOME
-          // Coluna C (indice 2): OS LINK
-
-          // Busca exclusivamente pelo ID da OS na coluna A
-          const osIdEmail = os.idUnico || os.id
-          for (const row of rows) {
-            const cells = row.c || []
-            const idPlanilha = cells[0]?.v as string | null
-            if (idPlanilha && String(idPlanilha).trim() === String(osIdEmail).trim()) {
-              const osLinkPlanilha = cells[2]?.v as string | null
-              if (osLinkPlanilha) {
-                linkDownloadOS = osLinkPlanilha
-              }
-              break
-            }
-          }
+      // Converter blob para base64 para envio
+      const reader = new FileReader()
+      const pdfBase64 = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const result = reader.result as string
+          resolve(result.split(",")[1])
         }
-      } catch (linkError) {
-        console.error("Erro ao buscar link de download:", linkError)
-      }
+        reader.onerror = reject
+        reader.readAsDataURL(pdfBlob)
+      })
 
-      // Enviar email com o link - envia para todos os destinatarios do modal
+      // Enviar email com PDF anexado
       const response = await fetch(
         "https://n8n-www4kggggc4c8k8ow4w8g4g0.95.217.164.173.sslip.io/webhook/6c58efc2-699c-4c59-8be2-2b7169900363",
         {
@@ -241,14 +162,15 @@ export default function HistoricoPage() {
             cliente: os.cliente?.razaoSocial || os.cliente?.nomeFantasia,
             equipamento: os.equipamento?.tipo,
             dataFinalizacao: os.finalizedAt,
-            linkDownload: linkDownloadOS,
+            pdfBase64: pdfBase64,
+            pdfNome: `OS-${os.numero}.pdf`,
           }),
         }
       )
 
       if (response.ok) {
         const emailsEnviados = destinatarios.length > 1 
-          ? `${destinatarios.length} destinatários (${destinatarios.join(", ")})`
+          ? `${destinatarios.length} destinatarios (${destinatarios.join(", ")})`
           : destinatarios[0]
         toast({
           title: "Email enviado!",
@@ -263,16 +185,12 @@ export default function HistoricoPage() {
       console.error("Erro ao enviar email:", error)
       toast({
         title: "Erro ao enviar email",
-        description: "Não foi possível enviar o email. Tente novamente.",
+        description: "Nao foi possivel enviar o email. Tente novamente.",
         variant: "destructive",
       })
     } finally {
       setEnviandoEmail(null)
     }
-  }
-
-  const handleEnviarEmail = async (os: OrdemServico) => {
-    // Implementação de handleEnviarEmail aqui
   }
 
   const filteredOrdens = ordens.filter((os) => {
@@ -465,14 +383,14 @@ export default function HistoricoPage() {
                             size="sm"
                             className="flex-1 min-w-[80px] sm:flex-none bg-transparent text-xs sm:text-sm"
                             onClick={() => handleBaixar(os)}
-                            disabled={buscandoLink === os.id}
+                            disabled={baixandoPdf === os.id}
                           >
-                            {buscandoLink === os.id ? (
+                            {baixandoPdf === os.id ? (
                               <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2 animate-spin" />
                             ) : (
                               <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                             )}
-                            {buscandoLink === os.id ? "..." : "Baixar"}
+                            {baixandoPdf === os.id ? "Gerando..." : "Baixar"}
                           </Button>
                         )}                       
                       </div>
@@ -484,37 +402,6 @@ export default function HistoricoPage() {
           </div>
         )}
       </main>
-
-      <Dialog open={showLinkDialog} onOpenChange={setShowLinkDialog}>
-        <DialogContent className="w-[95vw] max-w-lg mx-auto">
-          <DialogHeader>
-            <DialogTitle>{linkDownload ? "Link de Download" : "Aviso"}</DialogTitle>
-            <DialogDescription>
-              {linkDownload ? "Copie o link abaixo para baixar o documento da OS" : erroLink}
-            </DialogDescription>
-          </DialogHeader>
-          {linkDownload && (
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Input value={linkDownload} readOnly className="flex-1 text-xs sm:text-sm" />
-                <div className="flex gap-2">
-                  <Button onClick={handleCopiarLink} variant="outline" size="icon" className="shrink-0 bg-transparent">
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                  <Button asChild variant="outline" size="icon" className="shrink-0 bg-transparent">
-                    <a href={linkDownload} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                  </Button>
-                </div>
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Clique no ícone de cópia para copiar o link ou no ícone de link externo para abrir em uma nova aba.
-              </p>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {emailModalOS && (
         <EmailModal

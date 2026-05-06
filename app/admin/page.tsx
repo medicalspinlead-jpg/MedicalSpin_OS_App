@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { Plus, Search, Trash2, Edit, Users, ArrowLeft, Shield, Wrench, Eye, EyeOff, UserCircle, Building2, Zap, Radio, Scan, UserPlus, X, CheckSquare, Square, Clock, CheckCircle, XCircle, Settings, HardDrive, RefreshCw, AlertTriangle, Download, Upload, Database, FileText } from "lucide-react"
+import { Plus, Search, Trash2, Edit, Users, ArrowLeft, Shield, Wrench, Eye, EyeOff, UserCircle, Building2, Zap, Radio, Scan, UserPlus, X, CheckSquare, Square, Clock, CheckCircle, XCircle, Settings, HardDrive, RefreshCw, AlertTriangle, Download, Upload, Database, FileText, Cloud } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useAuth } from "@/components/auth-provider"
@@ -162,6 +163,10 @@ export default function AdminPage() {
   const [selectedClienteIds, setSelectedClienteIds] = useState<string[]>([])
   const [clienteSearch, setClienteSearch] = useState("")
   
+  // Estado para armazenamento no Drive
+  const [armazenarNoDrive, setArmazenarNoDrive] = useState(true)
+  const [armazenarDriveLoading, setArmazenarDriveLoading] = useState(false)
+
   // Estado para limpeza de mídias
   const [limpezaLoading, setLimpezaLoading] = useState(false)
   const [limpezaResultado, setLimpezaResultado] = useState<{
@@ -230,6 +235,18 @@ export default function AdminPage() {
   // Load clientes
   useEffect(() => {
     getClientes().then(setAllClientes)
+  }, [])
+
+  // Load configurações
+  useEffect(() => {
+    fetch("/api/config", { credentials: "include" })
+      .then((res) => res.json())
+      .then((config) => {
+        if (typeof config.armazenarNoDrive === "boolean") {
+          setArmazenarNoDrive(config.armazenarNoDrive)
+        }
+      })
+      .catch(() => {})
   }, [])
 
   // Load dept usuarios e clientes when selected
@@ -663,6 +680,33 @@ export default function AdminPage() {
       toast.error(err instanceof Error ? err.message : "Erro ao rejeitar usuário")
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Função para alternar armazenamento no Drive
+  const handleToggleArmazenarDrive = async (checked: boolean) => {
+    setArmazenarDriveLoading(true)
+    try {
+      const res = await fetch("/api/config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ armazenarNoDrive: checked }),
+      })
+
+      if (!res.ok) {
+        throw new Error("Erro ao atualizar configuração")
+      }
+
+      setArmazenarNoDrive(checked)
+      toast.success(checked 
+        ? "Armazenamento no Drive ativado" 
+        : "Armazenamento no Drive desativado"
+      )
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao atualizar configuração")
+    } finally {
+      setArmazenarDriveLoading(false)
     }
   }
 
@@ -1511,9 +1555,51 @@ export default function AdminPage() {
             </Card>
           </TabsContent>
 
-          {/* Tab de Manutenção */}
+{/* Tab de Manutenção */}
           <TabsContent value="manutencao">
             <div className="grid gap-6">
+              {/* Card de Armazenamento no Drive */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Cloud className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <CardTitle className="text-lg">Armazenar dados no Drive</CardTitle>
+                      <CardDescription>
+                        Envia automaticamente as OS finalizadas e suas mídias para o armazenamento externo
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <Cloud className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+                    <div className="text-sm text-blue-800">
+                      <p className="font-medium">Sobre o armazenamento</p>
+                      <p>Quando ativado, ao finalizar uma OS os dados serão enviados automaticamente para o armazenamento externo, incluindo as informações do cliente, equipamento, serviços realizados e todas as fotos anexadas.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="space-y-1">
+                      <p className="font-medium">Enviar dados ao Drive</p>
+                      <p className="text-sm text-muted-foreground">
+                        {armazenarNoDrive 
+                          ? "As OS finalizadas serão enviadas automaticamente" 
+                          : "As OS serão salvas apenas localmente"}
+                      </p>
+                    </div>
+                    <Switch
+                      checked={armazenarNoDrive}
+                      onCheckedChange={handleToggleArmazenarDrive}
+                      disabled={armazenarDriveLoading}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Card de Limpeza de Mídias */}
               <Card>
                 <CardHeader>

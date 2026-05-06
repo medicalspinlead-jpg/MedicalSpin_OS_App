@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button"
 import type { OrdemServico } from "@/lib/storage"
 import { CheckCircle, Save, X, ImageIcon, Loader2, Lock } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { enviarParaWebhook, converterParaJPG, isImageFile, gerarIdUnico, type ImagemWebhook } from "@/lib/webhook"
+import { converterParaJPG, isImageFile, gerarIdUnico, type ImagemWebhook } from "@/lib/webhook"
+import { enviarParaDrive } from "@/lib/webhook-drive"
 import { useToast } from "@/hooks/use-toast"
 import { areSteps1to8Complete } from "@/components/os/step-indicator"
 
@@ -154,9 +155,9 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
   }
 
   const handleFinalizar = async (e: React.FormEvent) => {
-  e.preventDefault()
+    e.preventDefault()
 
-  setIsFinalizando(true)
+    setIsFinalizando(true)
 
     try {
       // Prepara as imagens para o webhook
@@ -180,23 +181,43 @@ export const Step9Finalizacao = forwardRef(function Step9Finalizacao(
         finalizedAt: new Date().toISOString(),
       }
 
-      // Envia para o webhook
-      const sucesso = await enviarParaWebhook(osAtualizada, imagensWebhook)
+      // Busca configuração para verificar se deve enviar ao Drive
+      let enviarDrive = true
+      try {
+        const configRes = await fetch("/api/config", { credentials: "include" })
+        if (configRes.ok) {
+          const config = await configRes.json()
+          enviarDrive = config.armazenarNoDrive ?? true
+        }
+      } catch {
+        // Se falhar, assume que deve enviar
+      }
 
-      if (sucesso) {
+      // Envia para o webhook do Drive se a opção estiver ativada
+      let sucessoDrive = true
+      if (enviarDrive) {
+        sucessoDrive = await enviarParaDrive(osAtualizada, imagensWebhook)
+      }
+
+      if (enviarDrive && sucessoDrive) {
         toast({
           title: "OS Finalizada",
-          description: "Ordem de serviço finalizada e enviada com sucesso!",
+          description: "Ordem de serviço finalizada e armazenada no Drive com sucesso!",
         })
-        onFinalizar({ finalizacao: formData, midias: { arquivos: imagens.map((img) => img.preview) }, idUnico })
-      } else {
+      } else if (enviarDrive && !sucessoDrive) {
         toast({
           title: "Aviso",
-          description: "OS finalizada localmente, mas houve um erro ao enviar para o servidor.",
+          description: "OS finalizada, mas houve um erro ao enviar para o Drive.",
           variant: "destructive",
         })
-        onFinalizar({ finalizacao: formData, midias: { arquivos: imagens.map((img) => img.preview) }, idUnico })
+      } else {
+        toast({
+          title: "OS Finalizada",
+          description: "Ordem de serviço finalizada com sucesso!",
+        })
       }
+      
+      onFinalizar({ finalizacao: formData, midias: { arquivos: imagens.map((img) => img.preview) }, idUnico })
     } catch (error) {
       console.error("[v0] Erro ao finalizar:", error)
       toast({

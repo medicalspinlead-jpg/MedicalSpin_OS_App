@@ -12,6 +12,7 @@ export async function GET() {
       config = await prisma.configuracao.create({
         data: {
           emailHabilitado: true,
+          armazenarNoDrive: true,
         },
       })
     }
@@ -37,18 +38,29 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json()
-    const { emailHabilitado } = body
+    const { emailHabilitado, armazenarNoDrive } = body
 
     let config = await prisma.configuracao.findFirst()
+
+    const updateData: { emailHabilitado?: boolean; armazenarNoDrive?: boolean } = {}
+    if (typeof emailHabilitado === "boolean") {
+      updateData.emailHabilitado = emailHabilitado
+    }
+    if (typeof armazenarNoDrive === "boolean") {
+      updateData.armazenarNoDrive = armazenarNoDrive
+    }
 
     if (config) {
       config = await prisma.configuracao.update({
         where: { id: config.id },
-        data: { emailHabilitado },
+        data: updateData,
       })
     } else {
       config = await prisma.configuracao.create({
-        data: { emailHabilitado },
+        data: { 
+          emailHabilitado: emailHabilitado ?? true,
+          armazenarNoDrive: armazenarNoDrive ?? true,
+        },
       })
     }
 

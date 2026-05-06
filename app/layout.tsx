@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/components/auth-provider"
 import { AppHeader } from "@/components/layout/app-header"
 import { RegisterServiceWorker } from "@/components/register-service-worker"
+import { Watermark } from "@/components/watermark"
 
 import { Inter, Inter as V0_Font_Inter, Geist_Mono as V0_Font_Geist_Mono, Source_Serif_4 as V0_Font_Source_Serif_4 } from 'next/font/google'
 
@@ -83,8 +84,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <>
       <RegisterServiceWorker />
+      <Watermark />
       <AppHeader />
-      <main className="min-h-[calc(100vh-4rem)]">{children}</main>
+      <main className="min-h-[calc(100vh-4rem)] relative z-10">{children}</main>
     </>
   )
 }
