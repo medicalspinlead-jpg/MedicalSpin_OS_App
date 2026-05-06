@@ -49,7 +49,7 @@ export default function AjudaPage() {
     {
       icon: MessageCircle,
       label: "WhatsApp",
-      valor: "(51) 3181-1899",
+      valor: "(51) 9 3181-1899",
       descricao: "Atendimento rápido",
       link: "https://wa.me/555131811899?text=Ol%C3%A1%2C+preciso+de+suporte+tecnico+no+Portal+do+Cliente+MedicalSpin",
     },

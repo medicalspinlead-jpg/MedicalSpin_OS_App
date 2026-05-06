@@ -31,7 +31,7 @@ const MEDICALSPIN_INFO = {
   site: "https://medicalspin.com.br",
   cidade: "Novo Hamburgo",
   uf: "RS",
-  telefone: "(11) 99807-0104"
+  telefone: "(51) 9 3181-1899"
 }
 
 // Carrega imagem como base64
@@ -127,7 +127,8 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   }
 
   // Helper para verificar e adicionar nova pagina
-  const topContentOffset = 18
+  // Offset maior para dar espaco ao logo que e adicionado em todas as paginas
+  const topContentOffset = 22
   const checkNewPage = (currentY: number, neededHeight: number): number => {
     if (currentY + neededHeight > pageHeight - 15) {
       doc.addPage()
@@ -213,16 +214,27 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   // ==================== 1. DADOS DA EMPRESA (Cliente) ====================
   y = drawSectionTitle("1. DADOS DA EMPRESA", y)
   
-  const empresaBoxH = 35
+  // Calcula altura dinamica baseada no conteudo
+  const empresaRazaoSocial = os.cliente?.razaoSocial || os.empresa?.razaoSocial || os.empresa?.nomeFantasia || "N/A"
+  const empresaNomeFantasia = os.cliente?.nomeFantasia || os.empresa?.nomeFantasia || "N/A"
+  const empresaResponsavel = os.empresa?.responsavel || "N/A"
+  
+  doc.setFontSize(8)
+  const razaoLines = doc.splitTextToSize(empresaRazaoSocial, contentWidth - 30)
+  const fantasiaLines = doc.splitTextToSize(empresaNomeFantasia, contentWidth - 30)
+  const responsavelLines = doc.splitTextToSize(empresaResponsavel, contentWidth - 30)
+  
+  const empresaBoxH = 10 + (razaoLines.length * 4) + (fantasiaLines.length * 4) + 4 + 4 + 4 + (responsavelLines.length * 4)
+  
   drawBox(margin, y, contentWidth, empresaBoxH)
   
   let fieldY = y + 5
-  fieldY += drawField("Razao Social", os.cliente?.razaoSocial || os.empresa?.razaoSocial || os.empresa?.nomeFantasia || "N/A", margin + 3, fieldY, 19.5)
-  fieldY += drawField("Nome Fantasia", os.cliente?.nomeFantasia || os.empresa?.nomeFantasia || "N/A", margin + 3, fieldY, 22)
+  fieldY += drawField("Razao Social", empresaRazaoSocial, margin + 3, fieldY, 19.5)
+  fieldY += drawField("Nome Fantasia", empresaNomeFantasia, margin + 3, fieldY, 22)
   fieldY += drawField("CNPJ", os.cliente?.cnpj || os.empresa?.cnpj || "N/A", margin + 3, fieldY, 10)
   fieldY += drawField("Cidade", os.empresa?.cidade || "N/A", margin + 3, fieldY, 11.5)
   fieldY += drawField("UF", os.empresa?.uf || "N/A", margin + 3, fieldY, 5.5)
-  fieldY += drawField("Responsavel", (os.empresa?.responsavel || "N/A").substring(0, 20), margin + 3, fieldY, 19.5)
+  fieldY += drawField("Responsavel", empresaResponsavel, margin + 3, fieldY, 19.5)
   
   y += empresaBoxH + 3
 
@@ -272,37 +284,65 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   y = checkNewPage(y, 25)
   y = drawSectionTitle("3. MOTIVO E EVENTOS", y)
   
-  const motivoBoxH = 16
+  const motivacao = os.motivo?.motivacaoServico || os.motivo?.motivoServico || "N/A"
+  const eventos = os.motivo?.eventosRelevantes || "N/A"
+  
+  doc.setFontSize(8)
+  const motivacaoLines = doc.splitTextToSize(motivacao, contentWidth - 38)
+  const eventosLines = doc.splitTextToSize(eventos, contentWidth - 38)
+  
+  const motivoBoxH = 10 + (motivacaoLines.length * 3.5) + (eventosLines.length * 3.5)
+  
+  // Verifica se precisa de nova pagina com altura calculada
+  y = checkNewPage(y, motivoBoxH + 5)
+  
   drawBox(margin, y, contentWidth, motivoBoxH)
   
   fieldY = y + 5
-  const motivacao = os.motivo?.motivacaoServico || os.motivo?.motivoServico || "N/A"
-  fieldY += drawField("Motivacao do Servico", motivacao.substring(0, 80), margin + 3, fieldY, 31)
+  doc.setFontSize(8)
+  doc.setFont("helvetica", "bold")
+  doc.setTextColor(...COLORS.gray)
+  doc.text("Motivacao do Servico:", margin + 3, fieldY)
+  doc.setFont("helvetica", "normal")
+  doc.setTextColor(...COLORS.black)
+  doc.text(motivacaoLines, margin + 35, fieldY)
+  fieldY += motivacaoLines.length * 3.5 + 2
   
-  const eventos = os.motivo?.eventosRelevantes || "N/A"
-  doc.setFontSize(7)
   doc.setFont("helvetica", "bold")
   doc.setTextColor(...COLORS.gray)
   doc.text("Eventos Relevantes:", margin + 3, fieldY)
   doc.setFont("helvetica", "normal")
   doc.setTextColor(...COLORS.black)
-  doc.text(eventos.substring(0, 80), margin + 28, fieldY)
+  doc.text(eventosLines, margin + 35, fieldY)
   
   y += motivoBoxH + 3
 
   // ==================== 4. TIPO DE INTERVENCAO ====================
-  y = checkNewPage(y, 35)
+  const descServicos = os.intervencao?.descricaoServicos || os.intervencao?.descricao || "N/A"
+  const tipoIntervencao = os.intervencao?.tipo || "N/A"
+  
+  doc.setFontSize(8)
+  const descLines = doc.splitTextToSize(descServicos, contentWidth - 10)
+  const tipoLines = doc.splitTextToSize(tipoIntervencao, contentWidth - 38)
+  
+  // Altura dinamica: todas as linhas do texto
+  const intervBoxH = 14 + (tipoLines.length * 3.5) + (descLines.length * 3.5)
+  
+  y = checkNewPage(y, intervBoxH + 12)
   y = drawSectionTitle("4. TIPO DE INTERVENCAO", y)
   
-  const descServicos = os.intervencao?.descricaoServicos || os.intervencao?.descricao || "N/A"
-  const descLines = doc.splitTextToSize(descServicos, contentWidth - 10)
-  const intervBoxH = 14 + Math.min(descLines.length, 4) * 3.5
   drawBox(margin, y, contentWidth, intervBoxH)
   
   fieldY = y + 5
-  fieldY += drawField("Tipo de Intervencao", os.intervencao?.tipo || "N/A", margin + 3, fieldY, 29)
+  doc.setFontSize(8)
+  doc.setFont("helvetica", "bold")
+  doc.setTextColor(...COLORS.gray)
+  doc.text("Tipo de Intervencao:", margin + 3, fieldY)
+  doc.setFont("helvetica", "normal")
+  doc.setTextColor(...COLORS.black)
+  doc.text(tipoLines, margin + 33, fieldY)
+  fieldY += tipoLines.length * 3.5 + 2
   
-  doc.setFontSize(7)
   doc.setFont("helvetica", "bold")
   doc.setTextColor(...COLORS.gray)
   doc.text("Descricao dos Servicos:", margin + 3, fieldY)
@@ -310,7 +350,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   
   doc.setFont("helvetica", "normal")
   doc.setTextColor(...COLORS.black)
-  doc.text(descLines.slice(0, 4), margin + 3, fieldY)
+  doc.text(descLines, margin + 3, fieldY)
   
   y += intervBoxH + 3
 
@@ -322,7 +362,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   if (pecas.length > 0) {
     autoTable(doc, {
       startY: y,
-      margin: { left: margin, right: margin },
+      margin: { left: margin, right: margin, top: margin + 22 }, // top maior para evitar sobreposicao com logo
       head: [["Descricao", "Qtd", "Tipo", "Em Posse de", "Observacoes"]],
       body: pecas.map((p: any) => {
         // Tipo: removida ou inclusa
@@ -340,16 +380,23 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
           obs
         ]
       }),
-      styles: { fontSize: 7, cellPadding: 1.5 },
+      styles: { 
+        fontSize: 7, 
+        cellPadding: 2,
+        overflow: 'linebreak', // Quebra de linha automatica
+        cellWidth: 'wrap' // Permite que a celula cresça
+      },
       headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontStyle: "bold" },
       alternateRowStyles: { fillColor: COLORS.lightGray },
       columnStyles: {
-        0: { cellWidth: 50 },
-        1: { cellWidth: 12, halign: "center" },
-        2: { cellWidth: 22 },
-        3: { cellWidth: 28 },
-        4: { cellWidth: "auto" }
-      }
+        0: { cellWidth: 40 },
+        1: { cellWidth: 10, halign: "center" },
+        2: { cellWidth: 18 },
+        3: { cellWidth: 22 },
+        4: { cellWidth: 'auto', minCellWidth: 30 } // Observacoes com largura automatica
+      },
+      tableWidth: 'auto',
+      showHead: 'everyPage'
     })
     y = doc.lastAutoTable?.finalY ? doc.lastAutoTable.finalY + 3 : y + 15
   } else {
@@ -373,7 +420,7 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
     
     autoTable(doc, {
       startY: y,
-      margin: { left: margin, right: margin },
+      margin: { left: margin, right: margin, top: margin + 22 }, // top maior para evitar sobreposicao com logo
       head: [["Data", "Horas", "Descricao do Trabalho"]],
       body: [
         ...maoObra.map((m: any) => [
@@ -383,14 +430,21 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
         ]),
         [{ content: "TOTAL", styles: { fontStyle: "bold" } }, { content: `${totalHoras}h`, styles: { fontStyle: "bold" } }, ""]
       ],
-      styles: { fontSize: 7, cellPadding: 1.5 },
+      styles: { 
+        fontSize: 7, 
+        cellPadding: 2,
+        overflow: 'linebreak',
+        cellWidth: 'wrap'
+      },
       headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontStyle: "bold" },
       alternateRowStyles: { fillColor: COLORS.lightGray },
       columnStyles: {
-        0: { cellWidth: 28 },
-        1: { cellWidth: 18, halign: "center" },
-        2: { cellWidth: "auto" }
-      }
+        0: { cellWidth: 25 },
+        1: { cellWidth: 15, halign: "center" },
+        2: { cellWidth: 'auto', minCellWidth: 50 }
+      },
+      tableWidth: 'auto',
+      showHead: 'everyPage'
     })
     y = doc.lastAutoTable?.finalY ? doc.lastAutoTable.finalY + 3 : y + 15
   } else {
@@ -403,40 +457,70 @@ export async function gerarPdfOS(os: OrdemServico): Promise<Blob> {
   }
 
   // ==================== 7. PENDENCIAS ====================
-  y = checkNewPage(y, 22)
+  const pendMedicalSpin = os.pendencias?.medicalSpin || os.pendencias?.empresa || "N/A"
+  const pendCliente = os.pendencias?.cliente || "N/A"
+  
+  doc.setFontSize(8)
+  const pendMedicalLines = doc.splitTextToSize(pendMedicalSpin, contentWidth - 25)
+  const pendClienteLines = doc.splitTextToSize(pendCliente, contentWidth - 25)
+  
+  const pendBoxH = 10 + (pendMedicalLines.length * 3.5) + (pendClienteLines.length * 3.5)
+  
+  y = checkNewPage(y, pendBoxH + 12)
   y = drawSectionTitle("7. PENDENCIAS", y)
   
-  const pendBoxH = 14
   drawBox(margin, y, contentWidth, pendBoxH)
   
   fieldY = y + 5
-  fieldY += drawField("Medical Spin", os.pendencias?.medicalSpin || os.pendencias?.empresa || "N/A", margin + 3, fieldY, 18)
-  doc.setFontSize(7)
+  doc.setFontSize(8)
+  doc.setFont("helvetica", "bold")
+  doc.setTextColor(...COLORS.gray)
+  doc.text("Medical Spin:", margin + 3, fieldY)
+  doc.setFont("helvetica", "normal")
+  doc.setTextColor(...COLORS.black)
+  doc.text(pendMedicalLines, margin + 22, fieldY)
+  fieldY += pendMedicalLines.length * 3.5 + 2
+  
   doc.setFont("helvetica", "bold")
   doc.setTextColor(...COLORS.gray)
   doc.text("Cliente:", margin + 3, fieldY)
   doc.setFont("helvetica", "normal")
   doc.setTextColor(...COLORS.black)
-  doc.text(os.pendencias?.cliente || "N/A", margin + 13, fieldY)
+  doc.text(pendClienteLines, margin + 15, fieldY)
   
   y += pendBoxH + 3
 
   // ==================== 8. ESTADO DO EQUIPAMENTO ====================
-  y = checkNewPage(y, 22)
+  const estadoInicial = os.estadoEquipamento?.estadoInicial || os.estado?.estadoInicial || "N/A"
+  const estadoFinal = os.estadoEquipamento?.estadoFinal || os.estado?.estadoFinal || "N/A"
+  
+  doc.setFontSize(8)
+  const estadoInicialLines = doc.splitTextToSize(estadoInicial, contentWidth - 38)
+  const estadoFinalLines = doc.splitTextToSize(estadoFinal, contentWidth - 38)
+  
+  const estadoBoxH = 10 + (estadoInicialLines.length * 3.5) + (estadoFinalLines.length * 3.5)
+  
+  y = checkNewPage(y, estadoBoxH + 12)
   y = drawSectionTitle("8. ESTADO DO EQUIPAMENTO", y)
   
-  const estadoBoxH = 14
   drawBox(margin, y, contentWidth, estadoBoxH)
   
   fieldY = y + 5
-  fieldY += drawField("Antes da Intervencao", os.estadoEquipamento?.estadoInicial || os.estado?.estadoInicial || "N/A", margin + 3, fieldY, 30.5)
-  doc.setFontSize(7)
+  doc.setFontSize(8)
+  doc.setFont("helvetica", "bold")
+  doc.setTextColor(...COLORS.gray)
+  doc.text("Antes da Intervencao:", margin + 3, fieldY)
+  doc.setFont("helvetica", "normal")
+  doc.setTextColor(...COLORS.black)
+  doc.text(estadoInicialLines, margin + 33, fieldY)
+  fieldY += estadoInicialLines.length * 3.5 + 2
+  
   doc.setFont("helvetica", "bold")
   doc.setTextColor(...COLORS.gray)
   doc.text("Apos a Intervencao:", margin + 3, fieldY)
   doc.setFont("helvetica", "normal")
   doc.setTextColor(...COLORS.black)
-  doc.text(os.estadoEquipamento?.estadoFinal || os.estado?.estadoFinal || "N/A", margin + 28, fieldY)
+  doc.text(estadoFinalLines, margin + 30, fieldY)
   
   y += estadoBoxH + 3
 
