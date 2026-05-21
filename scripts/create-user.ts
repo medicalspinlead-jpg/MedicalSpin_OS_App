@@ -20,16 +20,10 @@ async function createUser() {
   // Configurações do usuário a ser criado
   const usuarios = [
     {
-      nome: "Administrador",
-      email: "admin@medicalspin.com",
-      senha: "admin123",
+      nome: "Wendel",
+      email: "lwendel003@gmail.com",
+      senha: "12345",
       cargo: "admin",
-    },
-    {
-      nome: "Técnico 1",
-      email: "tecnico1@medicalspin.com",
-      senha: "tecnico123",
-      cargo: "tecnico",
     },
   ]
 
